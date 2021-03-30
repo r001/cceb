@@ -1,0 +1,122 @@
+# CCEB - Bash cli for crypto token exchange and Ethereum contract interactions
+
+Enable trading on centralized and decentralized exchanges and interact with Ethereum smart contracts.
+
+# Features
+
+* Support to operate with 150+ exchanges that is supported by [CCXT](https://github.com/ccxt/ccxt) library
+* Support for UNISWAP and Kyber on Ethereum.
+* Ethereum smart contract interaction
+	* [MakerDAO](https://www.makerdao.com) supported
+	* [AAVE](https://github.com/ccxt/ccxt) supported
+	* [Curve](https://curve.fi) contracts integrated. (All operations manageable via command line.)
+* Ethereum wallets supported:
+	* Account with private keys
+	* [Ledger](https://www.ledger.com/) wallet supported.
+	* [Airsign](https://github.com/r001/airsign) supported. You store your keys on an android device, that is shut off from internet, and communicates with cceb through QR codes.
+* Access CCEB remotely using [Telegram](https://telegram.org).
+* Works on Android [Termux](https://termux.com/)
+
+# Getting started
+
+## Prerequisities
+You need access to the followings in order to make CCEB work:
+* On exchanges you wish to connect to, generate api keys and secrets.
+* [Infura](https://infura.io) api-key is needed for Ethereum (and Uniswap) interaction.
+* [Etherscan](https://etherscan.io/) api-key is needed to download abi and contract source code for your Ethereum smart contracts.
+* [Ethgasstation](https://ethgasstation.info/) api-key is needed for gas pricing for Ethereum transactions.
+* [Telegram](https://telegram.org) telegram-token is needed if you want to access CCEB from within Telegram.
+
+## Installing
+
+Install CCEB:  
+`$ npm i cceb`  
+`$ cd cceb`  
+1. Add api keys:  
+`$ vim config/secrets/default.yaml`  
+	- edit [Infura](https://infura.io) api key.`web3.mainnet.infura.api-key`
+	- edit [Etherscan](https://etherscan.io) api-key.`web3. etherscan.api-key`
+	- edit [Ethgasstation](https://ethgasstation.info) api-key.`web3.ethgasstation.api-key`
+	- add exhchange credentials.`keys`
+		- add exchange name (using [list](https://github.com/ccxt/ccxt).`keys.<ecxhange nam>` 	
+		- add exchange api key.`keys.<ecxhange name>.api-key`
+		- add exchange api key.`keys.<ecxhange name>.apiKey`
+		- add exchange api secret.`keys.<ecxhange name>.secret`
+		- add `type.'centralized'`
+		- add `enableRateLimit.true`
+		- add `timeout.30000`
+	- (optional) add Telegram token.`telegram-token`
+
+2. (optional) Configure cceb. 
+`$ vim config/default.yaml`
+	- (optional) Set Ethereum tx speed.`web3.txSpeed`   
+		Values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min
+	- (optional) Set default account: `web3: defaultFrom:`
+	- (optional) set network: `web3: network:`
+
+3. Check if all works well   
+`$ cceb eth tx USDT balanceOf 0x1062a747393198f70f71ec65a582423dba7e5ab3`  
+Should return a number greater than zero.  
+`$ cceb exchange listbalances <exchange name>`  
+Should return your balances on <exchange name> you configured in [##Installing].  
+
+## Examples
+
+### Exchange
+
+Add order on [Binance](https://www.binance.com):  
+`$ cceb exchange add binance buy market 1 ETH/USDT 0`  
+Add order on [Uniswap](https://app.uniswap.org/#/swap):  
+`$ cceb exchange add uniswap buy market 1 ETH/USDT 0`  
+Add order buying the maximum ETH possible on [Binance](https://www.binance.com):  
+`$ cceb exchange add binance buy market max ETH/USDT 0`  
+Add order buying the maximum ETH possible on [Uniswap](https://app.uniswap.org/#/swap):  
+`$ cceb exchange add uniswap buy market max ETH/USDT 0`  
+Add order buying half of the maximum ETH possible on [Binance](https://www.binance.com):  
+`$ cceb exchange add binance buy market max/2 ETH/USDT 0`  
+Add order buying half of the maximum ETH possible on [Uniswap](https://app.uniswap.org/#/swap):  
+`$ cceb exchange add uniswap buy market max/2 ETH/USDT 0`  
+Sell CRV in batches using random batch size between 0 and 1000 CRV with random time varying from 120 to 240 seconds between the creation of sell orders. Create order only if price of CRV is a minimum of 4 on [Binance](https://www.binance.com)  
+`cceb exchange trickle binance sell market 2090.46936856 CRV/USDT 0 -s 0 -v 1000 -t 120 -r 120 -m 4`  
+Emulate limit order on Uniswap, selling 11 MKR at limit price of 2000. Will try to sell once in every 300 seconds, if price is higher than or equal to limit:  
+`.cceb exchange trickle uniswap sell market 11 MKR/USDT 0 -s 11 -m 2000 -y 300 -t 10 -r 0`  
+
+### Ethereum contract manipulation
+
+Get info on [Curve.fi](https://www.curve.fi):  
+`$ cceb eth curve info`  
+See how much an ETH is worth on Uniswap.  
+`$ cceb eth tx UNISWAP_ROUTER2 getAmountsOut 1.000000000000000000 '["WETH","USDT"]'`  
+Send 1 ETH to 0x0000000000000000000000000000000000000000:  
+`$ cceb eth tx ETH transfer ZERO_ADDRESS 1.000000000000000000`  
+Import token (eg.: BZRX):  
+`$ cceb eth import BZRX 0x56d811088235F11C8920698a204A5010a788f4b3 -l web3.mainnet.token`  
+Once imported you can use its name to substitute for address:  
+`$ cceb eth abi BZRX`  
+
+### Ledger interaction
+
+List ledger addresses:  
+`$ cceb ledger addresses`
+
+## Documentation
+
+See [documentation](https://github.com/r001/cceb/DOCUMENTATION.md).  
+
+Get detailed help:  
+`$ cceb --help`
+
+## Authors
+* **Robert Horvath** - *Initial work* - [Contact](https://github.com/r001)  
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Disclaimer
+
+This software and all its components come with absolutely no warranty whatsoever. Using this software is absolutely your own risk. Please note that test are missing, but I have been using this software for quite a while, and trying to fix its bugs.
+
+## Acknowledgments
+
+* Thanks for the CCXT team for the great product.
+* Ethereum team did a great work with api.

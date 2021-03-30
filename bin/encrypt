@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+decoded=config/secrets/default.yaml
+openssl enc -pass pass:"$1" -aes-256-cbc -salt -pbkdf2 -in $decoded -out config/secrets/default.yaml.enc && rm $decoded

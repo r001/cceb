@@ -1,0 +1,63 @@
+{
+  "name": "cceb",
+  "version": "1.0.0",
+  "description": "Bash program to trade on exchanges and interact with Ethereum smart contracts from bash",
+  "main": "cceb",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ccxt",
+    "bash",
+    "crypto",
+    "ledger",
+    "smart contract",
+    "ethereum",
+    "cli",
+    "airsign",
+    "aave"
+  ],
+  "author": "Robert Horvath",
+  "license": "MIT",
+  "dependencies": {
+    "@ledgerhq/hw-app-eth": "^5.47.3",
+    "@ledgerhq/hw-transport-node-hid-singleton": "^5.46.0",
+    "@ledgerhq/logs": "^5.46.0",
+    "argparse": "^1.0.10",
+    "axios": "^0.21.1",
+    "bignumber.js": "^9.0.0",
+    "bn": "^1.0.4",
+    "ccxt": "~1.32.99",
+    "chrono-node": "^2.2.0",
+    "columnify": "^1.5.4",
+    "config": "^3.1.0",
+    "dateformat": "^3.0.3",
+    "es6-promisify": "^6.0.1",
+    "eth-airsign-util": "^1.2.1",
+    "ethereumjs-tx": "^1.3.7",
+    "fs": "0.0.1-security",
+    "js-yaml": "^4.0.0",
+    "keccak": "^3.0.0",
+    "keythereum": "^1.0.4",
+    "log4js": "^5.1.0",
+    "node-telegram-bot-api": "^0.50.0",
+    "path": "^0.12.7",
+    "pm2": "^3.5.1",
+    "press-any-key": "^0.1.1",
+    "promisify": "0.0.3",
+    "qr-encoding": "^1.2.1",
+    "qrcode": "^1.4.4",
+    "scrypt-js": "^3.0.0",
+    "set-value": "^3.0.2",
+    "shelljs": "~0.8.3",
+    "web3": "^1.2.11"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-chai": "0.0.1",
+    "eslint-plugin-json": "^1.4.0",
+    "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-react": "^7.13.0"
+  }
+}
