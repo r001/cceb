@@ -100,7 +100,7 @@ List ledger addresses:
 
 ## Documentation
 
-See [documentation](https://github.com/r001/cceb/DOCUMENTATION.md).  
+See [documentation](https://github.com/r001/cceb/blob/main/DOCUMENTATION.md).  
 
 Get detailed help:  
 `$ cceb --help`
