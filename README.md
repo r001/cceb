@@ -30,10 +30,9 @@ You need access to the followings in order to make CCEB work:
 ## Installing
 
 Install CCEB:  
-`$ npm i cceb`  
-`$ cd cceb`  
+`$ npm i -g cceb`  
 1. Add api keys:  
-`$ vim config/secrets/default.yaml`  
+`$ vim $(npm root -g)/cceb/config/secrets/default.yaml`  
 	- edit [Infura](https://infura.io) api key.`web3.mainnet.infura.api-key`
 	- edit [Etherscan](https://etherscan.io) api-key.`web3. etherscan.api-key`
 	- edit [Ethgasstation](https://ethgasstation.info) api-key.`web3.ethgasstation.api-key`
@@ -48,7 +47,7 @@ Install CCEB:
 	- (optional) add Telegram token.`telegram-token`
 
 2. (optional) Configure cceb. 
-`$ vim config/default.yaml`
+`$ vim $(npm root -g)/cceb/config/default.yaml`
 	- (optional) Set Ethereum tx speed.`web3.txSpeed`   
 		Values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min
 	- (optional) Set default account: `web3: defaultFrom:`
