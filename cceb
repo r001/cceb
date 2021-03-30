@@ -4,11 +4,9 @@ const ArgumentParser = require('argparse').ArgumentParser
 const BN = require('bignumber.js')
 const Eth = require("@ledgerhq/hw-app-eth").default
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default
-const appInstance = process.argv.NODE_APP_INSTANCE
 const baseDir = __dirname + '/'
 const chrono = require('chrono-node')
 const columnify = require('columnify')
-const config = require('config')
 const dateFormat = require('dateformat')
 const fs = require('fs')
 const log4js = require('log4js')
@@ -16,16 +14,23 @@ const logger = require("@ledgerhq/logs");
 const path = require('path')
 const pm2 = require('pm2')
 const pressAnyKey = require('press-any-key')
-const ut = require('./utils/util')
-const w3 = require('./utils/web3.js')
 const {decimalToPrecision, TRUNCATE, DECIMAL_PLACES, PAD_WITH_ZERO, SIGNIFICANT_DIGITS} = require ('ccxt')
 const {promisify} = require('es6-promisify')
-logger.listen(log => console.log(log.type + ": " + log.message))
 process.chdir(baseDir)
-process.argv.NODE_APP_INSTANCE = ''
-process.env["NODE_CONFIG_DIR"] = baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/"
-process.argv.NODE_APP_INSTANCE = appInstance
+
+process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
+  ?
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
+  :
+    "")
+  + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/"
+
+const config = require('config')
+const w3 = require('./utils/web3.js')
+const ut = require('./utils/util')
+logger.listen(log => console.log(log.type + ": " + log.message))
 BN.set({DECIMAL_PLACES: 45, ROUNDING_MODE: 1/*round down*/})
+
 log4js.configure(
 	{
 		appenders: {
@@ -76,6 +81,8 @@ if (require.main === module) {
 							await dispMarkets(exchange, args)
 							break
 						case 'price':
+							// TODO: implement dispPrice()
+							// eslint-disable-next-line
 							await dispPrice(exchange, args)
 							break
 						case 'orderbook':
@@ -212,18 +219,15 @@ if (require.main === module) {
 
 async function dispLedgerAddresses (args) {
 	const addresses = await ledgerAddresses(args)
-	console.log(addresses)
 	Object.keys(addresses).map(key => addresses[key].map(desc => console.log(`${key}: ${desc.address} derivePath: ${desc.derivePath}`)))
 }
 	
 async function ledgerAddresses (args) {
 	switch (args.wallet) {
 		case "Ethereum":
-			console.log('const transport = await TransportNodeHid.create();')
 			console.log(await TransportNodeHid.list())
 			// eslint-disable-next-line
 			const transport = await TransportNodeHid.create();
-			console.log('const eth = new Eth(transport)')
 			// eslint-disable-next-line
 			const eth = new Eth(transport)
 
@@ -1286,12 +1290,16 @@ async function getEthTransaction (args) {
 		args.gasprice)
 }
 
+// TODO: implement background order creation
 async function startProc (args) {
 	const connect = promisify(pm2.connect)
 	const start = promisify(pm2.start)
+	// eslint-disable-next-line
 	const stop = promisify(pm2.stop)
 	const list = promisify(pm2.list)
+	// eslint-disable-next-line
 	const readFile = promisify(fs.readFile)
+	// eslint-disable-next-line
 	const writeFile = promisify(fs.writeFile)
 	await connect()
 
@@ -1314,6 +1322,8 @@ async function startProc (args) {
 	return proc
 }
 
+// TODO: implement background order creation
+// eslint-disable-next-line
 async function startFork (exchange, args) {
 process.env.pm_id
 }
