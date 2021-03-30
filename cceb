@@ -1,32 +1,31 @@
 #!/usr/bin/env node
 // Moving NODE_APP_INSTANCE aside during configuration loading
-const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default
-const logger = require("@ledgerhq/logs");
-logger.listen(log => console.log(log.type + ": " + log.message))
+const ArgumentParser = require('argparse').ArgumentParser
+const BN = require('bignumber.js')
 const Eth = require("@ledgerhq/hw-app-eth").default
-var path = require('path')
+const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default
+const appInstance = process.argv.NODE_APP_INSTANCE
 const baseDir = __dirname + '/'
+const chrono = require('chrono-node')
+const columnify = require('columnify')
+const config = require('config')
+const dateFormat = require('dateformat')
+const fs = require('fs')
+const log4js = require('log4js')
+const logger = require("@ledgerhq/logs");
+const path = require('path')
+const pm2 = require('pm2')
+const pressAnyKey = require('press-any-key')
+const ut = require('./utils/util')
+const w3 = require('./utils/web3.js')
+const {decimalToPrecision, TRUNCATE, DECIMAL_PLACES, PAD_WITH_ZERO, SIGNIFICANT_DIGITS} = require ('ccxt')
+const {promisify} = require('es6-promisify')
+logger.listen(log => console.log(log.type + ": " + log.message))
 process.chdir(baseDir)
-var appInstance = process.argv.NODE_APP_INSTANCE
 process.argv.NODE_APP_INSTANCE = ''
 process.env["NODE_CONFIG_DIR"] = baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/"
-const config = require('config')
 process.argv.NODE_APP_INSTANCE = appInstance
-const {promisify} = require('es6-promisify')
-const pm2 = require('pm2')
-const ut = require('./utils/util')
-var fs = require('fs')
-const BN = require('bignumber.js')
 BN.set({DECIMAL_PLACES: 45, ROUNDING_MODE: 1/*round down*/})
-var log4js = require('log4js')
-const dateFormat = require('dateformat')
-const chrono = require('chrono-node')
-const pressAnyKey = require('press-any-key')
-const {decimalToPrecision, TRUNCATE, DECIMAL_PLACES, PAD_WITH_ZERO, SIGNIFICANT_DIGITS} = require ('ccxt')
-const columnify = require('columnify')
-const w3 = require('./utils/web3.js')
-const columnify = require('columnify')
-const ArgumentParser = require('argparse').ArgumentParser
 log4js.configure(
 	{
 		appenders: {

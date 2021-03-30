@@ -1,6 +1,6 @@
 {
   "name": "cceb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bash program to trade on exchanges and interact with Ethereum smart contracts from bash",
   "main": "cceb",
   "scripts": {
@@ -19,6 +19,9 @@
   ],
   "author": "Robert Horvath",
   "license": "MIT",
+  "bin": {
+    "cceb": "./cceb"
+  },
   "dependencies": {
     "@ledgerhq/hw-app-eth": "^5.47.3",
     "@ledgerhq/hw-transport-node-hid-singleton": "^5.46.0",
@@ -38,11 +41,11 @@
     "fs": "0.0.1-security",
     "js-yaml": "^4.0.0",
     "keccak": "^3.0.0",
-    "keythereum": "^1.0.4",
+    "keythereum": "^1.2.0",
     "log4js": "^5.1.0",
     "node-telegram-bot-api": "^0.50.0",
     "path": "^0.12.7",
-    "pm2": "^3.5.1",
+    "pm2": "^4.5.5",
     "press-any-key": "^0.1.1",
     "promisify": "0.0.3",
     "qr-encoding": "^1.2.1",
