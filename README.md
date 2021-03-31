@@ -44,22 +44,29 @@ You need access to the followings in order to make CCEB work:
 	- install basic Ethereum interactions
 		- edit [Infura](https://infura.io) api key: `web3.mainnet.infura.api-key`
 		- edit [Ethgasstation](https://ethgasstation.info) api-key: `web3.ethgasstation.api-key`
-	- (optional) install advanced blockckhain interactions (abi and contract source download)
-		- (optional) edit [Etherscan](https://etherscan.io) api-key: `web3.etherscan.api-key`
 	- install centralized exhchange credentials
-		- add exchange name (using [list](https://github.com/ccxt/ccxt)): `keys.<ecxhange_name>` 	
-		- `apiKey: <your_key>`
-		- `secret: <your_secret>`
-		- `type: 'centralized'`
-		- `enableRateLimit: true`
-		- `timeout: 30000`
+		- add exchange name (using [list](https://github.com/ccxt/ccxt)):
+		```
+		keys:
+			<ecxhange_name>:	
+				apiKey: <your_key>
+				secret: <your_secret>
+				type: 'centralized'
+				enableRateLimit: true
+				timeout: 30000
+			<ecxhange_name_1>:
+				apiKey: ...
+				...
+		```
+	- (optional) enable abi and contract source download
+		- (optional) edit [Etherscan](https://etherscan.io) api-key: `web3.etherscan.api-key`
 	- (optional) add Telegram token: `telegram-token`
 3. (optional) Configure cceb.  
 `$ vim $(npm root -g)/cceb/config/default.yaml`
 	- (optional) Set Ethereum tx speed.`web3.txSpeed`   
 		Values `fastest`: < 30 sec, `fast`: < 2 min, `average`: < 5 min, `safeLow`: < 30 min
 	- (optional) Set default account: `web3.defaultFrom`
-	- (optional) set network: `web3.network`
+	- (optional) Set network: `web3.network`
 4. Check if all works well
 
 	`$ cceb eth tx USDT balanceOf 0x1062a747393198f70f71ec65a582423dba7e5ab3`  
