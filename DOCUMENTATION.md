@@ -1,11 +1,11 @@
-# Documentation - cceb
+# cceb - documentation
 
 `cceb` bash cli can be used to trade on centralized and decentralized exchanges, and explore and interact with [Ethereum](https://ethereum.org/en/) smart contracts.
 
 ## General structure of usage 
 
 `cceb` has three main groups of commands:
-- `cceb exchange` - Interact with exchanges
+- `cceb exchange` - [Interact with exchanges](#interact-with-exchanges)
 	- `cceb exchange deposit` - get deposit address for tokens
 	- `cceb exchange add` - add limit or market order
 	- `cceb exchange listorders` - list orders
