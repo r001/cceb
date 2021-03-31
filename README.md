@@ -71,6 +71,7 @@ Add order on [Binance](https://www.binance.com):
 
 Add order on [Uniswap](https://app.uniswap.org/#/swap):  
 `$ cceb exchange add uniswap buy market 1 ETH/USDT 0`  
+
 Add order buying the maximum ETH possible on [Binance](https://www.binance.com):  
 `$ cceb exchange add binance buy market max ETH/USDT 0`  
 
