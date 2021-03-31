@@ -1,6 +1,9 @@
-# CCEB - Bash cli for crypto token exchange and Ethereum contract interactions
+# cceb
+[![GitHub license](https://img.shields.io/github/license/r001/cceb)](https://github.com/r001/cceb/blob/main/LICENSE)
+[![NPM version](https://img.shields.io/npm/v/cceb.svg?style=flat)](https://www.npmjs.org/package/cceb)
+https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fcceb08733804
 
-Enable trading on centralized and decentralized exchanges and interact with Ethereum smart contracts.
+> Bash cli for trading centralized and Ethereum exchanges and interact with Ethereum smart contracts.
 
 # Features
 
