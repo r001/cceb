@@ -369,10 +369,10 @@ Optional arguments:
 
 When interacting with Ethereum contracts, `cceb` returns fixed digits (decimals fitted for each token) numbers when `balanceOf`, or `totalSupply` is requested. When numbers are entered to `cceb eth tx` then dot is disregarded, and number is taken as an integer. So make sure you DO NOT delete any digits from fractional numbers.
   
-From address is not needed, because if not provided `cceb` will use default address defined in `config/default.yaml -> web3.defaultFrom`  
+From address is not needed, because if not provided `cceb` will use default address defined in `$(npm root -g)/cceb/config/default.yaml -> web3.defaultFrom`  
   
-There are three types of Ethereum accounts can be defined in `config/secrets/default.yaml -> web3.account`:
-- `privatekey` - UNSAFE!!! the privatekey is stored  in `config/secrets/default.yaml web3.account.<account_name>.privatekey`. If the file gets compromised, attacker has total authority on account.
+There are three types of Ethereum accounts can be defined in `$(npm root -g)/cceb/config/secrets/default.yaml -> web3.account`:
+- `privatekey` - UNSAFE!!! the privatekey is stored  in `$(npm root -g)/cceb/config/secrets/default.yaml web3.account.<account_name>.privatekey`. If the file gets compromised, attacker has total authority on account.
 - `airsign` - (SAFE) [airsign](https://github.com/r001/airsign) accounts store the privatekeys on a mobile phone that communicates `cceb` using QR codes to sign transactions and signatures. 
 - `ledger` - (SAFE) [ledger](https://www.ledger.com) accounts use Ledger cold wallets to sign transactions
 
@@ -411,7 +411,7 @@ Add 62000 USDT to 3POOL requiring a minimum of 61000 LP tokens.
 Lets check if we really got the LP tokens:  
 `$ cceb eth tx CRV_LP_3POOL balanceOf ETH-MY-ACC`  
 (Lets assume we got 61234.560000000000000000 LP tokens.)  
-(Note we assume that ETH-MY-ACC is listed in `config/secrets/default.yaml -> web3: -> account:` and has a valid address.)  
+(Note we assume that ETH-MY-ACC is listed in `$(npm root -g)/cceb/config/secrets/default.yaml -> web3: -> account:` and has a valid address.)  
   
 Let's put that LP token to the gauge to receive CRV payment:  
 `$ cceb eth tx CRV_GAUGE_3POOL deposit 61234.560000000000000000`  
@@ -526,9 +526,9 @@ Optional arguments:
 #### Import smart contract name and abi
 
 Addresses are stored in two files:
-- `config/secret/default.yaml` 
+- `$(npm root -g)/cceb/config/secret/default.yaml` 
 	- account addresses are stored here at `web3.account`. Importing accounts is not implemented. You have to edit the config file to add new accounts.
-- `config/default.yaml`
+- `$(npm root -g)/cceb/config/default.yaml`
 	- token addresses are stored in 
 		- `web3.mainnet.token` 
 		- `web3.kovan.token` 
@@ -553,7 +553,7 @@ Import token (eg.: BZRX):
 
 Import new Synthetics smart contract:
 1. Edit config file and add `synthetics` contract group name under `web3.mainnet`:  
-`vim config/default.yaml`  
+`vim $(npm root -g)/cceb/config/default.yaml`  
 2. Import Synthetics address resolver smart contract:  
 `$ cceb eth import SYNTHETICS_ADDRESS_RESOLVER 0x823bE81bbF96BEc0e25CA13170F5AaCb5B79ba83 -l web3.mainnet.synthetics`  
 
@@ -574,7 +574,7 @@ Positional arguments:
 Optional arguments:
   -h, --help            Show this help message and exit.
   --location LOCATION, -l LOCATION
-                        Insert contract into path in "./config/default.yaml".
+                        Insert contract into path in "$(npm root -g)/cceb/config/default.yaml".
 ```
 #### Interact with [Makerdao](https://www.makerdao.com)
 
@@ -940,7 +940,7 @@ Get account info for account address.
 
 Optional arguments:
   -h, --help            Show this help message and exit.
-  --from FROM, -f FROM  Account address. (Defaults to ./config/default.yaml 
+  --from FROM, -f FROM  Account address. (Defaults to $(npm root -g)/cceb/config/default.yaml 
                         -> web3.defaultFrom)
 ```
 ##### Details `cceb eth aave liquidate`
@@ -988,7 +988,7 @@ Get Curve info on our reserves and dailiy expected CRV income.
 ##### Details `cceb eth curve info`
 
 Information about Curve.fi reserves of current account.  
-The current account is the default account (defined in `config/default.yaml -> web3.defaultFrom`), or can be specified `--from address`.  
+The current account is the default account (defined in `$(npm root -g)/cceb/config/default.yaml -> web3.defaultFrom`), or can be specified `--from address`.  
   
 When `cceb eth curve info` issued the following fields are displayed:  
 - `GAUGE` - name of gauges, that are entities that can receive CRV 
@@ -1009,7 +1009,7 @@ When `cceb eth curve info` issued the following fields are displayed:
 
 `cceb` supports ledger for transaction signing. Message signing is not supported yet.
 
-Ledger accounts that will be used with `cceb` must be imported manually to `config/secrets/default.yaml -> web3.account`. The example below shows a valid entry:  
+Ledger accounts that will be used with `cceb` must be imported manually to `$(npm root -g)/cceb/config/secrets/default.yaml -> web3.account`. The example below shows a valid entry:  
 ```
 	web3:
 		account:
