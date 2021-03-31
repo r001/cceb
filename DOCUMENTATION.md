@@ -10,10 +10,10 @@
 	- `cceb exchange add` - [add limit or market order](#add-order)
 	- `cceb exchange listorders` - [list orders](#list-orders)
 	- `cceb exchange listbalances` - [list balances](#list-balances)
-	- `cceb exchange rm` - [remove an order](#remove-order)
+	- `cceb exchange rm` - [remove an order](#remove-orders)
 	- `cceb exchange rmall` - [remove all orders](#remove-all-orders)
 	- `cceb exchange orderbook` - [show orderbook](#show-orderbook)
-	- `cceb exchange price` - [show price](#show-price)
+	- `cceb exchange price` - [show price](#show-price-not-implemented)
 	- `cceb exchange trickle` - [trickle - automatically create many small orders or one large order if price reaches a threshold value ](#trickle)
 - `cceb eth` -  [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
 	- `cceb eth tx` - [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
@@ -25,7 +25,7 @@
 	- `cceb eth aave` - [Interact with Aave](#interact-with-aave) 
 	- `cceb eth curve` - [Interact with Curve](#interact-with-curve)
 - `cceb ledger` - [Ledger interactions](#ledger-interactions)
-	- `cceb ledger addresses` - [list ledger addresses](#list-ledger-addresses)
+	- `cceb ledger addresses` - [list ledger addresses](#ledger-interactions)
 
 ### Interact with exchanges
 
@@ -60,6 +60,7 @@ Optional arguments:
 Orders can be added on centralized exchanges like Binance, and on decentralized ones using the same syntax.
 
 When stating amount, any javascript accepted mathematical expression can be used with the symbol of `max`, meaning 'maximum possible amount'.   
+
 Add order buying Ether for half of the USDT we have at a limit price of 1500:  
 `$ cceb exchange add binance buy limit max/2 ETH/USDT 1500`  
   
