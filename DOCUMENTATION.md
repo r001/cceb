@@ -6,26 +6,26 @@
 
 `cceb` has three main groups of commands:
 - `cceb exchange` - [Interact with exchanges](#interact-with-exchanges)
-	- `cceb exchange deposit` - get deposit address for tokens
-	- `cceb exchange add` - add limit or market order
-	- `cceb exchange listorders` - list orders
-	- `cceb exchange listbalances` - list balances
-	- `cceb exchange rm` - remove an order
-	- `cceb exchange rmall` - remove all orders
-	- `cceb exchange orderbook` - show orderbook
-	- `cceb exchange price` - show price
-	- `cceb exchange trickle` - trickle - automatically create many small orders or one large order if price reaches a threshold value 
-- `cceb eth` -  [Ethereum](https://ethereum.org/en/) blockchain interactions 
-	- `cceb eth tx` - send or call ethereum contracts,
-	- `cceb eth abi` - display abi of smart contracts in a human readable way
-	- `cceb eth address` - get address of a contract name, or name of a contract address
-	- `cceb eth source` - display source code of smart contracts
-	- `cceb eth import` - import smart contract name and abi
-	- `cceb eth maker` - Interact with [Makerdao](https://www.makerdao.com)
-	- `cceb eth aave` - Interact with [Aave](https://aave.com), and 
-	- `cceb eth curve` - Interact with [Curve](https://www.curve.fi).
-- `cceb ledger` - [Ledger](https://www.ledger.com) interactions 
-	- `cceb ledger addresses` - list ledger addresses.
+	- `cceb exchange deposit` - [get deposit address for tokens](#get-deposit-address-for-tokens)
+	- `cceb exchange add` - [add limit or market order](#add-limit-or-market-order)
+	- `cceb exchange listorders` - [list orders](#list-orders)
+	- `cceb exchange listbalances` - [list balances](#list-balances)
+	- `cceb exchange rm` - [remove an order](#remove-an-order)
+	- `cceb exchange rmall` - [remove all orders](#remove-all-orders)
+	- `cceb exchange orderbook` - [show orderbook](#show-orderbook)
+	- `cceb exchange price` - [show price](#show-price)
+	- `cceb exchange trickle` - [trickle - automatically create many small orders or one large order if price reaches a threshold value ](#trickle)
+- `cceb eth` -  [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
+	- `cceb eth tx` - [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
+	- `cceb eth abi` - [display abi of smart contracts in a human readable way](#display-abi-of-smart-contracts-in-a-human-readable-way)
+	- `cceb eth address` - [get address of a contract name, or name of a contract address](#get-address-of-a-contract-name-or-name-of-a-contract-address)
+	- `cceb eth source` - [display source code of smart contracts](#display-source-code-of-smart-contracts)
+	- `cceb eth import` - [import smart contract name and abi](#import-smart-contract-name-and-abi)
+	- `cceb eth maker` - [Interact with Makerdao](#interact-with-makerdao)
+	- `cceb eth aave` - [Interact with Aave](#interact-with-aave) 
+	- `cceb eth curve` - [Interact with Curve](#interact-with-curve)
+- `cceb ledger` - [Ledger interactions](#ledger-interactions)
+	- `cceb ledger addresses` - [list ledger addresses](#list-ledger-addresses)
 
 ### Interact with exchanges
 
