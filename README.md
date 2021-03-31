@@ -94,12 +94,16 @@ Emulate limit order on Uniswap, selling 11 MKR at limit price of 2000. Will try 
 
 Get info on [Curve.fi](https://www.curve.fi):  
 `$ cceb eth curve info`  
+
 See how much an ETH is worth on Uniswap.  
 `$ cceb eth tx UNISWAP_ROUTER2 getAmountsOut 1.000000000000000000 '["WETH","USDT"]'`  
+
 Send 1 ETH to 0x0000000000000000000000000000000000000000:  
 `$ cceb eth tx ETH transfer ZERO_ADDRESS 1.000000000000000000`  
+
 Import token (eg.: BZRX):  
 `$ cceb eth import BZRX 0x56d811088235F11C8920698a204A5010a788f4b3 -l web3.mainnet.token`  
+
 Once imported you can use its name to substitute for address:  
 `$ cceb eth abi BZRX`  
 
