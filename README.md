@@ -68,18 +68,24 @@ Should return your balances on <exchange name> you configured in [##Installing].
 
 Add order on [Binance](https://www.binance.com):  
 `$ cceb exchange add binance buy market 1 ETH/USDT 0`  
+
 Add order on [Uniswap](https://app.uniswap.org/#/swap):  
 `$ cceb exchange add uniswap buy market 1 ETH/USDT 0`  
 Add order buying the maximum ETH possible on [Binance](https://www.binance.com):  
 `$ cceb exchange add binance buy market max ETH/USDT 0`  
+
 Add order buying the maximum ETH possible on [Uniswap](https://app.uniswap.org/#/swap):  
 `$ cceb exchange add uniswap buy market max ETH/USDT 0`  
+
 Add order buying half of the maximum ETH possible on [Binance](https://www.binance.com):  
 `$ cceb exchange add binance buy market max/2 ETH/USDT 0`  
+
 Add order buying half of the maximum ETH possible on [Uniswap](https://app.uniswap.org/#/swap):  
 `$ cceb exchange add uniswap buy market max/2 ETH/USDT 0`  
+
 Sell CRV in batches using random batch size between 0 and 1000 CRV with random time varying from 120 to 240 seconds between the creation of sell orders. Create order only if price of CRV is a minimum of 4 on [Binance](https://www.binance.com)  
 `cceb exchange trickle binance sell market 2090.46936856 CRV/USDT 0 -s 0 -v 1000 -t 120 -r 120 -m 4`  
+
 Emulate limit order on Uniswap, selling 11 MKR at limit price of 2000. Will try to sell once in every 300 seconds, if price is higher than or equal to limit:  
 `.cceb exchange trickle uniswap sell market 11 MKR/USDT 0 -s 11 -m 2000 -y 300 -t 10 -r 0`  
 
