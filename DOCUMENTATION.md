@@ -6,11 +6,11 @@
 
 `cceb` has three main groups of commands:
 - `cceb exchange` - [Interact with exchanges](#interact-with-exchanges)
-	- `cceb exchange deposit` - [get deposit address for tokens](#get-deposit-address-for-tokens)
-	- `cceb exchange add` - [add limit or market order](#add-limit-or-market-order)
+	- `cceb exchange deposit` - [get deposit address for tokens](#deposit-tokens)
+	- `cceb exchange add` - [add limit or market order](#add-order)
 	- `cceb exchange listorders` - [list orders](#list-orders)
 	- `cceb exchange listbalances` - [list balances](#list-balances)
-	- `cceb exchange rm` - [remove an order](#remove-an-order)
+	- `cceb exchange rm` - [remove an order](#remove-order)
 	- `cceb exchange rmall` - [remove all orders](#remove-all-orders)
 	- `cceb exchange orderbook` - [show orderbook](#show-orderbook)
 	- `cceb exchange price` - [show price](#show-price)
@@ -178,7 +178,7 @@ Remove orders from exchange. Centralized exchanges only.
 
 ##### Examples
 
-Remove order GRHVAG-WL9WX-6HHULI on [Kraken](https://www.kraken.com) 
+Remove order id of GRHVAG-WL9WX-6HHULI on [Kraken](https://www.kraken.com)  
 `$ cceb exchange rm kraken GRHVAG-WL9WX-6HHULI`
 
 ##### Details `cceb exchange rm`
