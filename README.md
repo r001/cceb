@@ -3,7 +3,7 @@
 [![NPM version](https://img.shields.io/npm/v/cceb.svg?style=flat)](https://www.npmjs.org/package/cceb)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fcceb08733804)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Ftwitter.com%2Fcceb08733804)
 
-> Bash cli for trading centralized and Ethereum exchanges and interact with Ethereum smart contracts.
+> Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
 
 ## Features
 
@@ -33,7 +33,7 @@ You need access to the followings in order to make CCEB work:
 		- `/start`
 		- `/newbot`
 		- `/<name_ending_with_bot>`
-		- Use received token during [Installing](#installing)
+		- The reply of `BotFather` will include telegram-token. Use this token during [Installing](#installing)!
 
 ### Installing
 
@@ -75,9 +75,9 @@ You need access to the followings in order to make CCEB work:
 	`$ cceb exchange listbalances <exchange_name>`   
 	Should return your balances on <exchange_name> you configured in [Installing](#installing).  
 
-### Examples
+## Examples
 
-#### Exchange
+### Exchange
 
 Add order on [Binance](https://www.binance.com):  
 `$ cceb exchange add binance buy market 1 ETH/USDT 0`  
@@ -98,12 +98,12 @@ Add order buying half of the maximum ETH possible on [Uniswap](https://app.unisw
 `$ cceb exchange add uniswap buy market max/2 ETH/USDT 0`  
 
 Sell CRV in batches using random batch size between 0 and 1000 CRV with random time varying from 120 to 240 seconds between the creation of sell orders. Create order only if price of CRV is a minimum of 4 on [Binance](https://www.binance.com)  
-`cceb exchange trickle binance sell market 2090.46936856 CRV/USDT 0 -s 0 -v 1000 -t 120 -r 120 -m 4`  
+`$ cceb exchange trickle binance sell market 2090.46936856 CRV/USDT 0 -s 0 -v 1000 -t 120 -r 120 -m 4`  
 
 Emulate limit order on Uniswap, selling 11 MKR at limit price of 2000. Will try to sell once in every 300 seconds, if price is higher than or equal to limit:  
-`.cceb exchange trickle uniswap sell market 11 MKR/USDT 0 -s 11 -m 2000 -y 300 -t 10 -r 0`  
+`$ cceb exchange trickle uniswap sell market 11 MKR/USDT 0 -s 11 -m 2000 -y 300 -t 10 -r 0`  
 
-#### Ethereum contract manipulation
+### Ethereum contract manipulation
 
 Get info on [Curve.fi](https://www.curve.fi):  
 `$ cceb eth curve info`  
@@ -120,29 +120,29 @@ Import token (eg.: BZRX):
 Once imported you can use its name to substitute for address:  
 `$ cceb eth abi BZRX`  
 
-#### Ledger interaction
+### Ledger interaction
 
 List ledger addresses:  
 `$ cceb ledger addresses`
 
-### Documentation
+## Documentation
 
 See [documentation](https://github.com/r001/cceb/blob/main/DOCUMENTATION.md).  
 
 Get detailed help:  
 `$ cceb --help`
 
-### Authors
+## Authors
 * **Robert Horvath** - *Initial work* - [Contact](https://github.com/r001)  
-### License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-### Disclaimer
+## Disclaimer
 
 This software and all its components come with absolutely no warranty whatsoever. Using this software is absolutely your own risk. Please note that test are missing, but I have been using this software for quite a while, and trying to fix its bugs.
 
-### Acknowledgments
+## Acknowledgments
 
 * Thanks for the CCXT team for the great product.
-* Ethereum team did a great work with api.
+* Ethereum team did a great work with their api.

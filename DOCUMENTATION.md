@@ -1,6 +1,6 @@
-# cceb - documentation
+# Documentation - cceb
 
-`cceb` bash cli can be used to trade on centralized and decentralized exchanges, and explore and interact with [Ethereum](https://ethereum.org/en/) smart contracts.
+> Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
 
 ## General structure of usage 
 
@@ -22,16 +22,16 @@
 	- `cceb eth address` - [get address of a contract name, or name of a contract address](#get-address-of-a-contract-name-or-name-of-a-contract-address)
 	- `cceb eth source` - [display source code of smart contracts](#display-source-code-of-smart-contracts)
 	- `cceb eth import` - [import smart contract name and abi](#import-smart-contract-name-and-abi)
-	- `cceb eth maker` - [Interact with Makerdao](#interact-with-makerdao)
-	- `cceb eth aave` - [Interact with Aave](#interact-with-aave) 
-	- `cceb eth curve` - [Interact with Curve](#interact-with-curve)
+	- `cceb eth maker` - [interact with Makerdao](#interact-with-makerdao)
+	- `cceb eth aave` - [interact with Aave](#interact-with-aave) 
+	- `cceb eth curve` - [interact with Curve](#interact-with-curve)
 - `cceb ledger` - [Ledger interactions](#ledger-interactions)
 	- `cceb ledger addresses` - [list ledger addresses](#ledger-interactions)
 
 ### `cceb-telegram` usage:
 
 `cceb` can be called from within Telegram.  
-To install see [README](https://github.com/r001/cceb/blob/main/README.md).  
+To install see [README](https://github.com/r001/cceb/blob/main/README.md#prerequisities).  
 
 To connect to Telegram from computer:  
 `$ cceb-telegram`
@@ -43,11 +43,11 @@ Examples:
 
 **Warning: It is NOT SAFE to use Telegram for exchanging money!**  
 **Especially DO NOT use accounts with privatekeys along with Telegram!**  
-To check see [Ethereum blockchain interactions](#ethereum-blockchain-interactions).
+See [Ethereum blockchain interactions](#ethereum-blockchain-interactions).
 
 ### Interact with exchanges
 
-Using `cceb` all basic exchange function can be executed including deposit, and withdraw funds. Add, remove, list orders, get orderbook, show a price of a token, and show available token pairs(markets).
+Using `cceb` all basic exchange functions can be executed. These are deposit, and withdraw funds, add, remove, list orders, get orderbook, show a price of a token, and show available token pairs(markets).
 
 #### Deposit tokens
 
@@ -77,9 +77,9 @@ Optional arguments:
 
 Orders can be added on centralized exchanges like Binance, and on decentralized ones using the same syntax.
 
-When stating amount, any javascript accepted mathematical expression can be used with the symbol of `max`, meaning 'maximum possible amount'.   
+When stating amount, any javascript accepted mathematical expression can be used using the symbol of `max`, meaning 'maximum possible amount'.   
 
-Add order buying Ether for half of the USDT we have at a limit price of 1500:  
+Add order buying Ether for half of all the USDT we have, at a limit price of 1500:  
 `$ cceb exchange add binance buy limit max/2 ETH/USDT 1500`  
   
 Sell all the WBTC we have (note we just set a price of 0, as it is ignored anyway when adding market orders):  
@@ -440,7 +440,7 @@ Let's check how much CRV can we claim on gauge:
 Once we have enough let's claim CRV:  
 `$ cceb eth tx CRV_TOKEN_MINTER mint CRV_GAUGE_3POOL`  
   
-If you want to know the callable functions(abi) of CRV_TOKEN_MINTER, you can just add `--ls .` to the end of previous:  
+If you want to know the callable functions(abi) of CRV_TOKEN_MINTER, you can just add `--ls .` to the end of any valid `cceb eth tx` command:  
 `$ cceb eth tx CRV_TOKEN_MINTER mint CRV_GAUGE_3POOL --ls .`  
 (Note if you use `--ls` then all the other function calls will be disregarded.)  
 
@@ -474,7 +474,7 @@ Optional arguments:
 #### Display abi of smart contracts in a human readable way
 
 Api-key for [Etherscan](https://etherscan.io/register) is needed for this function to work.
-See [Readme.md](https://github.com/r001/cceb/README.md) for installation details.
+See [Readme.md](https://github.com/r001/cceb/blob/main/README.md#installing) for installation details.
 
 ##### Examples
 
@@ -521,7 +521,7 @@ Optional arguments:
 #### Display source code of smart contracts
 
 Api-key for [Etherscan](https://etherscan.io/register) is needed for this function to work.
-See [Readme.md](https://github.com/r001/cceb/README.md) for installation details.
+See [Readme.md](https://github.com/r001/cceb/blob/main/README.md) for installation details.
 
 ##### Examples
 
@@ -558,7 +558,7 @@ Addresses are stored in two files:
 
 Contracts are grouped in contract groups. Eg.: Makerdao contracts are grouped under `web3.mainnet.maker` contract group name.  
   
-During importing smart contracts if a path is not specified (path tells cceb under which contract group a contract should be imported), then `cceb` will search for smart contract names that match until the first `_`. Eg: Curve smart contracts are stored under `web3.mainnet.curve` and all their names begin with `CRV_`, so if you import a smart contract with the name `CRV_TEST`, then it will automatically be appended to curve contract as its `CRV_` matches the `curve` contract group names.
+During importing smart contracts, if a path is not specified (path tells cceb under which contract group a contract should be imported), then `cceb` will search for smart contract names that match until the first `_`. Eg: Curve smart contracts are stored under `web3.mainnet.curve` and all their names begin with `CRV_`, so if you import a smart contract with the name `CRV_TEST`, then it will automatically be appended to curve contracts as its `CRV_` matches the `curve` contract group names.
   
 If you want to import to a new path, you have to edit the config file manually to add new path, as adding path is not implemented yet.  
   
@@ -619,14 +619,14 @@ Get vault info:
 `$ cceb eth maker info ETH-A --from ETH-SECOND-ACC`  
   
 Payback debt of 100 DAI:  
-`$ cceb eth maker payback ETH-A 100`  
+`$ cceb eth maker payback ETH-A 100 --from ETH-SECOND-ACC`  
   
 Withdraw collateral of 9 Ether:  
-`$ cceb eth maker withdraw ETH-A 9`  
+`$ cceb eth maker withdraw ETH-A 9 --from ETH-SECOND-ACC`  
   
 ##### Details `cceb eth maker open`
 
-Open vault.   
+Open new vault.   
   
 `--from address` the address the tx originates from.  
 ```
@@ -734,7 +734,7 @@ Optional arguments:
 ```
 ##### Makerdao auctions
 
-If there is a lot of bad debt in Makerdao, an auction is created, where the bidders pay DAI, and receive MKR. Bad debt is put into 50,000 DAI sized packages, called **lot**s. Bidders can bid on those lots with requireing less and less MKR for each lot. Once noone bids for a lot, then that bid is closed. If no one bids for a lot, then it is possible to offer to receive less MKR for the 50,000 DAI.
+If there is a lot of bad debt in Makerdao, an auction is created, where the bidders pay DAI, and receive MKR. Bad debt is put into 50,000 DAI sized packages, called **lot**s. Bidders can bid on those lots with requireing less and less MKR for each lot. Once no one bids for a lot, then that bid is closed. If no one bids for a lot, then it is possible to offer to receive less MKR for the 50,000 DAI.
 
 ##### Details `cceb eth maker flog`
 
