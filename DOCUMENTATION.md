@@ -4,7 +4,8 @@
 
 ## General structure of usage 
 
-`cceb` has three main groups of commands:
+### `cceb` usage:
+
 - `cceb exchange` - [Interact with exchanges](#interact-with-exchanges)
 	- `cceb exchange deposit` - [get deposit address for tokens](#deposit-tokens)
 	- `cceb exchange add` - [add limit or market order](#add-order)
@@ -26,6 +27,23 @@
 	- `cceb eth curve` - [Interact with Curve](#interact-with-curve)
 - `cceb ledger` - [Ledger interactions](#ledger-interactions)
 	- `cceb ledger addresses` - [list ledger addresses](#ledger-interactions)
+
+### `cceb-telegram` usage:
+
+`cceb` can be called from within Telegram.  
+To install see [README](https://github.com/r001/cceb/blob/main/README.md).  
+
+To connect to Telegram from computer:  
+`$ cceb-telegram`
+
+Within Telegram all bash commands and functions can be called:  
+Examples:  
+`/cceb --help`  
+`/ls -l`  
+
+**Warning: It is NOT SAFE to use Telegram for exchanging money!**  
+**Especially DO NOT use accounts with privatekeys along with Telegram!**  
+To check see [Ethereum blockchain interactions](#ethereum-blockchain-interactions).
 
 ### Interact with exchanges
 

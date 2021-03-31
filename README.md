@@ -28,13 +28,18 @@ You need access to the followings in order to make CCEB work:
 * [Infura](https://infura.io) api-key is needed for Ethereum (and Uniswap) interaction.
 * [Etherscan](https://etherscan.io/) api-key is needed to download abi and contract source code for your Ethereum smart contracts.
 * [Ethgasstation](https://ethgasstation.info/) api-key is needed for gas pricing for Ethereum transactions.
-* [Telegram](https://telegram.org) telegram-token is needed if you want to access CCEB from within Telegram.
+* [Telegram](https://telegram.org) telegram-token is needed if you want to access CCEB from within Telegram. To receive it:
+	- Within Telegram send message to `BotFather`:
+		- `/start`
+		- `/newbot`
+		- `/<name_ending_with_bot>`
+		- Use received token during [Installing](#installing)
 
 ### Installing
 
-1. Install CCEB:
+1. Install CCEB:  
 `$ npm i -g cceb`
-2. Add api keys:
+2. Add api keys:  
 `$ vim $(npm root -g)/cceb/config/secrets/default.yaml`
 	- install basic Ethereum interactions
 		- edit [Infura](https://infura.io) api key: `web3.mainnet.infura.api-key`
@@ -43,24 +48,25 @@ You need access to the followings in order to make CCEB work:
 		- (optional) edit [Etherscan](https://etherscan.io) api-key: `web3.etherscan.api-key`
 	- install centralized exhchange credentials
 		- add exchange name (using [list](https://github.com/ccxt/ccxt)): `keys.<ecxhange_name>` 	
-		- add exchange api key: `keys.<ecxhange_name>.api-key`
-		- add exchange api key: `keys.<ecxhange_name>.apiKey`
-		- add exchange api secret: `keys.<ecxhange name>.secret`
-		- add `keys.<ecxhange name>.type: 'centralized'`
-		- add `keys.<ecxhange name>.enableRateLimit: true`
-		- add `keys.<ecxhange name>.timeout: 30000`
+		- `apiKey: <your_key>`
+		- `secret: <your_secret>`
+		- `type: 'centralized'`
+		- `enableRateLimit: true`
+		- `timeout: 30000`
 	- (optional) add Telegram token: `telegram-token`
-3. (optional) Configure cceb. 
+3. (optional) Configure cceb.  
 `$ vim $(npm root -g)/cceb/config/default.yaml`
 	- (optional) Set Ethereum tx speed.`web3.txSpeed`   
 		Values `fastest`: < 30 sec, `fast`: < 2 min, `average`: < 5 min, `safeLow`: < 30 min
 	- (optional) Set default account: `web3.defaultFrom`
 	- (optional) set network: `web3.network`
-4. Check if all works well   
-`$ cceb eth tx USDT balanceOf 0x1062a747393198f70f71ec65a582423dba7e5ab3`  
-Should return a number greater than zero.  
-`$ cceb exchange listbalances <exchange name>`  
-Should return your balances on <exchange_name> you configured in [Installing](#installing).  
+4. Check if all works well
+
+	`$ cceb eth tx USDT balanceOf 0x1062a747393198f70f71ec65a582423dba7e5ab3`  
+  Should return a number greater than zero.
+
+	`$ cceb exchange listbalances <exchange_name>`   
+	Should return your balances on <exchange_name> you configured in [Installing](#installing).  
 
 ### Examples
 
