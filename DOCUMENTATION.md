@@ -2,48 +2,30 @@
 
 > Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
 
-## General structure of usage 
+## Table of contents
 
-### `cceb` usage:
-
-- `cceb exchange` - [Interact with exchanges](#interact-with-exchanges)
-	- `cceb exchange deposit` - [get deposit address for tokens](#deposit-tokens)
-	- `cceb exchange add` - [add limit or market order](#add-order)
-	- `cceb exchange listorders` - [list orders](#list-orders)
-	- `cceb exchange listbalances` - [list balances](#list-balances)
-	- `cceb exchange rm` - [remove an order](#remove-orders)
-	- `cceb exchange rmall` - [remove all orders](#remove-all-orders)
-	- `cceb exchange orderbook` - [show orderbook](#show-orderbook)
-	- `cceb exchange price` - [show price](#show-price-not-implemented)
-	- `cceb exchange trickle` - [trickle - automatically create many small orders or one large order if price reaches a threshold value ](#trickle)
-- `cceb eth` -  [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
-	- `cceb eth tx` - [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
-	- `cceb eth abi` - [display abi of smart contracts in a human readable way](#display-abi-of-smart-contracts-in-a-human-readable-way)
-	- `cceb eth address` - [get address of a contract name, or name of a contract address](#get-address-of-a-contract-name-or-name-of-a-contract-address)
-	- `cceb eth source` - [display source code of smart contracts](#display-source-code-of-smart-contracts)
-	- `cceb eth import` - [import smart contract name and abi](#import-smart-contract-name-and-abi)
-	- `cceb eth maker` - [interact with Makerdao](#interact-with-makerdao)
-	- `cceb eth aave` - [interact with Aave](#interact-with-aave) 
-	- `cceb eth curve` - [interact with Curve](#interact-with-curve)
-- `cceb ledger` - [Ledger interactions](#ledger-interactions)
-	- `cceb ledger addresses` - [list ledger addresses](#ledger-interactions)
-
-### `cceb-telegram` usage:
-
-`cceb` can be called from within Telegram.  
-To install see [README](https://github.com/r001/cceb/blob/main/README.md#prerequisities).  
-
-To connect to Telegram from computer:  
-`$ cceb-telegram`
-
-Within Telegram all bash commands and functions can be called:  
-Examples:  
-`/cceb --help`  
-`/ls -l`  
-
-**Warning: It is NOT SAFE to use Telegram for exchanging money!**  
-**Especially DO NOT use accounts with privatekeys along with Telegram!**  
-See [Ethereum blockchain interactions](#ethereum-blockchain-interactions).
+- [Interact with exchanges](#interact-with-exchanges)
+	- [get deposit address for tokens](#deposit-tokens)
+	- [add limit or market order](#add-order)
+	- [list orders](#list-orders)
+	- [list balances](#list-balances)
+	- [remove an order](#remove-orders)
+	- [remove all orders](#remove-all-orders)
+	- [show orderbook](#show-orderbook)
+	- [show price](#show-price-not-implemented)
+	- [trickle - automatically create many small orders or one large order if price reaches a threshold value ](#trickle)
+- [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
+	- [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
+	- [display abi of smart contracts in a human readable way](#display-abi-of-smart-contracts-in-a-human-readable-way)
+	- [get address of a contract name, or name of a contract address](#get-address-of-a-contract-name-or-name-of-a-contract-address)
+	- [display source code of smart contracts](#display-source-code-of-smart-contracts)
+	- [import smart contract name and abi](#import-smart-contract-name-and-abi)
+	- [interact with Makerdao](#interact-with-makerdao)
+	- [interact with Aave](#interact-with-aave) 
+	- [interact with Curve](#interact-with-curve)
+- [Ledger wallet interactions](#ledger-wallet-interactions)
+	- [list ledger addresses](#ledger-wallet-interactions)
+- [Telegram connect](#telegram-connect)
 
 ### Interact with exchanges
 
@@ -1023,7 +1005,7 @@ When `cceb eth curve info` issued the following fields are displayed:
 - `GAUGE_PERCENT` - gauge relative weight in percentage points compared to total weight of all gauges in receiving CRV income. Note if total value is less than 100, then there are unlisted gauges. Gauge addresses can be retrieved from CRV_GAUGE_CONTROLLER the following way: `cceb eth tx CRV_GAUGE_CONTROLLER gauges 0` (returns the address of the first gauge)
 - `DEPOSIT_USD` - total deposits in gauge in USD
 
-#### [Ledger](https://www.ledger.com) interactions
+#### [Ledger](https://www.ledger.com) wallet interactions
 
 `cceb` supports ledger for transaction signing. Message signing is not supported yet.
 
@@ -1065,3 +1047,20 @@ Optional arguments:
   --count COUNT, -c COUNT
                         List this many addresses each.
 ```
+
+### Telegram connect
+
+`cceb` can be called from within Telegram.  
+To install see [README](https://github.com/r001/cceb/blob/main/README.md#prerequisities).  
+
+To connect to Telegram from computer:  
+`$ cceb-telegram`
+
+Within Telegram all bash commands and functions can be called:  
+Examples:  
+`/cceb --help`  
+`/ls -l`  
+
+**Warning: It is NOT SAFE to use Telegram for exchanging money!**  
+**Especially DO NOT use accounts with privatekeys along with Telegram!**  
+See [Ethereum blockchain interactions](#ethereum-blockchain-interactions).
