@@ -1,4 +1,4 @@
-loglevel: 'warn'
+loglevel: 'debug'
 web3:
   txSpeed: 'fastest'
   txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
@@ -373,6 +373,10 @@ web3:
           - 'MKR'
           - 'WETH'
           - 'DUCK'
+        DUCK-USDT:
+          - 'USDT'
+          - 'WETH'
+          - 'DUCK'
       UNISWAP_FACTORY:
         address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
       UNISWAP_ROUTER2:
@@ -562,6 +566,33 @@ web3:
       KyberNetworkENSResolver:
         address: '0x1982131C7D6959ff7768EE39c023Ad002d8c9759'
         abifile: 'abi/KyberNetworkENSResolver'
+    fei:
+      FEI_CORE:
+        address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9'
+      FEI_DAO:
+        address: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B'
+      FEI_DAO_TIMELOCK:
+        address: '0x639572471f2f318464dc01066a56867130e45E25'
+      FEI_UNISWAP_INCENTIVE:
+        address: '0xfe5b6c2a87A976dCe20130c423C679f4d6044cD7'
+      FEI_ETH_BONDING_CURVE:
+        address: '0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7'
+      FEI_UNISWAP_PCV_DEPOSIT:
+        address: '0x9b0C6299D08fe823f2C0598d97A1141507e4ad86'
+      FEI_UNISWAP_PCV_CONTROLLER:
+        address: '0x7a165F8518A9Ec7d5DA15f4B77B1d7128B5D9188'
+      FEI_UNISWAP_ORACLE:
+        address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65'
+      FEI_BONDING_CURVE_ORACLE:
+        address: '0x89714d3AC9149426219a3568543200D1964101C4'
+      FEI_REWARDS_DISTRIBUTOR:
+        address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
+      FEI_STAKING_REWARDS:
+        address: '0x18305DaAe09Ea2F4D51fAa33318be5978D251aBd'
+      FEI_GENESIS_GROUP:
+        address: '0xBFfB152b9392e38CdDc275D818a3Db7FE364596b'
+      FEI_ROUTER:
+        address: '0x9271D303b57c204636C38Df0eD339b18Bf98f909'
     token:
       AETH:
         address: '0x3a3A65aAb0dd2A17E3F1947bA16138cd37d08c04'
@@ -656,6 +687,8 @@ web3:
         address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
       FARM:
         address: '0xa0246c9032bC3A600820415aE600c6388619A14D'
+      FEI:
+        address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA'
       FUEL:
         address: '0xea38eaa3c86c8f9b751533ba2e562deb9acded40'
       FUN:
@@ -793,10 +826,16 @@ web3:
         address: '0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44'
       DODO:
         address: '0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd'
-      TRU:
-        address: '0x4C19596f5aAfF459fA38B0f7eD92F11AE6543784'
       SEUR:
         address: '0xd71ecff9342a5ced620049e616c5035f1db98620'
+      TRIBE:
+        address: '0xc7283b66eb1eb5fb86327f08e1b5816b0720212b'
+      KICK:
+        address: '0xc12d1c73ee7dc3615ba4e37e4abfdbddfa38907e'
+      TRU:
+        address: '0x4C19596f5aAfF459fA38B0f7eD92F11AE6543784'
+      TRU_IMPLEMENTATION:
+        address: '0x095527F5bEa113E9575B662c5ba01D990A280f2F'
   rinkeby:
     infura:
       url: 'wss://rinkeby.infura.io/ws/v3/'
