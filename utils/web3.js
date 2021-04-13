@@ -202,16 +202,32 @@ async function getLedgerEthereumDerivePath (from, transport) {
 
 async function getGasPrice () {
   let gasPrice
+  var ethGasstationWorked = true 
+  var gasPrices = {}
   try {
-    const gasPrices = await axios.get(config.get('web3.ethgasstation.url') + config.get('web3.ethgasstation.api-key'), {timeout: config.get('web3.ethgasstation.timeout')})
-    gasPrice = new BN(gasPrices['data'][config.get('web3.txSpeed') ] / 10).times(10 ** 9)
-    //log.debug('Ethgasstation result: ', gasPrices)
-    log.info('Ethgasstation gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+    gasPrices = await axios.get(config.get('web3.ethgasstation.url') + config.get('web3.ethgasstation.api-key'), {timeout: config.get('web3.ethgasstation.timeout')})
   } catch (e) {
+    ethGasstationWorked = false
     log.debug('Ethgasstation did not work.')
     gasPrice = await web3.eth.getGasPrice()
     log.info('Web3 gasprice: ' + new BN(gasPrice).div(10 ** 9).toString() + ' GWei')
   }
+
+  if (ethGasstationWorked) {
+    const speed = config.get('web3.txSpeed')
+    const required = ['fastest', 'fast', 'average', 'safeLow']
+    if (!required.includes(speed)) {
+      throw new Error(`Wrong speed value of '${speed}'. Use any of '${required.join("', '")}'.`)
+    }
+    const gasPriceRec = gasPrices['data'][speed]
+    if (!gasPriceRec) {
+      throw new Error('Panic: no valid gasprice from Etherscan.')
+    }
+    gasPrice = new BN(gasPriceRec / 10).times(10 ** 9)
+    //log.debug('Ethgasstation result: ', gasPrices)
+    log.info('Ethgasstation gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+  }
+
   return gasPrice
 }
 
@@ -336,11 +352,35 @@ async function getSourceCode (address) {
       config.get('web3.etherscan.url') + config.get('web3.etherscan.api-key') + '&action=getsourcecode&address=' + await getAddress(address),
       {timeout: config.get('web3.etherscan.timeout')}
     )
-
-    return source.data.result[0].SourceCode.replace(/\r/g, '')
   } catch (e) {
     throw new Error('Could not download source code')
   }
+
+  var code = source.data.result[0].SourceCode.replace(/\r/g, '')
+  try {
+    code = code.slice(1, -1)
+    code = JSON.parse(code)
+    const remarks = {Solidity: "// ", Vyper: "# "}
+    const remark = remarks[code.language]
+    log.debug({remarks, remark, language: code.language, code})
+    if (code.sources) {
+      const sources = Object.keys(code.sources)
+      return sources.reduce((acc, source, index) => 
+        acc +
+        `${
+          index === 0 
+            ? 
+              `${remark} ------ File contains multiple sources. Can not be compiled as is.\n` 
+            : 
+              "\n"
+          }${remark || "# "} ------ Source of ${source} ------\n` +
+          code.sources[source].content.replace(/\r/g, '')
+      , '') 
+    } 
+  } catch (e) {
+    return code 
+  }
+    return code
 }
 
 async function getAbi (abi, address) {
@@ -350,21 +390,28 @@ async function getAbi (abi, address) {
     try {
       log.debug('Downloading abi from etherscan.')
       try {
+        const url = config.get('web3.etherscan.url') + config.get('web3.etherscan.api-key') + '&action=getabi&address=' + await getAddress(abi)
+        log.debug({url})
+
         abiJson = await axios.get(
-          config.get('web3.etherscan.url') + '&action=getabi&address=' + await getAddress(abi),
+          url,
           {timeout: config.get('web3.etherscan.timeout')}
         )
       } catch (e) {
         log.debug(`address: ${address}`)
-        if (address) {
+        if (address !== null) {
+          const url = config.get('web3.etherscan.url') + config.get('web3.etherscan.api-key') + '&action=getabi&address=' + address
+          log.debug({url})
+
           abiJson = await axios.get(
-            config.get('web3.etherscan.url') + '&action=getabi&address=' + address,
+            url,
             {timeout: config.get('web3.etherscan.timeout')}
           )
         } else {
           throw new Error(`Either config must contain ${abi} or address must be provided.`)
         }
       }
+
       abiJson = JSON.parse(abiJson.data.result)
 
       log.debug(`Writing abi/${abi}`)
@@ -375,9 +422,27 @@ async function getAbi (abi, address) {
         () => {
           throw Error(`File abi/${abi} could not be written.`)
         })  
+
     } catch (e) {
-      throw Error(`Could download abi. Either timeout or valid value must be in config/default.yaml->web3->etherscan.`)
+      throw Error(`Could not download abi. Either timeout error, or valid value missing in config/default.yaml->web3->etherscan.`)
     }
+  }
+
+  if (await hasImplementation(abiJson)) {
+
+    log.debug('here getAbi')
+
+    // abi contains a Truffle implementation() scheme  
+    const contract = new web3.eth.Contract(abiJson, address || await getAddress(abi))
+    const impAddress = await contract.methods['implementation']().call()
+    log.debug({impAddress})
+    
+    const abiImpl = await getAbi(
+      `${abi}_IMPLEMENTATION`,
+      impAddress
+    )
+
+    abiJson = [...abiJson, ...abiImpl] 
   }
   return abiJson
 }
@@ -432,7 +497,7 @@ async function access (to, funcName, args = [], abi, from, value, gasLimit, gasP
   var contract
   var methodName
   if (!ether) {
-    const abiJson = await getAbi(abi)
+    const abiJson = await getAbi(abi, to)
     contract = new web3.eth.Contract(abiJson, to)
     const funcNameReg = new RegExp('^' + funcName + '$', '')
 
@@ -470,12 +535,14 @@ async function access (to, funcName, args = [], abi, from, value, gasLimit, gasP
     }
 
     // substitute address name with address from config, remove all dots from uint values
+    log.debug({args: JSON.stringify(args)})
+
     args = await Promise.all(inputTypes.map(async (type, index) =>
       type === 'address' ? await getAddress(args[index]) : 
       type.match(/address\[\d*\]/) ? await Promise.all(args[index].map(async (address) => await getAddress(address))) :
 
       type.match(/uint\d*$/) ? args[index].replace(/\./g, "") :
-      type.match(/uint\d*\[\d*\]/) ? args[index].map( (uint) => String(uint).replace(/\./g, "")) :
+      type.match(/uint\d*\[\d*\]/) ? args[index].map((uint) => String(uint).replace(/\./g, "")) :
       args[index]
     ))
 
@@ -531,9 +598,9 @@ async function access (to, funcName, args = [], abi, from, value, gasLimit, gasP
             value,
           })
 
-          log.error(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
+         console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
           gasLimit += config.get(`web3.gasOverhead`)
-          log.error(`netw est. gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
+          console.log(`netw est. gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
         } catch (e) {
           log.warn(`Gaslimit estimation unsuccessful.`)
           gasLimit =  config.get(`web3.defaultGaslimit`)
@@ -643,48 +710,79 @@ async function getPath (sellToken, buyToken, pathString) {
 }
 
 async function importAddress (args) {
-      if (!args.contractAddress.match(/^0x[0-9a-fA-F]{40}$/)) {
-        throw new Error('Wrong contract address given.')
+  if (!args.contractAddress.match(/^0x[0-9a-fA-F]{40}$/)) {
+    throw new Error('Wrong contract address given.')
+  }
+  const yaml = require('js-yaml');
+  const set = require('set-value');
+  const conf = yaml.load(fs.readFileSync('./config/default.yaml', 'utf-8'))
+  const network = config.get('web3.network')
+  if (args.location === '' || !args.location) {
+    // find insert location based on contractName
+    const addresses = Object.keys(config.get(`web3.${network}`))
+    log.info('Searching for insert location based on name...')
+    for (var idx = 0; idx < addresses.length; idx++) {
+      var names = Object.keys(config.get(`web3.${network}.${addresses[idx]}`))
+      var nameMatch = new RegExp(`^${args.contractName.split('_')[0]}`)
+      var matching = names.filter(name => nameMatch.test(name))
+      if (matching.length > 0) {
+        args.location = `web3.${network}.${addresses[idx]}`
+        break
       }
-      const yaml = require('js-yaml');
-      const set = require('set-value');
-      const conf = yaml.load(fs.readFileSync('./config/default.yaml', 'utf-8'))
-      const network = config.get('web3.network')
-      if (args.location === '' || !args.location) {
-        // find insert location based on contractName
-        const addresses = Object.keys(config.get(`web3.${network}`))
-        log.info('Searching for insert location based on name...')
-        for (var idx = 0; idx < addresses.length; idx++) {
-          var names = Object.keys(config.get(`web3.${network}.${addresses[idx]}`))
-          var nameMatch = new RegExp(`^${args.contractName.split('_')[0]}`)
-          var matching = names.filter(name => nameMatch.test(name))
-          if (matching.length > 0) {
-            args.location = `web3.${network}.${addresses[idx]}`
-            break
-          }
-        }
-        if (args.location === '' || !args.location) {
-          args.location = `web3.${config.get('web3.network')}.other`
-        }
+    }
+    if (args.location === '' || !args.location) {
+      args.location = `web3.${config.get('web3.network')}.other`
+    }
+  }
+
+  // access element in change using args.location eg: 'web3.mainnet.token'
+  var change = args.location.split('.').reduce((acc, key) => acc && acc[key], conf)
+
+  change = {...change, [args.contractName]: {address: args.contractAddress}}
+  set(conf, args.location, change);
+
+  fs.writeFileSync(
+    './config/default.yaml',
+    yaml.dump(conf, {forceQuotes: true}),
+    () => {
+      throw Error(`File config could not be written.`)
+    }
+  )
+
+  log.info(`Contract inserted into ${args.location}`)
+  // reload config and dependent w3
+  config = require('config')
+
+  const abiJson = await getAbi(args.contractName, args.contractAddress)
+  if ( await hasImplementation(abiJson)) {
+
+    log.debug('here importAddress')
+
+    // abi contains a Truffle implementation() scheme  
+    const contract = new web3.eth.Contract(abiJson, args.contractAddress)
+    const impAddress = await contract.methods['implementation']().call()
+
+    await importAddress(
+      {
+        ...args,
+        contractName: `${args.contractName}_IMPLEMENTATION`,
+        contractAddress: impAddress
       }
-      var change = config.get(args.location)
-      change = {...change, [args.contractName]: {address: args.contractAddress}}
-      set(conf, args.location, change);
+    )
 
-      fs.writeFileSync(
-        './config/default.yaml',
-        yaml.dump(conf, {forceQuotes: true}),
-        () => {
-              throw Error(`File config could not be written.`)
-              }
-      )
+  }
+  return ''
+}
 
-      log.info(`Contract inserted into ${args.location}`)
-      // reload config and dependent w3
-      config = require('config')
+async function hasImplementation (abiJson) {
+  const res =  abiJson.find(a => 
+        a.name === 'implementation' &&
+        a.type === 'function' && 
+        a.outputs[0].type === 'address' &&
+        a.stateMutability === 'view'
+  ) 
 
-      await getAbi(args.contractName, args.contractAddress)
-      return ''
+  return res !== undefined
 }
 
 /* Translates address id like 'DAI' to real address */

@@ -4,7 +4,6 @@ const ArgumentParser = require('argparse').ArgumentParser
 const BN = require('bignumber.js')
 const Eth = require("@ledgerhq/hw-app-eth").default
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default
-const baseDir = __dirname + '/'
 const chrono = require('chrono-node')
 const columnify = require('columnify')
 const dateFormat = require('dateformat')
@@ -16,6 +15,7 @@ const pm2 = require('pm2')
 const pressAnyKey = require('press-any-key')
 const {decimalToPrecision, TRUNCATE, DECIMAL_PLACES, PAD_WITH_ZERO, SIGNIFICANT_DIGITS} = require ('ccxt')
 const {promisify} = require('es6-promisify')
+const baseDir = __dirname + '/'
 process.chdir(baseDir)
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
@@ -28,6 +28,7 @@ process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
 const config = require('config')
 const w3 = require('./utils/web3.js')
 const ut = require('./utils/util')
+
 logger.listen(log => console.log(log.type + ": " + log.message))
 BN.set({DECIMAL_PLACES: 45, ROUNDING_MODE: 1/*round down*/})
 
@@ -50,7 +51,7 @@ log.level = config.get('loglevel')
 var dust = 0.001
 var args = argParse().parseArgs()
 let exchange
-if (['eth', 'ledger'].filter( c => c === args.subCommand).length === 0 ) {
+if ('exchange' === args.subCommand) {
 	const exchangeType = config.get(`keys.${args.exchange}.type`)
 	if (exchangeType === 'centralized') {
 		exchange = ut.getExchange(args.exchange)
@@ -356,7 +357,7 @@ async function curveInfo (args) {
 	)
 
 	claims.map(gauge => {
-		BN(gauge.lp_free).gt(1) && log.error(`${gauge.gauge} has unused LP of ${BN(gauge.lp_free).toFixed()}`)
+		BN(gauge.lp_free).gt(1) && log.warn(`${gauge.gauge} has unused LP of ${BN(gauge.lp_free).toFixed()}`)
 		return 0
 	})
 
@@ -394,8 +395,8 @@ async function curveInfo (args) {
 		const crv_day_lp_f = BN(rate).times(BN(gauge_relative_weight_f)).times(86400).div(BN(working_supply))
 		const crv_100k = crv_day_lp.times(100000)
 		const crv_100k_f = crv_day_lp_f.times(100000)
-		const crv_day = crv_day_lp.times(BN(lp)).div(10**18)
 		const boost = BN(working_balances).div(BN(lp)).times(2.5)
+		const crv_day = lp === '0' ? BN(0) : crv_day_lp.times(BN(lp)).div(10**18).times(boost).div(2.5)
 
 		const boost_f = 
 			Math.min(
@@ -1556,19 +1557,20 @@ async function addOrderUniswap (args, amount, buy) {
 
 	args.path = await w3.getPath(sellToken, buyToken, args.path)
 
-	var balance
 	var sellAmt
 	var buyAmt
-	if (amount.match(/max/i)) {
-		balance = BN(
-			await w3.access(
-				sellToken,
-				'balanceOf',
-				fromAddress,
-				null, // abi - not necessary
-				args.from,
-			)
+
+	var balance = BN(
+		await w3.access(
+			sellToken,
+			'balanceOf',
+			fromAddress,
+			null, // abi - not necessary
+			args.from,
 		)
+	)
+		
+	if (amount.match(/max/i)) {
 
     log.info(`${sellToken} balance: ${balance.div(10 ** sellDecimals).toFixed()}`)
 
@@ -1640,7 +1642,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 	const ethValue = sellToken === 'ETH' ? sellAmt.toFixed() : null
 	const minBuyAmount = buyAmt.times((100. - args.minPercent)/100.).decimalPlaces(0)
-	const maxSellAmount = sellAmt.times((100. + args.minPercent)/100.).decimalPlaces(0)
+	const maxSellAmount = BN.min(balance, sellAmt.times((100. + args.minPercent)/100.).decimalPlaces(0))
 
 	log.debug(JSON.stringify({
 		ethValue,
@@ -1658,7 +1660,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 	var uniswapArgs = 
 		[
-			sellAmt.toFixed(),
+			buy ? buyAmt.toFixed() : sellAmt.toFixed(),
 			buy ? maxSellAmount.toFixed() : minBuyAmount.toFixed(),
 			Array.from(JSON.parse(args.path)),
 			args.to || args.from,
@@ -1725,7 +1727,6 @@ async function addOrderUniswap (args, amount, buy) {
 
   console.log(display)
 	const accType = `web3.account.${await w3.getAddressName(args.from)}.type`
-	console.log(accType)
 	if (config.has(accType)) {
 		if (config.get(accType) !== 'privatekey') {
 			await pressAnyKey('Press any key to continue!')
@@ -1751,6 +1752,8 @@ async function addOrderUniswap (args, amount, buy) {
 		( buy && priceToken.lt(args.batchMinRate)) ||
 		(!buy && priceToken.gt(args.batchMinRate))) {
 
+		log.debug(`Final params:`, {a})
+		
 		const receipt = await w3.access(...a, null, args.exchangeCommand === 'trickle')
 		
     if (!receipt.status) {
