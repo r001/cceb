@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 const path = require('path')
-process.env['NODE_CONFIG_DIR'] = path.join(__dirname, '/../config/')
+
+process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
+  ?
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
+  :
+    "") +
+  path.join(__dirname, '/../config/') +
+  require('path').delimiter +
+  path.join(__dirname, '/../config/secrets/')
+
 const config = require('config')
 const TelegramBot = require('node-telegram-bot-api')
 const shell = require('shelljs')
