@@ -447,6 +447,34 @@ async function getAbi (abi, address) {
   return abiJson
 }
 
+async function getAddressAndCheck (to) {
+  const {address:toAddr, type} = await getAddressType(to)
+  var toName
+  if (to.match(/^0x[0-9a-fA-F]{40}$/)) {
+    toName = await getAddressName(to)
+  } else {
+    toName = to
+  }
+  var toImplAddrStored, toImpAddr
+  // TODO: find more elaborate solution instead of try catch
+  try {
+    log.debug('')
+  } catch (e) {
+    return toAddr
+  }
+    toImplAddrStored = await getAddress(toName + '_IMPLEMENTATION')
+    // abi contains a Truffle implementation() scheme  
+    const contract = new web3.eth.Contract(await getAbi(toName), toAddr)
+    toImpAddr = await contract.methods['implementation']().call()
+  log.debug({toImplAddrStored, toImpAddr})
+  if (toImplAddrStored !== toImpAddr) {
+    const path = `web3.${network}.${type}` 
+    throw new Error(`Implementation addresgs changed. If you trust contract owner, then run 'cceb eth import ${toName} ${toAddr} -l ${path}'`)
+  }
+
+  return toAddr
+}
+
 async function access (to, funcName, args = [], abi, from, value, gasLimit, gasPrice, inputs, multipleUse) {
   if (multipleUse) {
     web3 = new Web3(Web3.givenProvider || new Web3.providers.WebsocketProvider(config.get(`web3.${network}.infura.url`) + config.get(`web3.${network}.infura.api-key`)))
@@ -488,7 +516,7 @@ async function access (to, funcName, args = [], abi, from, value, gasLimit, gasP
     log.debug('Args was not an array, arrayify it.')
     args = [args]
   }
-  to = await getAddress(to)
+  to = await getAddressAndCheck(to) 
   const ether = to.match(/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/i) 
   log.debug(`Value of 'to' changed to: '${to}'`)
   from = await getAddress(from)
