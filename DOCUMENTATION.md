@@ -546,6 +546,8 @@ If you want to import to a new path, you have to edit the config file manually t
   
 To import a token, the path must be specified. In most cases it will be `web3.mainnet.token`.
 
+`cceb` supports contracts defined in EIP-897 using implementation() method. It will alert if contract is used and implementation address changed meanwhile.
+
 ##### Examples
 
 Import token (eg.: BZRX):  
