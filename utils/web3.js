@@ -358,7 +358,9 @@ async function getSourceCode (address) {
 
   var code = source.data.result[0].SourceCode.replace(/\r/g, '')
   try {
-    code = code.slice(1, -1)
+    if (code[0] === '{' && code.slice(-1) === '}') {
+      code = code.slice(1, -1)
+    }
     code = JSON.parse(code)
     const remarks = {Solidity: "// ", Vyper: "# "}
     const remark = remarks[code.language]
@@ -458,15 +460,14 @@ async function getAddressAndCheck (to) {
   var toImplAddrStored, toImpAddr
   // TODO: find more elaborate solution instead of try catch
   try {
-    log.debug('')
-  } catch (e) {
-    return toAddr
-  }
     toImplAddrStored = await getAddress(toName + '_IMPLEMENTATION')
     // abi contains a Truffle implementation() scheme  
     const contract = new web3.eth.Contract(await getAbi(toName), toAddr)
     toImpAddr = await contract.methods['implementation']().call()
   log.debug({toImplAddrStored, toImpAddr})
+  } catch (e) {
+    return toAddr
+  }
   if (toImplAddrStored !== toImpAddr) {
     const path = `web3.${network}.${type}` 
     throw new Error(`Implementation addresgs changed. If you trust contract owner, then run 'cceb eth import ${toName} ${toAddr} -l ${path}'`)

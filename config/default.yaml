@@ -1,4 +1,4 @@
-loglevel: 'debug'
+loglevel: 'warn'
 web3:
   txSpeed: 'fastest'
   txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
