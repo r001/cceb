@@ -1,6 +1,6 @@
 {
   "name": "cceb",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "description": "Bash program to trade on exchanges and interact with Ethereum smart contracts from bash",
   "main": "cceb",
   "scripts": {
@@ -57,12 +57,14 @@
     "web3": "1.2.11"
   },
   "devDependencies": {
+    "assert": "^2.0.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-chai": "0.0.1",
     "eslint-plugin-json": "^1.4.0",
     "eslint-plugin-mocha": "^5.3.0",
     "eslint-plugin-react": "^7.13.0",
-    "mocha": "^8.3.2"
+    "mocha": "^8.3.2",
+    "rewiremock": "^3.14.3"
   }
 }

@@ -49,6 +49,7 @@ const log = log4js.getLogger()
 log.level = config.get('loglevel')
 
 var dust = 0.001
+if (require.main === module) {
 var args = argParse().parseArgs()
 let exchange
 if ('exchange' === args.subCommand) {
@@ -57,165 +58,169 @@ if ('exchange' === args.subCommand) {
 		exchange = ut.getExchange(args.exchange)
 	}
 }
-if (require.main === module) {
+
 	(async () => {
-		try {
-			switch (args.subCommand) {
-				case 'exchange':
-					switch (args.exchangeCommand) {
-						case 'listorders':
-							await dispListOrders(exchange, args, undefined)
-							break
-						case 'add':
-							await dispAddOrder(exchange, args, undefined)
-							break
-						case 'rm':
-							await removeOrder(exchange, args, undefined)
-							break
-						case 'rmall':
-							await removeAllOrders(exchange, args, undefined)
-							break
-						case 'trickle':
-							await dispAddTrickleOrder(exchange, args, undefined)
-							break
-						case 'markets':
-							await dispMarkets(exchange, args)
-							break
-						case 'price':
-							// TODO: implement dispPrice()
-							// eslint-disable-next-line
-							await dispPrice(exchange, args)
-							break
-						case 'orderbook':
-							await dispOrderbook(exchange, args)
-							break
-						case 'withdraw':
-							await withdraw(exchange, args)
-							break
-						case 'deposit':
-							await dispDeposit(exchange, args)
-							break
-						case 'listbalances':
-							await dispListBalances(exchange, args, null)
-							break
-					}
-					break
-				case 'eth':
-					switch (args.ethCommand) {
-						case 'tx':
-							await dispEthTransaction(args)
-							break
-						case 'abi':
-							await dispEthTransaction(args)
-							break
-						case 'source':
-							await dispEthTransaction(args)
-							break
-						case 'send':
-							await dispEthTransaction(args)
-							break
-						case 'address':
-							await dispEthTransaction(args)
-							break
-						case 'import':
-							await dispEthTransaction(args)
-							break
-						case 'maker':
-							switch (args.makerCommand) {
-								case 'info':
-									await dispVaultInfo(args)
-									break
-								case 'open':
-									await dispVaultOpen(args)
-									break
-								case 'deposit':
-									await dispVaultDeposit(args)
-									break
-								case 'withdraw':
-									await dispVaultWithdraw(args)
-									break
-								case 'generate':
-									await dispVaultGenerate(args)
-									break
-								case 'payback':
-									await dispVaultPayback(args)
-									break
-								case 'estimate':
-									await dispVaultEstimate(args)
-									// --Maker MKR acution commands ---
-									break
-								case 'auction':
-									await dispFlop()
-									break
-								case 'tick':
-									await dispTick(args)
-									break
-								case 'dent':
-									await dispDent(args)
-									break
-								case 'deal':
-									await dispDeal(args)
-									break
-								case 'flog':
-									await dispFlog(args)
-							} 
-							break
-						case 'aave':
-							switch (args.aaveCommand) {
-								case 'deposit':
-									await dispAaveDeposit(args)
-									break
-								case 'withdraw':
-									await dispAaveWithdraw(args)
-									break
-								case 'collateral':
-									await dispAaveCollateral(args)
-									break
-								case 'borrow':
-									await dispAaveBorrow(args)
-									break
-								case 'payback':
-									await dispAavePayback(args)
-									break
-								case 'swaprate':
-									await dispAaveSwapRate(args)
-									break
-								case 'rebalance':
-									await dispAaveRebalance(args)
-									break
-								case 'liquidate':
-									await dispAaveLiquidate(args)
-									break
-								case 'info':
-									await dispAaveInfo(args)
-									break
-								case 'estimate':
-									await dispAaveEstimate(args)
-							}							
-							break
-						case 'curve':
-							switch (args.curveCommand) {
-								case 'info':
-									await dispCurveInfo(args)
-									break
-							}
-							break
-					}
-					break
-				case 'ledger':
-					switch (args.ledgerCommand) {
-						case 'addresses':
-							await dispLedgerAddresses(args)
-							break
-					}
-					break
-			}
+		await processArgs(exchange, args)
+})()
+}
+
+async function processArgs (exchange, args) {
+	try {
+		switch (args.subCommand) {
+			case 'exchange':
+				switch (args.exchangeCommand) {
+					case 'listorders':
+						await dispListOrders(exchange, args, undefined)
+						break
+					case 'add':
+						await dispAddOrder(exchange, args, undefined)
+						break
+					case 'rm':
+						await removeOrder(exchange, args, undefined)
+						break
+					case 'rmall':
+						await removeAllOrders(exchange, args, undefined)
+						break
+					case 'trickle':
+						await dispAddTrickleOrder(exchange, args, undefined)
+						break
+					case 'markets':
+						await dispMarkets(exchange, args)
+						break
+					case 'price':
+						// TODO: implement dispPrice()
+						// eslint-disable-next-line
+						await dispPrice(exchange, args)
+						break
+					case 'orderbook':
+						await dispOrderbook(exchange, args)
+						break
+					case 'withdraw':
+						await withdraw(exchange, args)
+						break
+					case 'deposit':
+						await dispDeposit(exchange, args)
+						break
+					case 'listbalances':
+						await dispListBalances(exchange, args, null)
+						break
+				}
+				break
+			case 'eth':
+				switch (args.ethCommand) {
+					case 'tx':
+						await dispEthTransaction(args)
+						break
+					case 'abi':
+						await dispEthTransaction(args)
+						break
+					case 'source':
+						await dispEthTransaction(args)
+						break
+					case 'send':
+						await dispEthTransaction(args)
+						break
+					case 'address':
+						await dispEthTransaction(args)
+						break
+					case 'import':
+						await dispEthTransaction(args)
+						break
+					case 'maker':
+						switch (args.makerCommand) {
+							case 'info':
+								await dispVaultInfo(args)
+								break
+							case 'open':
+								await dispVaultOpen(args)
+								break
+							case 'deposit':
+								await dispVaultDeposit(args)
+								break
+							case 'withdraw':
+								await dispVaultWithdraw(args)
+								break
+							case 'generate':
+								await dispVaultGenerate(args)
+								break
+							case 'payback':
+								await dispVaultPayback(args)
+								break
+							case 'estimate':
+								await dispVaultEstimate(args)
+								// --Maker MKR acution commands ---
+								break
+							case 'auction':
+								await dispFlop()
+								break
+							case 'tick':
+								await dispTick(args)
+								break
+							case 'dent':
+								await dispDent(args)
+								break
+							case 'deal':
+								await dispDeal(args)
+								break
+							case 'flog':
+								await dispFlog(args)
+						} 
+						break
+					case 'aave':
+						switch (args.aaveCommand) {
+							case 'deposit':
+								await dispAaveDeposit(args)
+								break
+							case 'withdraw':
+								await dispAaveWithdraw(args)
+								break
+							case 'collateral':
+								await dispAaveCollateral(args)
+								break
+							case 'borrow':
+								await dispAaveBorrow(args.amount, args.token, args.fixed, args.from, args.gaslimit, args.gasprice)
+								break
+							case 'payback':
+								await dispAavePayback(args)
+								break
+							case 'swaprate':
+								await dispAaveSwapRate(args)
+								break
+							case 'rebalance':
+								await dispAaveRebalance(args)
+								break
+							case 'liquidate':
+								await dispAaveLiquidate(args)
+								break
+							case 'info':
+								await dispAaveInfo(args)
+								break
+							case 'estimate':
+								await dispAaveEstimate(args)
+						}							
+						break
+					case 'curve':
+						switch (args.curveCommand) {
+							case 'info':
+								await dispCurveInfo(args)
+								break
+						}
+						break
+				}
+				break
+			case 'ledger':
+				switch (args.ledgerCommand) {
+					case 'addresses':
+						await dispLedgerAddresses(args)
+						break
+				}
+				break
+		}
 		process.exit(0)
 	} catch (e) {
 		log.error(e)
 		process.exit(1)
 	}
-})()
 }
 
 async function dispLedgerAddresses (args) {
@@ -520,17 +525,17 @@ async function aaveCollateral (args) {
 	await w3.access(lendingPool, 'setUserUseReserveAsCollateral', [args.token, !args.disable], 'AAVE_LENDING_POOL', args.from)
 }
 
-async function dispAaveBorrow (args) {
-	console.log(await aaveBorrow(args))
+async function dispAaveBorrow (amount, token, fixed, from, gaslimit, gasprice) {
+	console.log(await aaveBorrow(amount, token, fixed, from, gaslimit, gasprice))
 }
 
-async function aaveBorrow (args) {
-	const decimals = args.token === 'ETH' ? 18 : Number(await w3.decimals(args.token))
-	const borrowAmt = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
-	const interestRateMode = args.fixed ? 1 : 2
+async function aaveBorrow (amount, token, fixed, from, gaslimit, gasprice) {
+	const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(token))
+	const borrowAmt = BN(amount).times(BN(10).pow(decimals)).integerValue().toFixed()
+	const interestRateMode = fixed ? 1 : 2
 	const referralCode = await getReferralCode()
 	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	await w3.access(lendingPool, 'borrow', [args.token, borrowAmt, interestRateMode, referralCode], 'AAVE_LENDING_POOL', args.from)
+	return await w3.access(lendingPool, 'borrow', [token, borrowAmt, interestRateMode, referralCode], 'AAVE_LENDING_POOL', from, null, gaslimit, gasprice)
 }
 
 async function dispAavePayback (args) {
@@ -1246,7 +1251,7 @@ async function getEthTransaction (args) {
 
 	if (args.ls || args.ls === '' || args.ethCommand === 'abi') {
 		
-		args.ls = args.ls === '' ? '.*' : args.ls
+		args.ls = (!args.ls || args.ls === '') ? '.*' : args.ls
 		return await w3.getAbiFunctions(args.abi || args.contract, args.ls)
 	
 	}
@@ -2970,6 +2975,24 @@ function argParse () {
     }
   )
 
+  eth.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  eth.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
   var ethparsers = eth.addSubparsers({
     title: 'subcommands',
     dest: 'ethCommand',
@@ -3016,35 +3039,10 @@ function argParse () {
   )
 
   tx.addArgument(
-    ['--from', "-f"],
-    {
-      action: 'store',
-			defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  tx.addArgument(
     ['--value', "-v"],
     {
       action: 'store',
       help: 'Eth value to send',
-    }
-  )
-
-  tx.addArgument(
-    ['--gaslimit', "-g"],
-    {
-      action: 'store',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  tx.addArgument(
-    ['--gasprice', "-p"],
-    {
-      action: 'store',
-      help: 'Gas price of transaction',
     }
   )
 
@@ -3845,4 +3843,87 @@ function argParse () {
 
   return parser
 }
-module.exports = {argParse, listOrders, startProc, startFork, dispListOrders, lockedAmount, addOrder, dispAddOrder, removeOrder, removeAllOrders}
+
+module.exports = {
+	aaveBorrow,
+	aaveCollateral,
+	aaveDeposit,
+	aaveEstimate,
+	aaveInfo,
+	aaveLiquidate,
+	aavePayback,
+	aaveRebalance,
+	aaveSwapRate,
+	aaveWithdraw,
+	addOrder,
+	addOrderCentralized,
+	addOrderKyber,
+	addOrderUniswap,
+	argParse,
+	calcValue,
+	curveInfo,
+	deposit,
+	dispAaveBorrow,
+	dispAaveCollateral,
+	dispAaveDeposit,
+	dispAaveEstimate,
+	dispAaveInfo,
+	dispAaveLiquidate,
+	dispAavePayback,
+	dispAaveRebalance,
+	dispAaveSwapRate,
+	dispAaveWithdraw,
+	dispAddOrder,
+	dispAddTrickleOrder,
+	dispCurveInfo,
+	dispDeal,
+	dispDent,
+	dispDeposit,
+	dispEthTransaction,
+	dispFlog,
+	dispFlop,
+	dispListBalances,
+	dispListOrders,
+	dispMarkets,
+	dispOrderbook,
+	dispTick,
+	dispVaultDeposit,
+	dispVaultEstimate,
+	dispVaultGenerate,
+	dispVaultInfo,
+	dispVaultOpen,
+	dispVaultPayback,
+	dispVaultWithdraw,
+	estimateGasCost,
+	fitPriceAndAmountToMarket,
+	getDeal,
+	getDent,
+	getEthTransaction,
+	getFlog,
+	getFlop,
+	getMarkets,
+	getOrderbook,
+	getPriceInOtherCurrency,
+	getReferralCode,
+	getSpendAmountFromOrderbook,
+	getTick,
+	getUrnParams,
+	getVaultId,
+	ledgerAddresses,
+	listBalances,
+	listOrders,
+	lockedAmount,
+	removeAllOrders,
+	removeOrder,
+	startFork,
+	startProc,
+	toDec,
+	vaultDeposit,
+	vaultEstimate,
+	vaultGenerate,
+	vaultInfo,
+	vaultOpen,
+	vaultPayback,
+	vaultWithDraw,
+	withdraw,
+}

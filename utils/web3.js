@@ -323,6 +323,10 @@ async function getKyberMaxGasPrice () {
 }
 
 async function getAbiFunctions (abi, regexp) {
+  return await extractAbi(abi, regexp, ['function'])
+}
+
+async function extractAbi (abi, regexp, type) {
   log.debug(`abi: ${abi}`)
   log.debug(`regexp: ${regexp}`)
   const abiJson = await getAbi(abi)
@@ -330,7 +334,7 @@ async function getAbiFunctions (abi, regexp) {
   return contract.options.jsonInterface
     .filter(abi =>
       (
-        abi.type === 'function' ||
+        type.includes(abi.type) ||
         !abi.type
       )
 
@@ -338,7 +342,11 @@ async function getAbiFunctions (abi, regexp) {
     .map(abi =>
       abi.name 
       + '(' + abi.inputs.map(input => `${input.type} ${input.name || '_input' }`).join(', ') + ')' +
-      '(' + abi.outputs.map(output => `${output.type} ${output.name || '_output' }`).join(', ') + ')' +
+      ((Array.isArray(abi.outputs)) 
+      ? 
+        '(' + abi.outputs.map(output => `${output.type} ${output.name || '_output' }`).join(', ') + ')' 
+      : 
+        '') +
       (abi.payable === 'true' || (abi.stateMutability && /^payable$/.test(abi.stateMutability)) ? ' payable' : '') +
       ((abi.stateMutability && !/nonPayable|payable/.test(abi.stateMutability)) || abi.constant ? ` ${abi.stateMutability || 'view'}` : '')
     )
