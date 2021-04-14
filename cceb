@@ -3845,7 +3845,7 @@ function argParse () {
 }
 
 module.exports = {
-	aaveBorrow,
+	aaveBorrow, 					// tested
 	aaveCollateral,
 	aaveDeposit,
 	aaveEstimate,
