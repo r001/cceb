@@ -49,6 +49,7 @@ const log = log4js.getLogger()
 log.level = config.get('loglevel')
 
 var dust = 0.001
+if (require.main === module) {
 var args = argParse().parseArgs()
 let exchange
 if ('exchange' === args.subCommand) {
@@ -57,165 +58,175 @@ if ('exchange' === args.subCommand) {
 		exchange = ut.getExchange(args.exchange)
 	}
 }
-if (require.main === module) {
+
 	(async () => {
-		try {
-			switch (args.subCommand) {
-				case 'exchange':
-					switch (args.exchangeCommand) {
-						case 'listorders':
-							await dispListOrders(exchange, args, undefined)
-							break
-						case 'add':
-							await dispAddOrder(exchange, args, undefined)
-							break
-						case 'rm':
-							await removeOrder(exchange, args, undefined)
-							break
-						case 'rmall':
-							await removeAllOrders(exchange, args, undefined)
-							break
-						case 'trickle':
-							await dispAddTrickleOrder(exchange, args, undefined)
-							break
-						case 'markets':
-							await dispMarkets(exchange, args)
-							break
-						case 'price':
-							// TODO: implement dispPrice()
-							// eslint-disable-next-line
-							await dispPrice(exchange, args)
-							break
-						case 'orderbook':
-							await dispOrderbook(exchange, args)
-							break
-						case 'withdraw':
-							await withdraw(exchange, args)
-							break
-						case 'deposit':
-							await dispDeposit(exchange, args)
-							break
-						case 'listbalances':
-							await dispListBalances(exchange, args, null)
-							break
-					}
-					break
-				case 'eth':
-					switch (args.ethCommand) {
-						case 'tx':
-							await dispEthTransaction(args)
-							break
-						case 'abi':
-							await dispEthTransaction(args)
-							break
-						case 'source':
-							await dispEthTransaction(args)
-							break
-						case 'send':
-							await dispEthTransaction(args)
-							break
-						case 'address':
-							await dispEthTransaction(args)
-							break
-						case 'import':
-							await dispEthTransaction(args)
-							break
-						case 'maker':
-							switch (args.makerCommand) {
-								case 'info':
-									await dispVaultInfo(args)
-									break
-								case 'open':
-									await dispVaultOpen(args)
-									break
-								case 'deposit':
-									await dispVaultDeposit(args)
-									break
-								case 'withdraw':
-									await dispVaultWithdraw(args)
-									break
-								case 'generate':
-									await dispVaultGenerate(args)
-									break
-								case 'payback':
-									await dispVaultPayback(args)
-									break
-								case 'estimate':
-									await dispVaultEstimate(args)
-									// --Maker MKR acution commands ---
-									break
-								case 'auction':
-									await dispFlop()
-									break
-								case 'tick':
-									await dispTick(args)
-									break
-								case 'dent':
-									await dispDent(args)
-									break
-								case 'deal':
-									await dispDeal(args)
-									break
-								case 'flog':
-									await dispFlog(args)
-							} 
-							break
-						case 'aave':
-							switch (args.aaveCommand) {
-								case 'deposit':
-									await dispAaveDeposit(args)
-									break
-								case 'withdraw':
-									await dispAaveWithdraw(args)
-									break
-								case 'collateral':
-									await dispAaveCollateral(args)
-									break
-								case 'borrow':
-									await dispAaveBorrow(args)
-									break
-								case 'payback':
-									await dispAavePayback(args)
-									break
-								case 'swaprate':
-									await dispAaveSwapRate(args)
-									break
-								case 'rebalance':
-									await dispAaveRebalance(args)
-									break
-								case 'liquidate':
-									await dispAaveLiquidate(args)
-									break
-								case 'info':
-									await dispAaveInfo(args)
-									break
-								case 'estimate':
-									await dispAaveEstimate(args)
-							}							
-							break
-						case 'curve':
-							switch (args.curveCommand) {
-								case 'info':
-									await dispCurveInfo(args)
-									break
-							}
-							break
-					}
-					break
-				case 'ledger':
-					switch (args.ledgerCommand) {
-						case 'addresses':
-							await dispLedgerAddresses(args)
-							break
-					}
-					break
-			}
+		await processArgs(exchange, args)
+})()
+}
+
+async function processArgs (exchange, args) {
+	try {
+		switch (args.subCommand) {
+			case 'exchange':
+				switch (args.exchangeCommand) {
+					case 'listorders':
+						await dispListOrders(exchange, args, undefined)
+						break
+					case 'add':
+						await dispAddOrder(exchange, args, undefined)
+						break
+					case 'rm':
+						await removeOrder(exchange, args, undefined)
+						break
+					case 'rmall':
+						await removeAllOrders(exchange, args, undefined)
+						break
+					case 'trickle':
+						await dispAddTrickleOrder(exchange, args, undefined)
+						break
+					case 'markets':
+						await dispMarkets(exchange, args)
+						break
+					case 'price':
+						// TODO: implement dispPrice()
+						// eslint-disable-next-line
+						await dispPrice(exchange, args)
+						break
+					case 'orderbook':
+						await dispOrderbook(exchange, args)
+						break
+					case 'withdraw':
+						await withdraw(exchange, args)
+						break
+					case 'deposit':
+						await dispDeposit(exchange, args)
+						break
+					case 'listbalances':
+						await dispListBalances(exchange, args, null)
+						break
+				}
+				break
+			case 'eth':
+				switch (args.ethCommand) {
+					case 'tx':
+						await dispEthTransaction(args)
+						break
+					case 'abi':
+						await dispEthTransaction(args)
+						break
+					case 'source':
+						await dispEthTransaction(args)
+						break
+					case 'send':
+						await dispEthTransaction(args)
+						break
+					case 'address':
+						await dispEthTransaction(args)
+						break
+					case 'import':
+						await dispEthTransaction(args)
+						break
+					case 'nonce':
+						await dispEthTransaction(args)
+						break
+			/*	case 'web3':
+						await dispEthTransaction(args)
+						break*/
+					case 'maker':
+						switch (args.makerCommand) {
+							case 'info':
+								await dispVaultInfo(args)
+								break
+							case 'open':
+								await dispVaultOpen(args)
+								break
+							case 'deposit':
+								await dispVaultDeposit(args)
+								break
+							case 'withdraw':
+								await dispVaultWithdraw(args)
+								break
+							case 'generate':
+								await dispVaultGenerate(args)
+								break
+							case 'payback':
+								await dispVaultPayback(args)
+								break
+							case 'estimate':
+								await dispVaultEstimate(args)
+								// --Maker MKR acution commands ---
+								break
+							case 'auction':
+								await dispFlop()
+								break
+							case 'tick':
+								await dispTick(args)
+								break
+							case 'dent':
+								await dispDent(args)
+								break
+							case 'deal':
+								await dispDeal(args)
+								break
+							case 'flog':
+								await dispFlog(args)
+						} 
+						break
+					case 'aave':
+						switch (args.aaveCommand) {
+							case 'deposit':
+								await dispAaveDeposit(args)
+								break
+							case 'withdraw':
+								await dispAaveWithdraw(args)
+								break
+							case 'collateral':
+								await dispAaveCollateral(args)
+								break
+							case 'borrow':
+								await dispAaveBorrow(args.amount, args.token, args.fixed, args.from, args.gasLimit, args.gasPrice, args.nonce)
+								break
+							case 'payback':
+								await dispAavePayback(args)
+								break
+							case 'swaprate':
+								await dispAaveSwapRate(args)
+								break
+							case 'rebalance':
+								await dispAaveRebalance(args)
+								break
+							case 'liquidate':
+								await dispAaveLiquidate(args)
+								break
+							case 'info':
+								await dispAaveInfo(args)
+								break
+							case 'estimate':
+								await dispAaveEstimate(args)
+						}							
+						break
+					case 'curve':
+						switch (args.curveCommand) {
+							case 'info':
+								await dispCurveInfo(args)
+								break
+						}
+						break
+				}
+				break
+			case 'ledger':
+				switch (args.ledgerCommand) {
+					case 'addresses':
+						await dispLedgerAddresses(args)
+						break
+				}
+				break
+		}
 		process.exit(0)
 	} catch (e) {
 		log.error(e)
 		process.exit(1)
 	}
-})()
 }
 
 async function dispLedgerAddresses (args) {
@@ -366,12 +377,12 @@ async function curveInfo (args) {
 	const ve_crv_total = await w3.access('CRV_VECRV', 'totalSupply')
 	// const WEEK = 604800
 	const rate = await w3.access('CRV', 'rate')
-	const btc_usd = (await w3.access('UNISWAP_ROUTER2', 'getAmountsOut', ["1.00000000", ["WBTC", "WETH", "USDT"]]))[2]
+	const btc_usd = (await w3.access('UNISWAP_ROUTER_V2', 'getAmountsOut', ["1.00000000", ["WBTC", "WETH", "USDT"]]))[2]
 
 	claims = await Promise.all(claims.map(async claim => {
 		// const period = await w3.access(claim.gauge,'period')
 		// const prev_week_time = await w3.access(claim.gauge,'period_timestamp',[period])
-		const crv_usd = claim.token !== '0' ? (await w3.access('UNISWAP_ROUTER2', 'getAmountsOut', [claim.token, ["CRV", "WETH", "USDT"]]))[2]: 0
+		const crv_usd = claim.token !== '0' ? (await w3.access('UNISWAP_ROUTER_V2', 'getAmountsOut', [claim.token, ["CRV", "WETH", "USDT"]]))[2]: 0
 		const lp = await w3.access(claim.gauge, 'balanceOf', [args.from])
 		const name = claim.gauge.replace(/CRV_GAUGE_/, '')
 		const lp_virtual_price = await w3.access('CRV_SWAP_' + name, 'get_virtual_price')
@@ -475,7 +486,13 @@ async function aaveDeposit (args) {
 			args.token,
 			'approve',
 			[lendingPoolCore, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
-			'ERC20')
+			'ERC20',
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		)
 	}
 
 	await w3.access(
@@ -488,7 +505,11 @@ async function aaveDeposit (args) {
 		],
 		'AAVE_LENDING_POOL',
 		args.from,
-		(args.token === 'ETH' ? depositAmt : 0))
+		(args.token === 'ETH' ? depositAmt : 0),
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+    )
 
 }
 
@@ -508,7 +529,18 @@ async function aaveWithdraw (args) {
 	var canWithdraw = await w3.access(aToken, 'isTransferAllowed', [args.from, amount], 'aToken')
 	if (!canWithdraw) { throw new Error('Withdraw not possible. Payback all debt first!')}
 	log.debug(`amount final: ${amount.toFixed()}`)
-	await w3.access(aToken, 'redeem', [amount.toFixed()], 'aToken', args.from) 
+
+	await w3.access(
+	aToken,
+		'redeem',
+		[amount.toFixed()],
+		'aToken',
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+	) 
 }
 
 async function dispAaveCollateral (args) {
@@ -517,20 +549,28 @@ async function dispAaveCollateral (args) {
 
 async function aaveCollateral (args) {
 	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	await w3.access(lendingPool, 'setUserUseReserveAsCollateral', [args.token, !args.disable], 'AAVE_LENDING_POOL', args.from)
+	await w3.access(lendingPool, 'setUserUseReserveAsCollateral', [args.token, !args.disable], 'AAVE_LENDING_POOL', args.from, 0, args.gaslimit, args.gasprice, args.nonce)
 }
 
-async function dispAaveBorrow (args) {
-	console.log(await aaveBorrow(args))
+async function dispAaveBorrow (amount, token, fixed, from, gasLimit, gasPrice, nonce) {
+	console.log(await aaveBorrow(amount, token, fixed, from, gasLimit, gasPrice, nonce))
 }
 
-async function aaveBorrow (args) {
-	const decimals = args.token === 'ETH' ? 18 : Number(await w3.decimals(args.token))
-	const borrowAmt = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
-	const interestRateMode = args.fixed ? 1 : 2
+async function aaveBorrow (
+	amount,
+	token,
+	fixed,
+	from,
+	gasLimit,
+	gasPrice,
+	nonce
+) {
+	const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(token))
+	const borrowAmt = BN(amount).times(BN(10).pow(decimals)).integerValue()
+	const interestRateMode = fixed ? 1 : 2
 	const referralCode = await getReferralCode()
 	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	await w3.access(lendingPool, 'borrow', [args.token, borrowAmt, interestRateMode, referralCode], 'AAVE_LENDING_POOL', args.from)
+	return await w3.access(lendingPool, 'borrow', [token, borrowAmt.toFixed(), interestRateMode, referralCode], 'AAVE_LENDING_POOL', from, 0, gasLimit, gasPrice, nonce)
 }
 
 async function dispAavePayback (args) {
@@ -575,7 +615,12 @@ async function aavePayback (args) {
 			args.token,
 			'approve',
 			[lendingPoolCore, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
-			'ERC20'
+			'ERC20',
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
 		)
 	}
 	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
@@ -590,7 +635,11 @@ async function aavePayback (args) {
 		],
 		'AAVE_LENDING_POOL',
 		args.from,
-		(args.token === 'ETH' ? paybackAmt : 0) )
+		(args.token === 'ETH' ? paybackAmt : 0),
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+		)
 }
 
 async function dispAaveSwapRate (args) {
@@ -605,7 +654,11 @@ async function aaveSwapRate (args) {
 		'swapBorrowRateMode',
 		[args.token],
 		'AAVE_LENDING_POOL',
-		args.from
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
 	)
 }
 
@@ -622,7 +675,11 @@ async function aaveRebalance (args) {
 		'rebalanceStableBorrowRate',
 		[args.token, args.for ? args.for : args.from],
 		'AAVE_LENDING_POOL',
-		args.from
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
 	)
 }
 
@@ -642,7 +699,12 @@ async function aaveLiquidate (args) { //TODO: implement
 			args.for ? args.for : args.from
 		],
 		'AAVE_LENDING_POOL',
-		args.from)//TODO: finish arguments
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+		)//TODO: finish arguments
 }
 
 async function dispAaveInfo (args) {
@@ -725,10 +787,31 @@ async function vaultPayback (args) {
 	log.debug(`paybackNormalizedWad: ${paybackNormalizedWad}`)
 	const approvedDai = BN(await w3.access('MCD_DAI', 'allowance', [args.from, 'MCD_JOIN_DAI'], 'ERC20'))
 	if (approvedDai.lt(paybackWad)) {
-		await w3.access('MCD_DAI', 'approve', ['MCD_JOIN_DAI', '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'], 'ERC20', args.from)
+		await w3.access(
+			'MCD_DAI',
+			'approve',
+			['MCD_JOIN_DAI', '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
+			'ERC20',
+			args.from,
+			0, 
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		)	
 	}
 	if (paybackWad.gt(0)) {
-		await w3.access('MCD_JOIN_DAI', 'join', [vaultAddr, paybackWad.toFixed()], null, args.from)
+		await w3.access(
+			'MCD_JOIN_DAI',
+			'join',
+			[vaultAddr, paybackWad.toFixed()],
+			null,
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+			)
+		
 	}
 	
 	daiVault = BN(await w3.access('MCD_VAT', 'dai', [vaultAddr])).div(BN(10).pow(27))
@@ -736,7 +819,18 @@ async function vaultPayback (args) {
 	rate = BN(ilk.rate)
 	log.debug(`rate: ${rate}`)
 	daiVaultNormalizedWad = daiVault.div(rate).integerValue()
-	await w3.access('MCD_CDP_MANAGER', 'frob', [vaultId, '0', daiVaultNormalizedWad], null, args.from) //FIXME: withdraw collateral too
+
+	await w3.access(
+		'MCD_CDP_MANAGER',
+		'frob',
+		[vaultId, '0', daiVaultNormalizedWad],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+		) //FIXME: withdraw collateral too
 }
 
 async function dispVaultGenerate (args) {
@@ -765,22 +859,64 @@ async function vaultGenerate (args) {
 	var daiToFrobWad = (daiTotal.lt(daiToGenerate) ? daiToGenerate.minus(daiTotal) : BN(0)).div(rate).integerValue()
 	log.debug(`DaiToFrobWad: ${daiToFrobWad}`)
 	if (!daiToFrobWad.eq(BN(0))) {
-		await w3.access('MCD_CDP_MANAGER', 'frob', [vaultId, 0, daiToFrobWad.toFixed()], null, args.from)
+
+		await w3.access(
+			'MCD_CDP_MANAGER',
+			'frob',
+			[vaultId, 0, daiToFrobWad.toFixed()],
+			null,
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+			)
+
 		daiAtVault = BN(await w3.access('MCD_VAT', 'dai', [vaultAddr]))
 		daiTotal = daiAtVault.plus(daiAtFrom)
 	}
 
 	daiToGenerate = BN.min(daiToGenerate, daiTotal)
 	
-	await w3.access('MCD_CDP_MANAGER', 'move', [vaultId, args.from, daiToGenerate.minus(daiAtFrom).integerValue().toFixed()], null, args.from)
+	await w3.access(
+		'MCD_CDP_MANAGER',
+		'move',
+		[vaultId, args.from, daiToGenerate.minus(daiAtFrom).integerValue().toFixed()],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+	)
 
 	const joinEnabled = await w3.access('MCD_VAT', 'can', [args.from, 'MCD_JOIN_DAI'])
 	
 	if (Number(joinEnabled) === 0) {
-		await w3.access('MCD_VAT', 'hope', ['MCD_JOIN_DAI'], null, args.from)
+		await w3.access(
+			'MCD_VAT',
+			'hope',
+			['MCD_JOIN_DAI'],
+			null,
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		)
 	}
 
-	await w3.access('MCD_JOIN_DAI', 'exit', [args.from, daiToGenerate.div(BN(10).pow(27)).integerValue().toFixed()], null, args.from)
+	await w3.access(
+		'MCD_JOIN_DAI',
+		'exit',
+		[args.from, daiToGenerate.div(BN(10).pow(27)).integerValue().toFixed()],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+	)
 }
 
 async function dispVaultWithdraw (args) {
@@ -810,16 +946,57 @@ async function vaultWithDraw (args) {
 	}
 	if (vault.unlockedCollateral.lt(args.amount)) {
 		const freeCollateral = vault.unlockedCollateral.minus(args.amount).times(BN(10).pow(18)).integerValue()
-		await w3.access('MCD_CDP_MANAGER', 'frob', [vaultId, freeCollateral.toFixed(), 0], null, args.from) //FIXME: allow to payback dai
+
+		await w3.access(
+			'MCD_CDP_MANAGER',
+			'frob',
+			[vaultId, freeCollateral.toFixed(), 0],
+			null,
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		) //FIXME: allow to payback dai
 	}
 
-	await w3.access('MCD_CDP_MANAGER', 'flux', [vaultId, args.from, withdrawAmtWad.toFixed()],
-		null, args.from, null, null, null, ['uint256', 'address', 'uint256'])
+	await w3.access(
+		'MCD_CDP_MANAGER',
+		'flux',
+		[vaultId, args.from, withdrawAmtWad.toFixed()],
+		null,
+		args.from, 
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce,
+		['uint256', 'address', 'uint256']
+	)
 	
-	await w3.access(joinContract, 'exit', [args.from, withdrawAmt.toFixed()], null, args.from)
+	await w3.access(
+		joinContract,
+		'exit',
+		[args.from, withdrawAmt.toFixed()],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+	)
 	
 	if (collCoin === 'WETH') {
-		await w3.access('WETH', 'withdraw', [withdrawAmt.toFixed()], null, args.from)
+		await w3.access(
+			'WETH',
+			'withdraw',
+			[withdrawAmt.toFixed()],
+			null,
+			args.from,
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		)
 	}
 }
 
@@ -838,7 +1015,18 @@ async function vaultDeposit (args) {
 	}
 	if (collCoin === 'ETH') {
 		collCoin = 'WETH'
-		await w3.access('WETH', 'deposit', [], null, args.from, BN(args.amount).times(BN(10).pow(18)).integerValue().toFixed())
+
+		await w3.access(
+			'WETH',
+			'deposit',
+			[],
+			null,
+			args.from,
+			BN(args.amount).times(BN(10).pow(18)).integerValue().toFixed(),
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		)
 	}
 	const joinContract = 'MCD_JOIN_' + args.type.replace(/-/, "_")
 	const decimals = Number(await w3.decimals(collCoin))
@@ -855,7 +1043,12 @@ async function vaultDeposit (args) {
 					'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
 				],
 				null,
-				args.from)
+				args.from,
+				0,
+				args.gaslimit,
+				args.gasprice,
+				args.nonce
+			)
 		}
 	var balance = BN(await w3.access(collCoin, 'balanceOf', [args.from]))
 	var {vaultId} = await getVaultId(args.from, args.vault, vaultTypeHex)
@@ -867,13 +1060,35 @@ async function vaultDeposit (args) {
 	}
 
 	log.info(`joincontract: ${joinContract} vaultAddr: ${vaultAddr} depositamt: ${depositAmt.toFixed()}`)
-	await w3.access(joinContract, 'join', [vaultAddr, depositAmt.toFixed()], null, args.from)
+
+	await w3.access(
+		joinContract,
+		'join',
+		[vaultAddr, depositAmt.toFixed()],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+	)
+
 	const depositInt = await w3.web3.eth.abi.encodeParameter('int', depositAmt.toFixed())
 		var ilk = await w3.access('MCD_VAT', 'ilks', [vaultTypeHex], null, args.from) 
 		var rate = new BN(ilk.rate)
 	const drawDaiInt = await w3.web3.eth.abi.encodeParameter('int', BN(args.draw).times(BN(10).pow(18+27)).div(rate).integerValue().toFixed())
 
-	await w3.access('MCD_CDP_MANAGER', 'frob', [vaultId, depositInt, drawDaiInt], null, args.from)
+	await w3.access(
+		'MCD_CDP_MANAGER', 
+		'frob',
+		[vaultId, depositInt, drawDaiInt],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+	)
 }
 
 async function dispVaultOpen (args) {
@@ -894,7 +1109,19 @@ async function vaultOpen (args) {
 	}
 
 	const vaultTypeHex = w3.web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(args.type).toString('hex'))
-	await w3.access('MCD_CDP_MANAGER', 'open', [vaultTypeHex, args.from], null, args.from)
+
+	await w3.access(
+		'MCD_CDP_MANAGER',
+		'open',
+		[vaultTypeHex, args.from],
+		null,
+		args.from,
+		0,
+		args.gaslimit,
+		args.gasprice,
+		args.nonce
+		)
+
 	return await w3.access('MCD_CDP_MANAGER', 'last', [args.from])
 }
 
@@ -1049,7 +1276,17 @@ async function getFlog (args) {
 		amt -= Math.min(sin, tab) 
 
 		if (sin > 0) 
-			await w3.access('MCD_VOW', 'flog', [era], null, args.from)
+			await w3.access(
+				'MCD_VOW',
+				'flog',
+				[era],
+				null,
+				args.from,
+				0,
+				args.gaslimit,
+				args.gasprice,
+				args.nonce
+			)
 
 		const d = new Date(era * 1000)
 		const date = dateFormat(d, 'yy-mm-dd HH:MM:ss') 
@@ -1068,11 +1305,12 @@ async function getFlop () {
 					'MCD_VOW',
 					'flop',
 					[],
-					null, // args.abi,
-					args.from, // args.from,
-					null, // args.value,
-					null, // args.gaslimit,
-					null  // args.gasprice
+					null, 					// args.abi,
+					args.from, 			// args.from,
+					0, 							// args.value,
+					args.gaslimit, 	// args.gaslimit,
+					args.gasprice,  // args.gasprice
+					args.nonce  		// args.nonce
 	)
 }
 
@@ -1085,11 +1323,12 @@ async function getTick (args) {
 					'MCD_FLOP',
 					'tick',
 					[args.id],
-					null, // args.abi,
-					args.from, // args.from,
-					null, // args.value,
-					null, // args.gaslimit,
-					null  // args.gasprice
+					null, 					// args.abi,
+					args.from, 			// args.from,
+					0, 							// args.value,
+					args.gaslimit, 	// args.gaslimit,
+					args.gasprice,  // args.gasprice
+					args.nonce      // args.nonce
 	)
 }
 
@@ -1133,9 +1372,10 @@ async function getDent (args) {
 					],
 					null, // args.abi,
 					args.from, // args.from,
-					null, // args.value,
-					null, // args.gaslimit,
-					null  // args.gasprice
+					0, // args.value,
+					args.gaslimit,  // args.gaslimit,
+					args.gasprice,  // args.gasprice
+					args.nonce
 	)
 }
 
@@ -1150,9 +1390,9 @@ async function getDeal (args) {
 					[args.id],
 					null, // args.abi,
 					args.from, // args.from,
-					null, // args.value,
-					null, // args.gaslimit,
-					null  // args.gasprice
+					0, // args.value,
+					args.gaslimit, // args.gaslimit,
+					args.gasprice  // args.gasprice
 	)
 }
 
@@ -1244,9 +1484,14 @@ async function getEthTransaction (args) {
 		)
 	}
 
+	if (args.ethCommand === 'nonce') {
+		var acc = args.from.match(/^0x[0-9a-fA-F]{40}$/) ? args.account : await w3.getAddress(args.account)
+		return await w3.getNonce(acc)
+	}
+
 	if (args.ls || args.ls === '' || args.ethCommand === 'abi') {
 		
-		args.ls = args.ls === '' ? '.*' : args.ls
+		args.ls = (!args.ls || args.ls === '') ? '.*' : args.ls
 		return await w3.getAbiFunctions(args.abi || args.contract, args.ls)
 	
 	}
@@ -1288,7 +1533,9 @@ async function getEthTransaction (args) {
 		args.from,
 		args.value,
 		args.gaslimit,
-		args.gasprice)
+		args.gasprice,
+		args.nonce
+	)
 }
 
 // TODO: implement background order creation
@@ -1578,7 +1825,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 		buyAmt = new BN(
 			(await w3.access(
-				'UNISWAP_ROUTER2',
+				'UNISWAP_ROUTER_V2',
 				'getAmountsOut',
 				[	
 					sellAmt.toFixed(),
@@ -1598,7 +1845,7 @@ async function addOrderUniswap (args, amount, buy) {
 			sellAmt = BN(
 				(
 					await w3.access(
-						'UNISWAP_ROUTER2',
+						'UNISWAP_ROUTER_V2',
 						'getAmountsIn',
 						[	
 							tokenAmt.toFixed(),
@@ -1616,7 +1863,7 @@ async function addOrderUniswap (args, amount, buy) {
 			buyAmt = BN(
 				(
 					await w3.access(
-						'UNISWAP_ROUTER2',
+						'UNISWAP_ROUTER_V2',
 						'getAmountsOut',
 						[	
 							sellAmt.toFixed(),
@@ -1673,14 +1920,15 @@ async function addOrderUniswap (args, amount, buy) {
 	}
 
   const a = [
-		'UNISWAP_ROUTER2',
+		'UNISWAP_ROUTER_V2',
 		uniswapFunction,
 		uniswapArgs,
 		null,  //abi name
 		args.from,
 		ethValue,
 		args.gaslimit,
-		args.gasprice
+		args.gasprice,
+		args.nonce
 	]
 
 	log.debug(`w3.access(${JSON.stringify(a.slice(0, 2))}...`)
@@ -1735,17 +1983,19 @@ async function addOrderUniswap (args, amount, buy) {
 		throw new Error('From address must be stored in ./config/secrets/default.yaml -> web3: -> account:')
 	}
 
-	const allowance = BN(await w3.access(sellToken, 'allowance', [args.from, 'UNISWAP_ROUTER2']))
+	const allowance = BN(await w3.access(sellToken, 'allowance', [args.from, 'UNISWAP_ROUTER_V2']))
 	if (allowance.lt(sellAmt)) {
 		await w3.access(
 			sellToken,
 			'approve',
-			['UNISWAP_ROUTER2', BN(2).pow(256).minus(1).toFixed()],
+			['UNISWAP_ROUTER_V2', BN(2).pow(256).minus(1).toFixed()],
 			null,
 			args.from,
-			null,
-			null,
-			args.gasprice)
+			0,
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
+		)
 	}
 	
 	if (args.exchangeCommand !== 'trickle' ||
@@ -1923,7 +2173,10 @@ async function addOrderKyber (args, amount, buy) {
       config.get('web3.defaultFrom'),
       w3.MAX_DEST_AMOUNT,
       '0',
-      '0x0000000000000000000000000000000000000000'
+      '0x0000000000000000000000000000000000000000',
+			args.gaslimit,
+			args.gasprice,
+			args.nonce
     )
 
     if (!receipt.status) {
@@ -2970,6 +3223,32 @@ function argParse () {
     }
   )
 
+  eth.addArgument(
+    ['--gaslimit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  eth.addArgument(
+    ['--gasprice', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
+  eth.addArgument(
+    ['--nonce', "-n"],
+    {
+      action: 'store',
+      help: 'Nonce of transaction.',
+    }
+  )
+
   var ethparsers = eth.addSubparsers({
     title: 'subcommands',
     dest: 'ethCommand',
@@ -3016,15 +3295,6 @@ function argParse () {
   )
 
   tx.addArgument(
-    ['--from', "-f"],
-    {
-      action: 'store',
-			defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  tx.addArgument(
     ['--value', "-v"],
     {
       action: 'store',
@@ -3033,9 +3303,18 @@ function argParse () {
   )
 
   tx.addArgument(
+    ['--ls', "-l"],
+    {
+      action: 'store',
+      help: 'List functions in abi matching pattern.',
+    }
+  )
+
+  tx.addArgument(
     ['--gaslimit', "-g"],
     {
       action: 'store',
+			dest: 'gaslimit',
       help: 'Gaslimit of transaction',
     }
   )
@@ -3044,15 +3323,16 @@ function argParse () {
     ['--gasprice', "-p"],
     {
       action: 'store',
+			dest: 'gasprice',
       help: 'Gas price of transaction',
     }
   )
 
   tx.addArgument(
-    ['--ls', "-l"],
+    ['--nonce', "-n"],
     {
       action: 'store',
-      help: 'List functions in abi matching pattern.',
+      help: 'Nonce of transaction.',
     }
   )
 
@@ -3135,7 +3415,7 @@ function argParse () {
 
 	const im = ethparsers.addParser('import',
 		{
-			description:'Map contract address to a human readable name and download and store  contract abi.',
+			description:'Map contract address to a human readable name and download and store contract abi.',
 			addHelp: true,
 		})
 
@@ -3160,6 +3440,20 @@ function argParse () {
     {
       action: 'store',
       help: 'Insert contract into path in "./config/default.yaml".'
+    }
+  )
+
+	const nonce = ethparsers.addParser('nonce',
+		{
+			description:'Get highest nonce of account.',
+			addHelp: true,
+		})
+
+  nonce.addArgument(
+    ['account'],
+    {
+      action: 'store',
+      help: 'Account to get nonce for.',
     }
   )
 
@@ -3845,4 +4139,87 @@ function argParse () {
 
   return parser
 }
-module.exports = {argParse, listOrders, startProc, startFork, dispListOrders, lockedAmount, addOrder, dispAddOrder, removeOrder, removeAllOrders}
+
+module.exports = {
+	aaveBorrow,
+	aaveCollateral,
+	aaveDeposit,
+	aaveEstimate,
+	aaveInfo,
+	aaveLiquidate,
+	aavePayback,
+	aaveRebalance,
+	aaveSwapRate,
+	aaveWithdraw,
+	addOrder,
+	addOrderCentralized,
+	addOrderKyber,
+	addOrderUniswap,
+	argParse,
+	calcValue,
+	curveInfo,
+	deposit,
+	dispAaveBorrow,
+	dispAaveCollateral,
+	dispAaveDeposit,
+	dispAaveEstimate,
+	dispAaveInfo,
+	dispAaveLiquidate,
+	dispAavePayback,
+	dispAaveRebalance,
+	dispAaveSwapRate,
+	dispAaveWithdraw,
+	dispAddOrder,
+	dispAddTrickleOrder,
+	dispCurveInfo,
+	dispDeal,
+	dispDent,
+	dispDeposit,
+	dispEthTransaction,
+	dispFlog,
+	dispFlop,
+	dispListBalances,
+	dispListOrders,
+	dispMarkets,
+	dispOrderbook,
+	dispTick,
+	dispVaultDeposit,
+	dispVaultEstimate,
+	dispVaultGenerate,
+	dispVaultInfo,
+	dispVaultOpen,
+	dispVaultPayback,
+	dispVaultWithdraw,
+	estimateGasCost,
+	fitPriceAndAmountToMarket,
+	getDeal,
+	getDent,
+	getEthTransaction,
+	getFlog,
+	getFlop,
+	getMarkets,
+	getOrderbook,
+	getPriceInOtherCurrency,
+	getReferralCode,
+	getSpendAmountFromOrderbook,
+	getTick,
+	getUrnParams,
+	getVaultId,
+	ledgerAddresses,
+	listBalances,
+	listOrders,
+	lockedAmount,
+	removeAllOrders,
+	removeOrder,
+	startFork,
+	startProc,
+	toDec,
+	vaultDeposit,
+	vaultEstimate,
+	vaultGenerate,
+	vaultInfo,
+	vaultOpen,
+	vaultPayback,
+	vaultWithDraw,
+	withdraw,
+}
