@@ -28,6 +28,7 @@ process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
 const config = require('config')
 const w3 = require('./utils/web3.js')
 const ut = require('./utils/util')
+const util = require('util')
 
 logger.listen(log => console.log(log.type + ": " + log.message))
 BN.set({DECIMAL_PLACES: 45, ROUNDING_MODE: 1/*round down*/})
@@ -129,9 +130,9 @@ async function processArgs (exchange, args) {
 					case 'nonce':
 						await dispEthTransaction(args)
 						break
-			/*	case 'web3':
+					case 'web3':
 						await dispEthTransaction(args)
-						break*/
+						break
 					case 'maker':
 						switch (args.makerCommand) {
 							case 'info':
@@ -1416,7 +1417,7 @@ async function dispEthTransaction (args) {
 	} else {
 		if (disp !== null || typeof disp !== 'undefined' || disp === '') {
 			if (typeof disp === 'object') {
-				disp = JSON.stringify(disp)
+				disp = util.inspect(disp)
 			} else {
 				disp = String(disp)
 			}
@@ -1427,7 +1428,7 @@ async function dispEthTransaction (args) {
 					async (line) => 
 					line.match(/^0x[A-Fa-f0-9]{40}$/i) && !args.contr  ?
 					await w3.getAddressName(line) :
-					await toDec(disp, decimals))
+					await toDec(line, decimals))
 			)).join("\n")
 
 			console.log(disp)
@@ -1439,7 +1440,7 @@ async function dispEthTransaction (args) {
 async function toDec (str, decimals) {
 	if (typeof decimals === 'undefined' || decimals === null) decimals = 18
 	log.debug(`decimals: ${decimals}`)
-	if (String(str).match(/^[-+0-9]+$/)) {
+	if (String(str).match(/^[-+]?[0-9]+$/)) {
 		// return BN(str).div(BN(10).pow(decimals || 18)).toFixed()
 		str.padStart(decimals + 1, '0')
 		return str.slice(0, -(decimals)) +
@@ -1456,8 +1457,47 @@ async function calcValue (from, balanceExpr) {
 	return ut.evalExpr('max', balance, balanceExpr, true)
 }
 
+async function getWeb3 (args) {
+	var fn = await w3.getWeb3Function(args.function)
+	var parent = await w3.getWeb3Function(args.function.replace(/\.\w*\s*$/, ""))
+
+	var params = await Promise.all(args.parameters.map(async param => {
+
+		if (typeof param === 'string' && param.match(/^\s*[[{].*[\]}]\s*$/)) {
+			param = JSON.parse(param)	
+		}	
+
+
+		try {
+			return await w3.getAddress(param)
+		} catch (e)  {
+			return param
+		}
+	}))
+
+	switch (typeof fn) {
+		case 'function':
+			try {
+				return fn.call(parent, ...params)
+			} catch (e) {
+				switch (e.name) {
+					case "TypeError":
+						return fn(...params)
+					default:
+						throw e
+				}
+			}
+		default:
+			return fn
+	}
+}
+
 async function getEthTransaction (args) {
 	
+	if (args.ethCommand === 'web3') {
+		return await getWeb3(args)
+	}
+
 	if (args.ethCommand === 'import') {
 		return await w3.importAddress(args)
 	}
@@ -3215,13 +3255,13 @@ function argParse () {
 )
 
 	eth.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
+		['--from', "-f"],
+		{
+			action: 'store',
+			defaultValue: config.get('web3.defaultFrom'),
+			help: 'From Address defaults to web3.defaultFrom',
+		}
+	)
 
   eth.addArgument(
     ['--gaslimit', "-g"],
@@ -3254,7 +3294,31 @@ function argParse () {
     dest: 'ethCommand',
   })
 
-  var tx = ethparsers.addParser('tx', 
+	var web3 = ethparsers.addParser('web3', 
+		{
+			addHelp: true,
+			description: 'Calling functions or get parameters from web3 library.'
+		}
+	)
+
+	web3.addArgument(
+		['function'],
+		{
+			action: 'store',
+			help: 'Web3 function or parameter to use (eg.: web3.eth.getAccounts)',
+		}
+	)
+
+	web3.addArgument(
+		['parameters'],
+		{
+			action: 'store',
+			nargs: '*',
+			help: 'Web3 function parameters',
+		}
+	)
+
+	var tx = ethparsers.addParser('tx', 
 		{
 			addHelp: true,
 			description: 'Create an ethereum transaction. Send or call method is used automatically based on abi.'
@@ -3307,6 +3371,14 @@ function argParse () {
     {
       action: 'store',
       help: 'List functions in abi matching pattern.',
+    }
+  )
+
+	tx.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      help: 'From Address defaults to web3.defaultFrom',
     }
   )
 

@@ -49,6 +49,25 @@ function toHex (value) {
 
 function getWeb3 (network) {
   var web3 = null
+  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
+    try {
+      web3 = new Web3(
+        Web3.givenProvider ||
+        new Web3.providers.HttpProvider(
+          config.get(`web3.${network}.provider.http.url`) +
+          (
+            config.has(`web3.${network}.provider.http.api-key`) ?
+            config.get(`web3.${network}.provider.http.api-key`)
+            : 
+            ""
+          )
+        )
+      )
+
+      log.debug(`http rpc provider used.`)
+    } catch (e) {web3 = null}
+
+  } 
   if (web3 === null && config.has(`web3.${network}.provider.alchemy.url`)) {
     try {
 
@@ -87,25 +106,6 @@ function getWeb3 (network) {
       log.debug(`infura rpc provider used.`)
     } catch (e) {web3 = null}
   }
-  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
-    try {
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.HttpProvider(
-          config.get(`web3.${network}.provider.http.url`) +
-          (
-            config.has(`web3.${network}.provider.http.api-key`) ?
-            config.get(`web3.${network}.provider.http.api-key`)
-            : 
-            ""
-          )
-        )
-      )
-
-      log.debug(`http rpc provider used.`)
-    } catch (e) {web3 = null}
-
-  } 
   if (web3 === null && config.has(`web3.${network}.provider.ws.url`)) {
     try {
       web3 = new Web3(
@@ -145,6 +145,7 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
     gasLimit: toHex(gasLimit),
     gasPrice: toHex(gasPrice),
     nonce: toHex(txCount),
+    chainId: Number(config.get(`web3.${network}.chainid`)) 
   }
 
   log.debug(rawTx)
@@ -482,8 +483,17 @@ async function getNonce (address) {
   return nonce
 }
 
-async function getWeb3Function (accessString) {
-  return accessString.split(".").reduce((acc, fnString) => acc[fnString], web3)
+async function getWeb3Function (functionString) {
+  return functionString.split(".").slice(1).reduce((acc, fnString) =>
+  {
+    try {
+      return acc[fnString]
+    } catch (e) {
+      throw new Error(`Object "${fnString}" does not exist.`)
+    }
+    
+  }
+  , web3)
 }
 
 async function getSourceCode (address) {
@@ -783,7 +793,7 @@ async function access (to, funcName, args = [], abi, from, value, gasLimit, gasP
         }
       } else {
         gasLimit = 21000 //gaslimit of sending ether
-        log.error(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
+        console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
       }
     }
 
