@@ -15,6 +15,7 @@
 	- [show price](#show-price-not-implemented)
 	- [trickle - automatically create many small orders or one large order if price reaches a threshold value ](#trickle)
 - [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
+	- [call web3 query functions](#call-any-web3-query-function)
 	- [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
 	- [display abi of smart contracts in a human readable way](#display-abi-of-smart-contracts-in-a-human-readable-way)
 	- [get address of a contract name, or name of a contract address](#get-address-of-a-contract-name-or-name-of-a-contract-address)
@@ -315,7 +316,7 @@ usage: cceb exchange trickle [-h] [--batch-size BATCHSIZE]
                              [--min-percent MINPERCENT]
                              [--max-slippage MAXSLIPPAGE] [--path PATH]
                              [--from FROM] [--gaslimit GASLIMIT] [--to TO]
-                             [--gasprice GASPRICE]
+                             [--gasprice GASPRICE] [--nonce NONCE]
                              exchange {buy,sell} {limit,market} amount pair
                              price
 
@@ -364,6 +365,8 @@ Optional arguments:
   --to TO, -o TO        Uniswap only. Recipient of output tokens
   --gasprice GASPRICE, -c GASPRICE
                         Decentralized swaps only. Gas price of transaction
+	--nonce NONCE, -n NONCE
+                        Nonce of transaction.
 ```
 ### [Ethereum](https://ethereum.org/en/) blockchain interactions
 
@@ -376,6 +379,36 @@ There are three types of Ethereum accounts can be defined in `$(npm root -g)/cce
 - `airsign` - (SAFE) [airsign](https://github.com/r001/airsign) accounts store the privatekeys on a mobile phone that communicates `cceb` using QR codes to sign transactions and signatures. 
 - `ledger` - (SAFE) [ledger](https://www.ledger.com) accounts use Ledger cold wallets to sign transactions
 
+#### Call web3 query functions
+
+Any web3 function that returns a single value or a set of values can be called. You can not call functions that return handles (you can not subscribe to events). You can substitute names for addresses and `cceb` will translate them to addresses. 
+
+##### Examples
+
+Get block number:  
+`$ cceb eth web3 web3.eth.getBlockNumber`  
+  
+Get gas price:  
+`$ cceb eth web3 web3.eth.getGasPrice`  
+  
+Get Rari protocol fund manager smart contract's implementation address:  
+`$ cceb eth web3 web3.eth.getStorageAt RARI_FUND_MANAGER 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc`  
+  
+Get timestamp of block number 13500000 (using `jq` bash json util):  
+`$ cceb eth web3 web3.eth.getBlock 13500000|jq .timestamp`  
+  
+Encode function to signature:  
+`$ cceb eth web3 web3.eth.abi.encodeFunctionSignature "enterMarkets(address[])"`  
+  
+Encode function parameter:  
+`$ cceb eth web3 web3.eth.abi.encodeParameter "address[]" '["0xFd3300A9a74b3250F1b2AbC12B47611171910b07"]'`  
+  
+Encode function parameters:  
+`cceb eth web3 web3.eth.abi.encodeParameters '[ "uint8[]", { "ParentStruct": { "propertyOne": "uint256", "propertyTwo": "uint256", "ChildStruct": { "propertyOne": "uint256", "propertyTwo": "uint256" } } } ]' '[ ["34","116"], { "propertyOne": "42", "propertyTwo": "56", "ChildStruct": { "propertyOne": "45", "propertyTwo": "78" } } ]'`  
+  
+Address substitutions do work. Get 0th storage from old MKR token:  
+`cceb eth web3 web3.eth.getStorageAt MKR_OLD 0`  
+  
 #### Send or call ethereum contracts
 
 ##### Examples
@@ -452,6 +485,11 @@ Optional arguments:
   --gasprice GASPRICE, -p GASPRICE
                         Gas price of transaction
   --ls LS, -l LS        List functions in abi matching pattern.
+	--nonce NONCE, -n NONCE
+                        Nonce of transaction.
+  --block BLOCK, -b BLOCK
+                        Block height of transaction. (Only used with call
+                        transactions.)
 ```
 #### Display abi of smart contracts in a human readable way
 

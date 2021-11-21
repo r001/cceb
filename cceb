@@ -361,8 +361,8 @@ async function curveInfo (args) {
 	var claims = await Promise.all(fileNames.map(async fileName => {
 		return { 
 			gauge: fileName, 
-			token: await w3.access(fileName, 'claimable_tokens', [args.from]),
-			lp_free: await w3.access('CRV_LP_' + fileName.replace(/CRV_GAUGE_/, ''), 'balanceOf', [args.from]),
+			token: await w3.access(args.block, fileName, 'claimable_tokens', [args.from]),
+			lp_free: await w3.access(args.block, 'CRV_LP_' + fileName.replace(/CRV_GAUGE_/, ''), 'balanceOf', [args.from]),
 		}
 	}
 	)
@@ -374,34 +374,34 @@ async function curveInfo (args) {
 	})
 
 	// claims = claims.filter(gauge => gauge.token !== '0')
-	const ve_crv = await w3.access('CRV_VECRV', 'balanceOf', [args.from])
-	const ve_crv_total = await w3.access('CRV_VECRV', 'totalSupply')
+	const ve_crv = await w3.access(args.block, 'CRV_VECRV', 'balanceOf', [args.from])
+	const ve_crv_total = await w3.access(args.block, 'CRV_VECRV', 'totalSupply')
 	// const WEEK = 604800
-	const rate = await w3.access('CRV', 'rate')
-	const btc_usd = (await w3.access('UNISWAP_ROUTER_V2', 'getAmountsOut', ["1.00000000", ["WBTC", "WETH", "USDT"]]))[2]
+	const rate = await w3.access(args.block, 'CRV', 'rate')
+	const btc_usd = (await w3.access(args.block, 'UNISWAP_ROUTER_V2', 'getAmountsOut', ["1.00000000", ["WBTC", "WETH", "USDT"]]))[2]
 
 	claims = await Promise.all(claims.map(async claim => {
-		// const period = await w3.access(claim.gauge,'period')
-		// const prev_week_time = await w3.access(claim.gauge,'period_timestamp',[period])
-		const crv_usd = claim.token !== '0' ? (await w3.access('UNISWAP_ROUTER_V2', 'getAmountsOut', [claim.token, ["CRV", "WETH", "USDT"]]))[2]: 0
-		const lp = await w3.access(claim.gauge, 'balanceOf', [args.from])
+		// const period = await w3.access(args.block, claim.gauge,'period')
+		// const prev_week_time = await w3.access(args.block, claim.gauge,'period_timestamp',[period])
+		const crv_usd = claim.token !== '0' ? (await w3.access(args.block, 'UNISWAP_ROUTER_V2', 'getAmountsOut', [claim.token, ["CRV", "WETH", "USDT"]]))[2]: 0
+		const lp = await w3.access(args.block, claim.gauge, 'balanceOf', [args.from])
 		const name = claim.gauge.replace(/CRV_GAUGE_/, '')
-		const lp_virtual_price = await w3.access('CRV_SWAP_' + name, 'get_virtual_price')
+		const lp_virtual_price = await w3.access(args.block, 'CRV_SWAP_' + name, 'get_virtual_price')
 		const lp_usd = BN(lp).times(BN(lp_virtual_price)).div(10**36)
-		const lp_total = (await w3.access(claim.gauge, 'totalSupply')).replace(/\./, "")
-		const lp_all = (await w3.access('CRV_LP_' + name, 'totalSupply')).replace(/\./, "")
+		const lp_total = (await w3.access(args.block, claim.gauge, 'totalSupply')).replace(/\./, "")
+		const lp_all = (await w3.access(args.block, 'CRV_LP_' + name, 'totalSupply')).replace(/\./, "")
 		var deposit_token = BN(lp_all).times(BN(lp_virtual_price)).div(10**36)
 		if (/.*BTC.*|.*REN.*/.test(claim.gauge)) {
 			deposit_token = deposit_token.times(BN(btc_usd)).div(10**6)
 		}
-		const working_balances =  await w3.access(claim.gauge, 'working_balances', [args.from])
-		const working_supply =  await w3.access(claim.gauge, 'working_supply')
-		const gauge_relative_weight = await w3.access('CRV_GAUGE_CONTROLLER', 'gauge_relative_weight', [claim.gauge]) 
+		const working_balances =  await w3.access(args.block, claim.gauge, 'working_balances', [args.from])
+		const working_supply =  await w3.access(args.block, claim.gauge, 'working_supply')
+		const gauge_relative_weight = await w3.access(args.block, 'CRV_GAUGE_CONTROLLER', 'gauge_relative_weight', [claim.gauge]) 
 		const next_week = String(Math.floor(Date.now() / 1000 + 604800))
-		const gauge_relative_weight_f = await w3.access('CRV_GAUGE_CONTROLLER', 'gauge_relative_weight', [claim.gauge, next_week]) 
-		const gauge_weight = await w3.access('CRV_GAUGE_CONTROLLER', 'get_gauge_weight', [claim.gauge]) 
-		const gauge_type = await w3.access('CRV_GAUGE_CONTROLLER', 'gauge_types', [claim.gauge]) 
-		const type_weight = await w3.access('CRV_GAUGE_CONTROLLER', 'get_weights_sum_per_type', [gauge_type]) 
+		const gauge_relative_weight_f = await w3.access(args.block, 'CRV_GAUGE_CONTROLLER', 'gauge_relative_weight', [claim.gauge, next_week]) 
+		const gauge_weight = await w3.access(args.block, 'CRV_GAUGE_CONTROLLER', 'get_gauge_weight', [claim.gauge]) 
+		const gauge_type = await w3.access(args.block, 'CRV_GAUGE_CONTROLLER', 'gauge_types', [claim.gauge]) 
+		const type_weight = await w3.access(args.block, 'CRV_GAUGE_CONTROLLER', 'get_weights_sum_per_type', [gauge_type]) 
 		const gauge_percent = BN(gauge_weight).div(BN(type_weight))
 		const crv_day_lp = BN(rate).times(BN(gauge_relative_weight)).times(86400).div(BN(working_supply))
 		const crv_day_lp_f = BN(rate).times(BN(gauge_relative_weight_f)).times(86400).div(BN(working_supply))
@@ -471,19 +471,20 @@ async function getReferralCode () {
 }
 
 async function aaveDeposit (args) {
-	const decimals = args.token === 'ETH' ? 18 : Number(await w3.decimals(args.token))
+	const decimals = args.token === 'ETH' ? 18 : Number(await w3.decimals(args.block, args.token))
 	const depositAmt = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
 	const referralCode = await getReferralCode()
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	const lendingPoolCore = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPoolCore')
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	const lendingPoolCore = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPoolCore')
 
 	const approved = 
 		args.token === 'ETH' ?
 		BN(10).pow(100) :
-		BN(await w3.access(args.token, 'allowance', [args.from, lendingPoolCore], 'ERC20'))
+		BN(await w3.access(args.block, args.token, 'allowance', [args.from, lendingPoolCore], 'ERC20'))
 	
 	if (approved.lt(depositAmt)) {
 		await w3.access(
+			args.block,
 			args.token,
 			'approve',
 			[lendingPoolCore, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
@@ -497,6 +498,7 @@ async function aaveDeposit (args) {
 	}
 
 	await w3.access(
+		args.block,
 		lendingPool,
 		'deposit',
 		[
@@ -520,18 +522,19 @@ async function dispAaveWithdraw (args) {
 
 async function aaveWithdraw (args) {
 	const aToken = 'a' + args.token
-	const decimals = Number(await w3.decimals(aToken))
+	const decimals = Number(await w3.decimals(args.block, aToken))
 	var amount
 	if (args.amount.match(/ALL/i)) {
-		amount = BN(await w3.access(aToken, 'balanceOf', [args.from], 'ERC20'))
+		amount = BN(await w3.access(args.block, aToken, 'balanceOf', [args.from], 'ERC20'))
 	} else {
 		amount = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
 	}
-	var canWithdraw = await w3.access(aToken, 'isTransferAllowed', [args.from, amount], 'aToken')
+	var canWithdraw = await w3.access(args.block, aToken, 'isTransferAllowed', [args.from, amount], 'aToken')
 	if (!canWithdraw) { throw new Error('Withdraw not possible. Payback all debt first!')}
 	log.debug(`amount final: ${amount.toFixed()}`)
 
 	await w3.access(
+	args.block,
 	aToken,
 		'redeem',
 		[amount.toFixed()],
@@ -549,8 +552,8 @@ async function dispAaveCollateral (args) {
 }
 
 async function aaveCollateral (args) {
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	await w3.access(lendingPool, 'setUserUseReserveAsCollateral', [args.token, !args.disable], 'AAVE_LENDING_POOL', args.from, 0, args.gaslimit, args.gasprice, args.nonce)
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	await w3.access(args.block, lendingPool, 'setUserUseReserveAsCollateral', [args.token, !args.disable], 'AAVE_LENDING_POOL', args.from, 0, args.gaslimit, args.gasprice, args.nonce)
 }
 
 async function dispAaveBorrow (amount, token, fixed, from, gasLimit, gasPrice, nonce) {
@@ -564,14 +567,15 @@ async function aaveBorrow (
 	from,
 	gasLimit,
 	gasPrice,
-	nonce
+	nonce,
+	block
 ) {
-	const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(token))
+	const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(block, token))
 	const borrowAmt = BN(amount).times(BN(10).pow(decimals)).integerValue()
 	const interestRateMode = fixed ? 1 : 2
 	const referralCode = await getReferralCode()
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	return await w3.access(lendingPool, 'borrow', [token, borrowAmt.toFixed(), interestRateMode, referralCode], 'AAVE_LENDING_POOL', from, 0, gasLimit, gasPrice, nonce)
+	const lendingPool = await w3.access(block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	return await w3.access(block, lendingPool, 'borrow', [token, borrowAmt.toFixed(), interestRateMode, referralCode], 'AAVE_LENDING_POOL', from, 0, gasLimit, gasPrice, nonce)
 }
 
 async function dispAavePayback (args) {
@@ -583,7 +587,7 @@ async function aavePayback (args) {
 	const decimals = 
 		args.token === 'ETH' ?
 		18 :
-		Number(await w3.decimals(args.token))
+		Number(await w3.decimals(args.block, args.token))
 
 	if ( args.amount.match(/all/i)) {
 
@@ -600,11 +604,12 @@ async function aavePayback (args) {
 	
 	}
 	
-	const lendingPoolCore = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPoolCore')
+	const lendingPoolCore = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPoolCore')
 	
 	const approved = args.token === 'ETH' ?
 		BN(10).pow(100) :
 		BN(await w3.access(
+			args.block,
 			args.token,
 			'allowance',
 			[args.from, lendingPoolCore],
@@ -613,6 +618,7 @@ async function aavePayback (args) {
 	
 	if (approved.lt(paybackAmt)) {
 		await w3.access(
+			args.block,
 			args.token,
 			'approve',
 			[lendingPoolCore, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
@@ -624,9 +630,10 @@ async function aavePayback (args) {
 			args.nonce
 		)
 	}
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
 	await w3.access(
+	args.block,
 	lendingPool,
 		'repay',
 		[
@@ -648,9 +655,10 @@ async function dispAaveSwapRate (args) {
 }
 
 async function aaveSwapRate (args) {
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
 	await w3.access(
+		args.block,
 		lendingPool,
 		'swapBorrowRateMode',
 		[args.token],
@@ -669,9 +677,10 @@ async function dispAaveRebalance (args) {
 
 async function aaveRebalance (args) {
 	
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
 	await w3.access(
+		args.block,
 		lendingPool,
 		'rebalanceStableBorrowRate',
 		[args.token, args.for ? args.for : args.from],
@@ -690,9 +699,10 @@ async function dispAaveLiquidate (args) {
 
 async function aaveLiquidate (args) { //TODO: implement
 
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 	
 	await w3.access(
+		args.block,
 		lendingPool,
 		'liquidationCall', 
 		[
@@ -713,28 +723,29 @@ async function dispAaveInfo (args) {
 }
 
 async function aaveInfo (args) {
-	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
+	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 	
 	if (args.aaveInfoCommand === 'reserve') {
 
 		var configdata =  await w3.access(
+			args.block,
 			lendingPool,
 			'getReserveConfigurationData',
 			[args.token],
 			'AAVE_LENDING_POOL'
 		)
 	
-		var configdata1 = await w3.access(lendingPool, 'getReserveData', [args.token], 'AAVE_LENDING_POOL')	
+		var configdata1 = await w3.access(args.block, lendingPool, 'getReserveData', [args.token], 'AAVE_LENDING_POOL')	
 
 		return {...configdata, ...configdata1}
 	
 	}	else if (args.aaveInfoCommand === 'account') {
 		
-		return await w3.access(lendingPool, 'getUserAccountData', [args.from], 'AAVE_LENDING_POOL')		
+		return await w3.access(args.block, lendingPool, 'getUserAccountData', [args.from], 'AAVE_LENDING_POOL')		
 	
 	}	else if (args.aaveInfoCommand === 'user') {
 	
-		return await w3.access(lendingPool, 'getUserReserveData', [args.token, args.from], 'AAVE_LENDING_POOL')		
+		return await w3.access(args.block, lendingPool, 'getUserReserveData', [args.token, args.from], 'AAVE_LENDING_POOL')		
 	}
 }
 
@@ -768,13 +779,13 @@ async function vaultPayback (args) {
 	var {vaultId} = await getVaultId(args.from, args.vault, vaultTypeHex)
 	var {vaultAddr, vaultTypeHex, daiNormalized} = await getUrnParams(vaultId, args.type)
 
-	var ilk = await w3.access('MCD_VAT', 'ilks', [vaultTypeHex]) 
+	var ilk = await w3.access(args.block, 'MCD_VAT', 'ilks', [vaultTypeHex]) 
 	var rate = BN(ilk.rate)
 	log.debug(`rate: ${rate}`)
 	
-	var daiVault = BN(await w3.access('MCD_VAT', 'dai', [vaultAddr]))
+	var daiVault = BN(await w3.access(args.block, 'MCD_VAT', 'dai', [vaultAddr]))
 	log.debug(`dai in Vault: ${daiVault.toFixed()}`)
-	const daiBalance = BN(await w3.access('MCD_DAI', 'balanceOf', [args.from], 'ERC20'))
+	const daiBalance = BN(await w3.access(args.block, 'MCD_DAI', 'balanceOf', [args.from], 'ERC20'))
 	var daiVaultNormalizedWad = daiVault.div(rate).integerValue()
 	log.debug(`dai in Vaultnormalized: ${daiVaultNormalizedWad.toFixed()}`)
 	var paybackWad = BN(args.amount).times(BN(10).pow(18)).integerValue()
@@ -786,9 +797,10 @@ async function vaultPayback (args) {
 	const paybackNormalizedWad = paybackWad.times(BN(10).pow(27)).div(rate).integerValue()
 
 	log.debug(`paybackNormalizedWad: ${paybackNormalizedWad}`)
-	const approvedDai = BN(await w3.access('MCD_DAI', 'allowance', [args.from, 'MCD_JOIN_DAI'], 'ERC20'))
+	const approvedDai = BN(await w3.access(args.block, 'MCD_DAI', 'allowance', [args.from, 'MCD_JOIN_DAI'], 'ERC20'))
 	if (approvedDai.lt(paybackWad)) {
 		await w3.access(
+			args.block,
 			'MCD_DAI',
 			'approve',
 			['MCD_JOIN_DAI', '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
@@ -802,6 +814,7 @@ async function vaultPayback (args) {
 	}
 	if (paybackWad.gt(0)) {
 		await w3.access(
+			args.block,
 			'MCD_JOIN_DAI',
 			'join',
 			[vaultAddr, paybackWad.toFixed()],
@@ -815,13 +828,14 @@ async function vaultPayback (args) {
 		
 	}
 	
-	daiVault = BN(await w3.access('MCD_VAT', 'dai', [vaultAddr])).div(BN(10).pow(27))
-	ilk = await w3.access('MCD_VAT', 'ilks', [vaultTypeHex]) 
+	daiVault = BN(await w3.access(args.block, 'MCD_VAT', 'dai', [vaultAddr])).div(BN(10).pow(27))
+	ilk = await w3.access(args.block, 'MCD_VAT', 'ilks', [vaultTypeHex]) 
 	rate = BN(ilk.rate)
 	log.debug(`rate: ${rate}`)
 	daiVaultNormalizedWad = daiVault.div(rate).integerValue()
 
 	await w3.access(
+		args.block,
 		'MCD_CDP_MANAGER',
 		'frob',
 		[vaultId, '0', daiVaultNormalizedWad],
@@ -847,14 +861,14 @@ async function vaultGenerate (args) {
 	}
 	const vaultTypeHex = w3.web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(args.type).toString('hex'))
 	var {vaultId} = await getVaultId(args.from, args.vault, vaultTypeHex)
-	const vaultAddr = await w3.access('MCD_CDP_MANAGER', 'urns', [vaultId])
-	var ilk = await w3.access('MCD_VAT', 'ilks', [vaultTypeHex]) 
+	const vaultAddr = await w3.access(args.block, 'MCD_CDP_MANAGER', 'urns', [vaultId])
+	var ilk = await w3.access(args.block, 'MCD_VAT', 'ilks', [vaultTypeHex]) 
 	var rate = new BN(ilk.rate)
 	var daiToGenerate = BN(args.amount).times(BN(10).pow(45)).integerValue()
 	log.debug(`DaiToGenerate: ${daiToGenerate}`)
-	var daiAtVault = BN(await w3.access('MCD_VAT', 'dai', [vaultAddr]))
+	var daiAtVault = BN(await w3.access(args.block, 'MCD_VAT', 'dai', [vaultAddr]))
 	log.debug(`daiAtVault: ${daiAtVault}`)
-	var daiAtFrom = BN(await w3.access('MCD_VAT', 'dai', [args.from]))
+	var daiAtFrom = BN(await w3.access(args.block, 'MCD_VAT', 'dai', [args.from]))
 	var daiTotal = daiAtVault.plus(daiAtFrom)
 	log.debug(`daiAtFrom: ${daiAtFrom}`)
 	var daiToFrobWad = (daiTotal.lt(daiToGenerate) ? daiToGenerate.minus(daiTotal) : BN(0)).div(rate).integerValue()
@@ -862,6 +876,7 @@ async function vaultGenerate (args) {
 	if (!daiToFrobWad.eq(BN(0))) {
 
 		await w3.access(
+			args.block,
 			'MCD_CDP_MANAGER',
 			'frob',
 			[vaultId, 0, daiToFrobWad.toFixed()],
@@ -873,13 +888,14 @@ async function vaultGenerate (args) {
 			args.nonce
 			)
 
-		daiAtVault = BN(await w3.access('MCD_VAT', 'dai', [vaultAddr]))
+		daiAtVault = BN(await w3.access(args.block, 'MCD_VAT', 'dai', [vaultAddr]))
 		daiTotal = daiAtVault.plus(daiAtFrom)
 	}
 
 	daiToGenerate = BN.min(daiToGenerate, daiTotal)
 	
 	await w3.access(
+		args.block,
 		'MCD_CDP_MANAGER',
 		'move',
 		[vaultId, args.from, daiToGenerate.minus(daiAtFrom).integerValue().toFixed()],
@@ -891,10 +907,11 @@ async function vaultGenerate (args) {
 		args.nonce
 	)
 
-	const joinEnabled = await w3.access('MCD_VAT', 'can', [args.from, 'MCD_JOIN_DAI'])
+	const joinEnabled = await w3.access(args.block, 'MCD_VAT', 'can', [args.from, 'MCD_JOIN_DAI'])
 	
 	if (Number(joinEnabled) === 0) {
 		await w3.access(
+			args.block,
 			'MCD_VAT',
 			'hope',
 			['MCD_JOIN_DAI'],
@@ -908,6 +925,7 @@ async function vaultGenerate (args) {
 	}
 
 	await w3.access(
+		args.block,
 		'MCD_JOIN_DAI',
 		'exit',
 		[args.from, daiToGenerate.div(BN(10).pow(27)).integerValue().toFixed()],
@@ -936,7 +954,7 @@ async function vaultWithDraw (args) {
 	if (collCoin === 'ETH') collCoin = 'WETH'
 	const joinContract = 'MCD_JOIN_' + args.type.replace(/-/, "_")
 	var {vaultId} = await getVaultId(args.from, args.vault, vaultTypeHex)
-	const decimals = Number(await w3.decimals(collCoin))
+	const decimals = Number(await w3.decimals(args.block, collCoin))
 	var withdrawAmt = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
 	var withdrawAmtWad = BN(args.amount).times(BN(10).pow(18)).integerValue()
 	
@@ -949,6 +967,7 @@ async function vaultWithDraw (args) {
 		const freeCollateral = vault.unlockedCollateral.minus(args.amount).times(BN(10).pow(18)).integerValue()
 
 		await w3.access(
+			args.block,
 			'MCD_CDP_MANAGER',
 			'frob',
 			[vaultId, freeCollateral.toFixed(), 0],
@@ -962,6 +981,7 @@ async function vaultWithDraw (args) {
 	}
 
 	await w3.access(
+		args.block,
 		'MCD_CDP_MANAGER',
 		'flux',
 		[vaultId, args.from, withdrawAmtWad.toFixed()],
@@ -975,6 +995,7 @@ async function vaultWithDraw (args) {
 	)
 	
 	await w3.access(
+		args.block,
 		joinContract,
 		'exit',
 		[args.from, withdrawAmt.toFixed()],
@@ -988,6 +1009,7 @@ async function vaultWithDraw (args) {
 	
 	if (collCoin === 'WETH') {
 		await w3.access(
+			args.block,
 			'WETH',
 			'withdraw',
 			[withdrawAmt.toFixed()],
@@ -1018,6 +1040,7 @@ async function vaultDeposit (args) {
 		collCoin = 'WETH'
 
 		await w3.access(
+			args.block,
 			'WETH',
 			'deposit',
 			[],
@@ -1030,13 +1053,14 @@ async function vaultDeposit (args) {
 		)
 	}
 	const joinContract = 'MCD_JOIN_' + args.type.replace(/-/, "_")
-	const decimals = Number(await w3.decimals(collCoin))
-		var allowance = BN(await w3.access(collCoin, 'allowance', [args.from, joinContract]))
+	const decimals = Number(await w3.decimals(args.block, collCoin))
+		var allowance = BN(await w3.access(args.block, collCoin, 'allowance', [args.from, joinContract]))
 		if (allowance.div(BN(10).pow(decimals)).lt(BN(args.amount))) {
 			//if allowance less than amount to deposit
 			log.info("approve infinite")
 
 			await w3.access(
+				args.block,
 				collCoin, 
 				'approve', 
 				[
@@ -1051,9 +1075,9 @@ async function vaultDeposit (args) {
 				args.nonce
 			)
 		}
-	var balance = BN(await w3.access(collCoin, 'balanceOf', [args.from]))
+	var balance = BN(await w3.access(args.block, collCoin, 'balanceOf', [args.from]))
 	var {vaultId} = await getVaultId(args.from, args.vault, vaultTypeHex)
-	const vaultAddr = await w3.access('MCD_CDP_MANAGER', 'urns', [vaultId])
+	const vaultAddr = await w3.access(args.block, 'MCD_CDP_MANAGER', 'urns', [vaultId])
 	var depositAmt = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
 	if (depositAmt.gt(balance)) {
 		depositAmt = balance
@@ -1063,6 +1087,7 @@ async function vaultDeposit (args) {
 	log.info(`joincontract: ${joinContract} vaultAddr: ${vaultAddr} depositamt: ${depositAmt.toFixed()}`)
 
 	await w3.access(
+		args.block,
 		joinContract,
 		'join',
 		[vaultAddr, depositAmt.toFixed()],
@@ -1075,11 +1100,12 @@ async function vaultDeposit (args) {
 	)
 
 	const depositInt = await w3.web3.eth.abi.encodeParameter('int', depositAmt.toFixed())
-		var ilk = await w3.access('MCD_VAT', 'ilks', [vaultTypeHex], null, args.from) 
+		var ilk = await w3.access(args.block, 'MCD_VAT', 'ilks', [vaultTypeHex], null, args.from) 
 		var rate = new BN(ilk.rate)
 	const drawDaiInt = await w3.web3.eth.abi.encodeParameter('int', BN(args.draw).times(BN(10).pow(18+27)).div(rate).integerValue().toFixed())
 
 	await w3.access(
+		args.block,
 		'MCD_CDP_MANAGER', 
 		'frob',
 		[vaultId, depositInt, drawDaiInt],
@@ -1112,6 +1138,7 @@ async function vaultOpen (args) {
 	const vaultTypeHex = w3.web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(args.type).toString('hex'))
 
 	await w3.access(
+		args.block,
 		'MCD_CDP_MANAGER',
 		'open',
 		[vaultTypeHex, args.from],
@@ -1123,7 +1150,7 @@ async function vaultOpen (args) {
 		args.nonce
 		)
 
-	return await w3.access('MCD_CDP_MANAGER', 'last', [args.from])
+	return await w3.access(args.block, 'MCD_CDP_MANAGER', 'last', [args.from])
 }
 
 async function dispVaultInfo (args) {
@@ -1148,22 +1175,22 @@ async function dispVaultInfo (args) {
 async function getVaultId (from, vault, type) {
 	const vaultTypeHex = w3.web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(type).toString('hex'))
 	// check if cdp is registered with proxy
-	var proxyAddress = await w3.access( 'MCD_PROXY_REGISTRY', 'proxies', [from])
+	var proxyAddress = await w3.access(args.block,  'MCD_PROXY_REGISTRY', 'proxies', [from])
 	var fromAddress = parseInt(proxyAddress) === 0 ? from : proxyAddress
 
 	log.info(`fromAddress: ${fromAddress}, type: ${typeof fromAddress}`)
 	
-	var vaultId = vault !== 0 ? vault : await w3.access('MCD_CDP_MANAGER', 'last', [fromAddress])
+	var vaultId = vault !== 0 ? vault : await w3.access(args.block, 'MCD_CDP_MANAGER', 'last', [fromAddress])
 	log.debug({vaultId})
 	if (vaultTypeHex) {
-		var vaultTypeHexCurr = await w3.access('MCD_CDP_MANAGER', 'ilks', [vaultId])
+		var vaultTypeHexCurr = await w3.access(args.block, 'MCD_CDP_MANAGER', 'ilks', [vaultId])
 		log.debug({vaultTypeHexCurr, vaultTypeHex})
 		while (vaultTypeHexCurr.toString("hex") !== vaultTypeHex.toString("hex") && vaultId !== 0) {
 			if (vault !== 0) throw new Error('Vault id and type mismatch.')
-			vaultId =  Number((await w3.access('MCD_CDP_MANAGER', 'list', [vaultId])).prev)
+			vaultId =  Number((await w3.access(args.block, 'MCD_CDP_MANAGER', 'list', [vaultId])).prev)
 			log.debug({vaultId})
 			if (vaultId !== 0) {
-				vaultTypeHexCurr = await w3.access('MCD_CDP_MANAGER', 'ilks', [vaultId])
+				vaultTypeHexCurr = await w3.access(args.block, 'MCD_CDP_MANAGER', 'ilks', [vaultId])
 				log.debug({vaultTypeHexCurr})
 			}
 		}
@@ -1173,14 +1200,14 @@ async function getVaultId (from, vault, type) {
 }
 
 async function getUrnParams (vaultId, type) {
-	const vaultAddr = await w3.access('MCD_CDP_MANAGER', 'urns', [vaultId])
+	const vaultAddr = await w3.access(args.block, 'MCD_CDP_MANAGER', 'urns', [vaultId])
 
 	const vaultTypeHex = w3.web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(type).toString('hex'))
 	log.info('VaultTypeHex: ' + vaultTypeHex)
-	var urn = await w3.access('MCD_VAT', 'urns', [vaultTypeHex, vaultAddr])
+	var urn = await w3.access(args.block, 'MCD_VAT', 'urns', [vaultTypeHex, vaultAddr])
 	var daiNormalized = BN(urn.art)
 	var lockedCollateral = BN(urn.ink)
-	var unlockedCollateral = BN(await w3.access('MCD_VAT', 'gem', [vaultTypeHex, vaultAddr]))
+	var unlockedCollateral = BN(await w3.access(args.block, 'MCD_VAT', 'gem', [vaultTypeHex, vaultAddr]))
 	log.info('Dai(normalized) in vault: ' + daiNormalized.toFixed())
 	return {vaultAddr, vaultTypeHex, daiNormalized, lockedCollateral, unlockedCollateral}
 }
@@ -1199,12 +1226,12 @@ async function vaultInfo (args) {
 
 		var {vaultAddr, vaultTypeHex, daiNormalized, lockedCollateral, unlockedCollateral} = await getUrnParams(vaultId, args.type)
 		//get current rate from vat contract
-		var ilk = await w3.access('MCD_VAT', 'ilks', [vaultTypeHex]) 
+		var ilk = await w3.access(args.block, 'MCD_VAT', 'ilks', [vaultTypeHex]) 
 		var rate = new BN(ilk.rate)
 		var spot = new BN(ilk.spot)
 		log.info('Rate of ' + args.type +' : ' + rate.div(10**27).toFixed())
 
-		var spotIlk = await w3.access('MCD_SPOT', 'ilks', [vaultTypeHex])
+		var spotIlk = await w3.access(args.block, 'MCD_SPOT', 'ilks', [vaultTypeHex])
 		const priceFeed = spotIlk.pip
 		const liquidationRatio = BN(spotIlk.mat)
 
@@ -1225,7 +1252,7 @@ async function vaultInfo (args) {
 			priceFeedAddress: priceFeed,
 		})
 
-		vaultId = args.vault !== 0 ? args.vault : (await w3.access('MCD_CDP_MANAGER', 'list', [vaultId])).prev
+		vaultId = args.vault !== 0 ? args.vault : (await w3.access(args.block, 'MCD_CDP_MANAGER', 'list', [vaultId])).prev
 	}
 	return vaults
 }
@@ -1262,6 +1289,7 @@ async function getFlog (args) {
 			era = block.timestamp
 
 			sinB = await w3.access(
+						args.block,
 						'MCD_VOW',
 						'sin',
 						[new BN(era).toFixed()],
@@ -1278,6 +1306,7 @@ async function getFlog (args) {
 
 		if (sin > 0) 
 			await w3.access(
+				args.block,
 				'MCD_VOW',
 				'flog',
 				[era],
@@ -1303,6 +1332,7 @@ async function dispFlop () {
 
 async function getFlop () {
 	return await w3.access(
+					args.block,
 					'MCD_VOW',
 					'flop',
 					[],
@@ -1321,6 +1351,7 @@ async function dispTick (args) {
 
 async function getTick (args) {
 	return await w3.access(
+					args.block,
 					'MCD_FLOP',
 					'tick',
 					[args.id],
@@ -1342,6 +1373,7 @@ async function getDent (args) {
 	var beg
 	if (!args.amount) {
 	const bids = await w3.access(
+					args.block,
 					'MCD_FLOP',
 					'bids',
 					[
@@ -1352,7 +1384,7 @@ async function getDent (args) {
 
 		log.info(bids)
 		lot = bids.lot
-		beg = Number(new BN(await w3.access('MCD_FLOP', 'beg', [])).div(10**18))
+		beg = Number(new BN(await w3.access(args.block, 'MCD_FLOP', 'beg', [])).div(10**18))
 
 		var Bignumber = BN.clone({ 
 			DECIMAL_PLACES: 0,
@@ -1364,12 +1396,13 @@ async function getDent (args) {
 	}
 	
 	return await w3.access(
+					args.block,
 					'MCD_FLOP',
 					'dent',
 					[
 					args.id,
 					lot,
-					new BN(await w3.access('MCD_FLOP', 'bid', [])).toFixed(),
+					new BN(await w3.access(args.block, 'MCD_FLOP', 'bid', [])).toFixed(),
 					],
 					null, // args.abi,
 					args.from, // args.from,
@@ -1386,6 +1419,7 @@ async function dispDeal (args) {
 
 async function getDeal (args) {
 	return await w3.access(
+					args.block,
 					'MCD_flop',
 					'deal',
 					[args.id],
@@ -1403,10 +1437,10 @@ async function dispEthTransaction (args) {
 		return
 	}
 	let disp = await getEthTransaction(args)
-	var decimals = 18
+	var decimals = 0
 	if ((await w3.getAddressType(args.contract)).type === 'token' &&
 		['balanceOf', 'totalSupply', 'allowance'].includes(args.func)) {
-		decimals = await w3.decimals(args.contract)
+		decimals = await w3.decimals(args.block, args.contract)
 	}
 		
 	if (disp && disp.map) {
@@ -1417,7 +1451,11 @@ async function dispEthTransaction (args) {
 	} else {
 		if (disp !== null || typeof disp !== 'undefined' || disp === '') {
 			if (typeof disp === 'object') {
-				disp = util.inspect(disp)
+				try {
+					disp = JSON.stringify(disp)
+				} catch (e) {
+					disp = util.inspect(disp, {maxArrayLength: null, depth:null})
+				}
 			} else {
 				disp = String(disp)
 			}
@@ -1438,9 +1476,12 @@ async function dispEthTransaction (args) {
 }
 
 async function toDec (str, decimals) {
-	if (typeof decimals === 'undefined' || decimals === null) decimals = 18
+	if (typeof decimals === 'undefined' || decimals === null || decimals === "0x") decimals = 0
 	log.debug(`decimals: ${decimals}`)
-	if (String(str).match(/^[-+]?[0-9]+$/)) {
+	if (String(str).match(/^[-+]?[0-9]+$/) && (decimals > 0 || BN(str).gt(BN(10).pow(18)))) {
+		if (decimals === 0) { 
+			decimals = 18
+		}
 		// return BN(str).div(BN(10).pow(decimals || 18)).toFixed()
 		str.padStart(decimals + 1, '0')
 		return str.slice(0, -(decimals)) +
@@ -1453,11 +1494,14 @@ async function toDec (str, decimals) {
 }
 
 async function calcValue (from, balanceExpr) {
-	var balance = BN(await w3.access('ETH', 'balanceOf', from)).div(BN(10).pow(18)).toFixed()
+	var balance = BN(await w3.access(args.block, 'ETH', 'balanceOf', from)).div(BN(10).pow(18)).toFixed()
 	return ut.evalExpr('max', balance, balanceExpr, true)
 }
 
 async function getWeb3 (args) {
+	if (Number.isInteger(args.block)) {
+		w3.web3.eth.defaultBlock = w3.toHex(args.block)
+	}
 	var fn = await w3.getWeb3Function(args.function)
 	var parent = await w3.getWeb3Function(args.function.replace(/\.\w*\s*$/, ""))
 
@@ -1477,17 +1521,23 @@ async function getWeb3 (args) {
 
 	switch (typeof fn) {
 		case 'function':
+			log.debug("Function has been called.")
 			try {
-				return fn.call(parent, ...params)
+						ret = await fn(...params)
+						log.debug("Used the fn(...params) method.")
+				return ret
 			} catch (e) {
 				switch (e.name) {
 					case "TypeError":
-						return fn(...params)
+						var ret = await fn.call(parent, ...params)
+						log.debug("Used the fn.call(parent, ...params) method.")
+						return ret
 					default:
 						throw e
 				}
 			}
 		default:
+			log.debug("Return object.")
 			return fn
 	}
 }
@@ -1566,6 +1616,7 @@ async function getEthTransaction (args) {
 	log.debug('args.args: '+JSON.stringify(args.args))
 
 	return await w3.access(
+		args.block,
 		args.contract,
 		args.func,
 		args.args,
@@ -1833,10 +1884,10 @@ async function addOrderUniswap (args, amount, buy) {
   const buyToken = buy ? args.pair.replace(/\/.*/, '') : args.pair.replace(/.*\//, '')
   log.info(`Buy token: ${buyToken}`)
 
-  const sellDecimals = await w3.decimals(sellToken)
+  const sellDecimals = await w3.decimals(args.block, sellToken)
   log.info(`${sellToken} decimals: ${sellDecimals}`)
 
-  const buyDecimals = await w3.decimals(buyToken)
+  const buyDecimals = await w3.decimals(args.block, buyToken)
   log.info(`${buyToken} decimals: ${buyDecimals}`)
 
 	const fromAddress = await w3.getAddress(args.from || config.get('web3.defaultFrom'))
@@ -1849,6 +1900,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 	var balance = BN(
 		await w3.access(
+			args.block,
 			sellToken,
 			'balanceOf',
 			fromAddress,
@@ -1865,6 +1917,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 		buyAmt = new BN(
 			(await w3.access(
+				args.block,
 				'UNISWAP_ROUTER_V2',
 				'getAmountsOut',
 				[	
@@ -1885,6 +1938,7 @@ async function addOrderUniswap (args, amount, buy) {
 			sellAmt = BN(
 				(
 					await w3.access(
+						args.block,
 						'UNISWAP_ROUTER_V2',
 						'getAmountsIn',
 						[	
@@ -1903,6 +1957,7 @@ async function addOrderUniswap (args, amount, buy) {
 			buyAmt = BN(
 				(
 					await w3.access(
+						args.block,
 						'UNISWAP_ROUTER_V2',
 						'getAmountsOut',
 						[	
@@ -1927,9 +1982,9 @@ async function addOrderUniswap (args, amount, buy) {
 		${buyToken === 'ETH' ? 'ETH' : 'Tokens'}\
 		${buy ? '' : 'SupportingFeeOnTransferTokens'}`.replace(/\s*/g, '')
 
-	const ethValue = sellToken === 'ETH' ? sellAmt.toFixed() : null
 	const minBuyAmount = buyAmt.times((100. - args.minPercent)/100.).decimalPlaces(0)
 	const maxSellAmount = BN.min(balance, sellAmt.times((100. + args.minPercent)/100.).decimalPlaces(0))
+	const ethValue = sellToken === 'ETH' ? maxSellAmount.toFixed() : null
 
 	log.debug(JSON.stringify({
 		ethValue,
@@ -1954,9 +2009,10 @@ async function addOrderUniswap (args, amount, buy) {
 			dueTimestampSec
 		]
 
-	if (!buy && sellToken === 'ETH') {
+	if (sellToken === 'ETH') {
 		// remove first element of args
 		uniswapArgs.shift()
+		uniswapArgs[0] = minBuyAmount.toFixed()
 	}
 
   const a = [
@@ -1971,7 +2027,7 @@ async function addOrderUniswap (args, amount, buy) {
 		args.nonce
 	]
 
-	log.debug(`w3.access(${JSON.stringify(a.slice(0, 2))}...`)
+	log.debug(`w3.access(args.block, ${JSON.stringify(a.slice(0, 2))}...`)
 	log.debug(`...${JSON.stringify(a.slice(2))})`)
 
   const priceToken = 
@@ -2023,9 +2079,10 @@ async function addOrderUniswap (args, amount, buy) {
 		throw new Error('From address must be stored in ./config/secrets/default.yaml -> web3: -> account:')
 	}
 
-	const allowance = BN(await w3.access(sellToken, 'allowance', [args.from, 'UNISWAP_ROUTER_V2']))
+	const allowance = BN(await w3.access(args.block, sellToken, 'allowance', [args.from, 'UNISWAP_ROUTER_V2']))
 	if (allowance.lt(sellAmt)) {
 		await w3.access(
+			args.block,
 			sellToken,
 			'approve',
 			['UNISWAP_ROUTER_V2', BN(2).pow(256).minus(1).toFixed()],
@@ -2044,7 +2101,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 		log.debug(`Final params:`, {a})
 		
-		const receipt = await w3.access(...a, null, args.exchangeCommand === 'trickle')
+		const receipt = await w3.access(args.block, ...a, null, args.exchangeCommand === 'trickle')
 		
     if (!receipt.status) {
       log.error(`Transaction reverted`)
@@ -2071,15 +2128,16 @@ async function addOrderKyber (args, amount, buy) {
   const buyToken = buy ? args.pair.replace(/\/.*/, '') : args.pair.replace(/.*\//, '')
   log.info(`Buy token: ${buyToken}`)
 
-  const sellDecimals = await w3.decimals(sellToken)
+  const sellDecimals = await w3.decimals(args.block, sellToken)
   log.info(`${sellToken} decimals: ${sellDecimals}`)
 
-  const buyDecimals = await w3.decimals(buyToken)
+  const buyDecimals = await w3.decimals(args.block, buyToken)
   log.info(`${buyToken} decimals: ${buyDecimals}`)
 
   var buyTokenCap
   try {
     buyTokenCap = new BN(await w3.access(
+      args.block,
       'KyberNetworkProxy',
       'getUserCapInTokenWei',
       [
@@ -2098,6 +2156,7 @@ async function addOrderKyber (args, amount, buy) {
       var balance = new BN(await w3.web3.eth.getBalance(await w3.getAddress(config.get('web3.defaultFrom'))))
     } else {
       balance = new BN(await w3.access(
+        args.block,
         sellToken,
         'balanceOf',
         config.get('web3.defaultFrom'),
@@ -2107,6 +2166,7 @@ async function addOrderKyber (args, amount, buy) {
     log.info(`Balance: ${balance.div(10 ** sellDecimals).toString()}`)
 
     let {expectedRate: kyberRate} = await w3.access(
+      args.block,
       'KyberNetworkProxy',
       'getExpectedRate',
       [
@@ -2136,6 +2196,7 @@ async function addOrderKyber (args, amount, buy) {
     amount = new BN(amount)
 
     let {expectedRate: kyberRate} = await w3.access(
+      args.block,
       'KyberNetworkProxy',
       'getExpectedRate',
       [
@@ -2165,6 +2226,7 @@ async function addOrderKyber (args, amount, buy) {
 
     if (buy) { // iterate another to find a close enough sellTokenAmt
       let {'expectedRate': kyberRate} = await w3.access(
+        args.block,
         'KyberNetworkProxy',
         'getExpectedRate',
         [
@@ -2194,6 +2256,7 @@ async function addOrderKyber (args, amount, buy) {
   }
 
   let {expectedRate: kyberRate} = await w3.access(
+    args.block,
     'KyberNetworkProxy',
     'getExpectedRate',
     [
@@ -3129,7 +3192,7 @@ function argParse () {
     ['--due-time', '-u'],
     {
       action: 'store',
-      defaultValue: '10 minutes from now',
+      defaultValue: '30 minutes from now',
       dest: 'dueTime',
       help: 'Uniswap only. Minimum amount requeseted. Uses free text to define end time using chrono lib.',
     }
@@ -3289,6 +3352,15 @@ function argParse () {
     }
   )
 
+  eth.addArgument(
+    ['--block', "-b"],
+    {
+      action: 'store',
+      type: Number,
+      help: 'Block height of transaction. (Only used with call transactions.)',
+    }
+  )
+
   var ethparsers = eth.addSubparsers({
     title: 'subcommands',
     dest: 'ethCommand',
@@ -3405,6 +3477,15 @@ function argParse () {
     {
       action: 'store',
       help: 'Nonce of transaction.',
+    }
+  )
+
+  tx.addArgument(
+    ['--block', "-b"],
+    {
+      action: 'store',
+      type: Number,
+      help: 'Block height of transaction. (Only used with call transactions.)',
     }
   )
 
@@ -4149,6 +4230,15 @@ function argParse () {
       action: 'store',
       defaultValue: config.get('web3.defaultFrom'),
       help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  info.addArgument(
+    ['--block', "-b"],
+    {
+      action: 'store',
+      type: Number,
+      help: 'Block height of transaction. (Only used with call transactions.)',
     }
   )
 
