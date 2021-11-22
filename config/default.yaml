@@ -1,6 +1,6 @@
 loglevel: 'warn'
 web3:
-  txSpeed: 'fastest'
+  txSpeed: 'safeLow'
   txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
   network: 'mainnet'
   defaultFrom: 'ETH-1'
@@ -8,7 +8,8 @@ web3:
   defaultGaslimit: 800000
   erc20abi: 'abi/ERC20'
   etherscan:
-    url: 'https://api.etherscan.io/api?module=contract&apikey='
+    contract_url: 'https://api.etherscan.io/api?module=contract&apikey='
+    nonce_url: 'https://api.etherscan.io/api?module=account&action=txlist&startblock=0&endblock=99999999&offset=10&sort=desc&apikey='
     timeout: 15000
   ethgasstation:
     url: 'https://ethgasstation.info/api/ethgasAPI.json?api-key='
@@ -16,14 +17,24 @@ web3:
   aave:
     paybackExtra: 0.00001
   mainnet:
-    infura:
-      url: 'wss://mainnet.infura.io/ws/v3/'
+    provider:
+      http:
+        url: 'http://localhost:8545'
+      ws: null
+      infura:
+        url: 'wss://mainnet.infura.io/ws/v3/'
+      alchemy:
+        url: 'wss://eth-mainnet.alchemyapi.io/v2/'
     chainid: 1
     sushi:
       SUSHI_MASTER_CHEF:
         address: '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd'
       SUSHI_TIMELOCK:
         address: '0x9a8541Ddf3a932a9A922B607e9CF7301f1d47bD1'
+      SUSHI_MASTER_CHEF_V2:
+        address: '0xef0881ec094552b2e128cf945ef17a6752b4ec5d'
+      SUSHI_ROUTER_V2:
+        address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
     kimchi:
       KIMCHI_MASTER_CHEF:
         address: '0x9Dd5b5c71842a4fD51533532E5470298BFA398fd'
@@ -144,6 +155,20 @@ web3:
         address: '0x203153522B9EAef4aE17c6e99851EE7b2F7D312E'
       UNIT_LOCK_DROP_CONTRACT:
         address: '0x46DAc43Ca95e316Ef2124B1a4Dd7806e93106C42'
+      UNIT_FEE_DISTRIBUTION:
+        address: '0x3f93dE882dA8150Dc98a3a1F4626E80E3282df46'
+      UNIT_STAKING_V2:
+        address: '0x48ddd27a4d54cd3e8c34f34f7e66e998442dbce3'
+      UNIT_CONTROLLER:
+        address: '0xae37E8f9a3f960eE090706Fa4db41Ca2f2C56Cb8'
+      UNIT_FEE_DISTRIBUTION_V2:
+        address: '0x9f2138ccb930f0654B2C40E7e29FF8291452Eed8'
+      UNIT_VAULT_PARAMETERS:
+        address: '0xB46F8CF42e504Efe8BEf895f848741daA55e9f1D'
+      UNIT_VAULT_MANAGER_01:
+        address: '0x0e13ab042eC5AB9Fc6F43979406088B9028F66fA'
+      UNIT_VAULT_MANAGER_02:
+        address: '0xee84F58Ee39C6122C76C1Fa54f0B6f33da1642Ec'
     crv:
       CRV_ADAPTER_REN:
         address: '0x73aB2Bd10aD10F7174a1AD5AFAe3ce3D991C5047'
@@ -337,6 +362,75 @@ web3:
         address: '0xF178C0b5Bb7e7aBF4e12A4838C7b7c5bA2C623c0'
       CRV_GAUGE_LINK:
         address: '0xfd4d8a17df4c27c1dd245d153ccf4499e806c87d'
+      CRV_DEPOSIT_TUSD:
+        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+      CRV_SWAP_TUSD:
+        address: '0xecd5e75afb02efa118af914515d6521aabd189f1'
+      CRV_GAUGE_TUSD:
+        address: '0x359FD5d6417aE3D8D6497d9B2e7A890798262BA4'
+      CRV_DEPOSIT_FRAX_USD:
+        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+      CRV_GAUGE_FRAX_USD:
+        address: '0x72e158d38dbd50a483501c24f792bdaaa3e7d55c'
+      CRV_SWAP_FRAX_USD:
+        address: '0xd632f22692fac7611d2aa1c0d552930d43caed3b'
+      CRV_SWAP_LUSD:
+        address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA'
+      CRV_DEPOSIT_LUSD:
+        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+      CRV_GAUGE_LUSD:
+        address: '0x9b8519a9a00100720ccdc8a120fbed319ca47a14'
+      CRV_SWAP_BUSDV2:
+        address: '0x4807862AA8b2bF68830e4C8dc86D0e9A998e085a'
+      CRV_DEPOSIT_BUSDV2:
+        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+      CRV_GAUGE_BUSDV2:
+        address: '0xd4b22fedca85e684919955061fdf353b9d38389b'
+      CRV_SWAP_RETH:
+        address: '0xF9440930043eb3997fc70e1339dBb11F341de7A8'
+      CRV_GAUGE_RETH:
+        address: '0x824F13f1a2F29cFEEa81154b46C0fc820677A637'
+      CRV_GAUGE_TRICRYPTO:
+        address: '0x9582C4ADACB3BCE56Fea3e590F05c3ca2fb9C477'
+      CRV_DEPOSIT_TRICRYPTO:
+        address: '0x331aF2E331bd619DefAa5DAc6c038f53FCF9F785'
+      CRV_SWAP_ALUSD:
+        address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
+      CRV_DEPOSIT_ALUSD:
+        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+      CRV_GAUGE_ALUSD:
+        address: '0x9582C4ADACB3BCE56Fea3e590F05c3ca2fb9C477'
+      CRV_SWAP_MIM_USD:
+        address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
+      CRV_DEPOSIT_MIM_USD:
+        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+      CRV_GAUGE_MIM_USD:
+        address: '0xd8b712d29381748dB89c36BCa0138d7c75866ddF'
+      CRV_SWAP_TRICRYPTO2:
+        address: '0xD51a44d3FaE010294C616388b506AcdA1bfAAE46'
+      CRV_DEPOSIT_TRICRYPTO2:
+        address: '0x3993d34e7e99Abf6B6f367309975d1360222D446'
+      CRV_GAUGE_TRICRYPTO2:
+        address: '0xDeFd8FdD20e0f34115C7018CCfb655796F6B2168'
+      CRV_SWAP_EURT:
+        address: '0xfd5db7463a3ab53fd211b4af195c5bccc1a03890'
+      CRV_GAUGE_EURT:
+        address: '0xe8060Ad8971450E624d5289A10017dD30F5dA85F'
+    rari:
+      RARI_FUND_CONTROLLER:
+        address: '0x66f4856f1bbd1eb09e1c8d9d646f5a3a193da569'
+      RARI_FUND_MANAGER:
+        address: '0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a'
+      RARI_FUND_PRICE_CONSUMER:
+        address: '0xFE98A52bCAcC86432E7aa76376751DcFAB202244'
+      RARI_FUND_PRICE_PROXY:
+        address: '0x4a785fa6fcd2e0845a24847beb7bddd26f996d4d'
+      RARI_COMPTROLLER:
+        address: '0xc54172e34046c1653d1920d40333Dd358c7a1aF4'
+      RARI_FUSE_POOL_DIRECTORY:
+        address: '0x835482FE0532f169024d5E9410199369aAD5C77E'
+      RARI_FUSE_8_TRIBE_REWARDS:
+        address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'
     snow:
       SNOW_POOL_YSNOW:
         address: '0x4571753311e37ddb44faa8fb78a6df9a6e3c6c0b'
@@ -377,18 +471,46 @@ web3:
           - 'USDT'
           - 'WETH'
           - 'DUCK'
-      UNISWAP_FACTORY:
+        TRIBE-USDT:
+          - 'USDT'
+          - 'WETH'
+          - 'FEI'
+          - 'TRIBE'
+        FEI-TRIBE:
+          - 'FEI'
+          - 'TRIBE'
+        USDP-WETH:
+          - 'WETH'
+          - 'DUCK'
+          - 'USDP'
+      UNISWAP_FACTORY_V2:
         address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
-      UNISWAP_ROUTER2:
+      UNISWAP_ROUTER_V2:
         address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
-      UNISWAP_SUSHI_WETH:
+      UNISWAP_SUSHI_WETH_V2:
         address: '0xCE84867c3c02B05dc570d0135103d3fB9CC19433'
-      UNISWAP_PAIR_WETH_SNOW:
+      UNISWAP_PAIR_WETH_SNOW_V2:
         address: '0xE4f8F3CB9b33247789e4984A457bb69A1a621Df3'
-      UNISWAP_PAIR_YSNOW_USDC:
+      UNISWAP_PAIR_YSNOW_USDC_V2:
         address: '0x9371801bb71ff2756c9ffac371b9c311f77bf986'
-      UNISWAP_PAIR_YCRVSNOW_USDC:
+      UNISWAP_PAIR_YCRVSNOW_USDC_V2:
         address: '0x45ea0521d9e428ab078af2586c3bee97a5e5156c'
+      UNISWAP_FACTORY_V3:
+        address: '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+      UNISWAP_ROUTER_V3:
+        address: '0xE592427A0AEce92De3Edee1F18E0157C05861564'
+      UNISWAP_QUOTER_V3:
+        address: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
+    votium:
+      VOTIUM_VOTER_PROXY:
+        address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'
+      VOTIUM_BRIBE:
+        address: '0x19bbc3463dd8d07f55438014b021fb457ebd4595'
+      VOTIUM_MULTI_MERKLE_STASH:
+        address: '0x378ba9b73309be80bf4c2c027aad799766a7ed5a'
+    1inch:
+      1INCH_AGGREGATION_ROUTER_V3:
+        address: '0x11111112542D85B3EF69AE05771c2dCCff4fAa26'
     aave:
       AAVE_LENDING_POOL_ADDRESSES_PROVIDER:
         address: '0x24a42fD28C976A61Df5D00D0599C34c4f90748c8'
@@ -651,6 +773,8 @@ web3:
         address: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8'
       CRV_LP_BUSD:
         address: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B'
+      CRV_LP_FRAX_USD:
+        address: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B'
       CRV_LP_GUSD:
         address: '0xD2967f45c4f384DEEa880F807Be904762a3DeA07'
       CRV_LP_HBTC:
@@ -663,6 +787,10 @@ web3:
         address: '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3'
       CRV_LP_SUSD:
         address: '0xC25a3A3b969415c80451098fa907EC722572917F'
+      CRV_LP_TRICRYPTO:
+        address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
+      CRV_LP_TUSD:
+        address: '0xecd5e75afb02efa118af914515d6521aabd189f1'
       CRV_LP_USDT:
         address: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23'
       CRV_LP_USDN:
@@ -835,9 +963,58 @@ web3:
         address: '0x4C19596f5aAfF459fA38B0f7eD92F11AE6543784'
       TRU_IMPLEMENTATION:
         address: '0x095527F5bEa113E9575B662c5ba01D990A280f2F'
+      MNE:
+        address: '0x426ca1ea2406c07d75db9585f22781c096e3d0e0'
+      MIM:
+        address: '0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3'
+      SPELL:
+        address: '0x090185f2135308BaD17527004364eBcC2D37e5F6'
+      CRV_LP_LUSD:
+        address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA'
+      CRV_LP_BUSDV2:
+        address: '0x4807862AA8b2bF68830e4C8dc86D0e9A998e085a'
+      CRV_LP_RETH:
+        address: '0x53a901d48795C58f485cBB38df08FA96a24669D5'
+      CRV_LP_ALUSD:
+        address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
+      CRV_LP_MIM_USD:
+        address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
+      CRV_LP_TRICRYPTO2:
+        address: '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff'
+      CRV_LP_EURT:
+        address: '0xfd5db7463a3ab53fd211b4af195c5bccc1a03890'
+      QDUCK:
+        address: '0xE85d5FE256F5f5c9E446502aE994fDA12fd6700a'
+      RARI_FUND_TOKEN:
+        address: '0x016bf078ABcaCB987f0589a6d3BEAdD4316922B0'
+      CVXCRV:
+        address: '0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7'
+      RARI_LP_F_TRIBE:
+        address: '0xFd3300A9a74b3250F1b2AbC12B47611171910b07'
+      RARI_LP_F_FEI:
+        address: '0xd8553552f8868c1ef160eedf031cf0bcf9686945'
+      RARI_LP_F_FEI_IMPLEMENTATION:
+        address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
+      RARI_LP_F_FEI_IMPLEMENTATION_IMPLEMENTATION:
+        address: '0x0000000000000000000000000000000000000000'
+      EXRD:
+        address: '0x6468e79a80c0eab0f9a2b574c8d5bc374af59414'
+      RARI_LP_F_DAI:
+        address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43'
+      RARI_LP_F_DAI_IMPLEMENTATION:
+        address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
+      RARI_LP_F_DAI_IMPLEMENTATION_IMPLEMENTATION:
+        address: '0x0000000000000000000000000000000000000000'
+    other:
+      VOTIUM_VOTER_PROXY:
+        address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'
   rinkeby:
-    infura:
-      url: 'wss://rinkeby.infura.io/ws/v3/'
+    provider:
+      http:
+        url: 'http://localhost:8545'
+      ws: null
+      infura:
+        url: 'wss://mainnet.infura.io/ws/v3/'
     chainid: 4
     uniswap:
       UNISWAP_FACTORY:
@@ -845,8 +1022,12 @@ web3:
       UNISWAP_ROUTER2:
         address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
   kovan:
-    infura:
-      url: 'wss://kovan.infura.io/ws/v3/'
+    provider:
+      http:
+        url: 'http://localhost:8545'
+      ws: null
+      infura:
+        url: 'wss://mainnet.infura.io/ws/v3/'
     chainid: 42
     aave:
       referralCode: 0
@@ -1114,8 +1295,12 @@ web3:
       ZRX:
         address: '0xE41d2489571d322189246DaFA5ebDe1F4699F498'
   ropsten:
-    infura:
-      url: 'wss://ropsten.infura.io/ws/v3/'
+    provider:
+      http:
+        url: 'http://localhost:8545'
+      ws: null
+      infura:
+        url: 'wss://mainnet.infura.io/ws/v3/'
     chainid: 3
     aave:
       referralCode: 0

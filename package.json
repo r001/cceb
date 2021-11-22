@@ -1,6 +1,6 @@
 {
   "name": "cceb",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "Bash program to trade on exchanges and interact with Ethereum smart contracts from bash",
   "main": "cceb",
   "scripts": {
@@ -28,7 +28,7 @@
     "@ledgerhq/hw-transport-node-hid-singleton": "^5.46.0",
     "@ledgerhq/logs": "^5.46.0",
     "argparse": "^1.0.10",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "bignumber.js": "^9.0.0",
     "bn": "^1.0.4",
     "ccxt": "~1.32.99",
@@ -51,10 +51,11 @@
     "promisify": "0.0.3",
     "qr-encoding": "^1.2.1",
     "qrcode": "^1.4.4",
+    "readline-sync": "^1.4.10",
     "scrypt-js": "^3.0.0",
     "set-value": "^3.0.2",
     "shelljs": "~0.8.3",
-    "web3": "1.2.11"
+    "web3": "1.5.2"
   },
   "devDependencies": {
     "assert": "^2.0.0",
