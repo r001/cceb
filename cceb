@@ -169,13 +169,13 @@ async function processArgs (exchange, args) {
 					case 'aave':
 						switch (args.aaveCommand) {
 							case 'deposit':
-								await dispAaveDeposit(args)
+								await dispAaveDeposit(args.token, args.amount, args.from, args.gaslimit, args.gasprice)
 								break
 							case 'withdraw':
 								await dispAaveWithdraw(args)
 								break
 							case 'collateral':
-								await dispAaveCollateral(args)
+								await dispAaveCollateral(args.token, args.disable, args.from, args.gaslimit, args.gasprice)
 								break
 							case 'borrow':
 								await dispAaveBorrow(args.amount, args.token, args.fixed, args.from, args.gaslimit, args.gasprice)
@@ -454,8 +454,8 @@ async function curveInfo (args) {
 	return {claims, crv_day, sum, crv_usd, lp_usd, gauge_percent, deposit_token}
 }
 
-async function dispAaveDeposit (args) {
-	console.log(await aaveDeposit(args))
+async function dispAaveDeposit (token, amount, from, gaslimit, gasprice) {
+	console.log(await aaveDeposit(token, amount, from, gaslimit, gasprice))
 }
 
 async function getReferralCode () {
@@ -463,37 +463,50 @@ async function getReferralCode () {
 	return config.get(`web3.${network}.aave.referralCode`)
 }
 
-async function aaveDeposit (args) {
-	const decimals = args.token === 'ETH' ? 18 : Number(await w3.decimals(args.token))
-	const depositAmt = BN(args.amount).times(BN(10).pow(decimals)).integerValue()
+async function aaveDeposit (token, amount, from, gaslimit, gasprice) {
+	const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(token))
+	const depositAmt = BN(amount).times(BN(10).pow(decimals)).integerValue()
 	const referralCode = await getReferralCode()
 	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 	const lendingPoolCore = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPoolCore')
+	var approved
+	if (token === 'ETH') {
+		approved = BN(10).pow(100)	
+		token = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	} else {
+		approved = BN(await w3.access(token, 'allowance', [from, lendingPoolCore], 'ERC20'))
+	}
 
-	const approved = 
-		args.token === 'ETH' ?
-		BN(10).pow(100) :
-		BN(await w3.access(args.token, 'allowance', [args.from, lendingPoolCore], 'ERC20'))
 	
 	if (approved.lt(depositAmt)) {
 		await w3.access(
-			args.token,
+			token,
 			'approve',
 			[lendingPoolCore, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'],
-			'ERC20')
+			'ERC20',
+			from,
+			null,
+			gaslimit,
+			gasprice
+			)
 	}
 
 	await w3.access(
 		lendingPool,
 		'deposit',
 		[
-			args.token,
+			token,
 			depositAmt.toFixed(),
 			referralCode
 		],
 		'AAVE_LENDING_POOL',
-		args.from,
-		(args.token === 'ETH' ? depositAmt : 0))
+		from,
+		(token === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? depositAmt.toFixed() : 0),
+		gaslimit,
+		gasprice)
+		
+
+	return ''
 
 }
 
@@ -516,13 +529,16 @@ async function aaveWithdraw (args) {
 	await w3.access(aToken, 'redeem', [amount.toFixed()], 'aToken', args.from) 
 }
 
-async function dispAaveCollateral (args) {
-	console.log(await aaveCollateral(args))
+async function dispAaveCollateral (token, disable, from, gaslimit, gasprice) {
+	console.log(await aaveCollateral(token, disable, from, gaslimit, gasprice))
 }
 
-async function aaveCollateral (args) {
+async function aaveCollateral (token, disable, from, gaslimit, gasprice) {
+	if (token === 'ETH') {
+		token = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	} 
 	const lendingPool = await w3.access('AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
-	await w3.access(lendingPool, 'setUserUseReserveAsCollateral', [args.token, !args.disable], 'AAVE_LENDING_POOL', args.from)
+	return await w3.access(lendingPool, 'setUserUseReserveAsCollateral', [token, !disable], 'AAVE_LENDING_POOL', from, null, gaslimit, gasprice)
 }
 
 async function dispAaveBorrow (amount, token, fixed, from, gaslimit, gasprice) {
@@ -1283,7 +1299,7 @@ async function getEthTransaction (args) {
 		arg 
 	)
 
-	log.debug('args.args: '+JSON.stringify(args.args))
+	log.debug('args.args: ' + JSON.stringify(args.args))
 
 	return await w3.access(
 		args.contract,
@@ -3468,6 +3484,14 @@ function argParse () {
   )
 
   aave.addArgument(
+    ['--estimate', "-e"],
+    {
+      action: 'storeTrue',
+      help: 'Returns expected gas cost in USD.',
+    }
+  )
+
+	aave.addArgument( 
     ['--from', "-f"],
     {
       action: 'store',
@@ -3477,10 +3501,20 @@ function argParse () {
   )
 
   aave.addArgument(
-    ['--estimate', "-e"],
+    ['--gas-limit', "-g"],
     {
-      action: 'storeTrue',
-      help: 'Returns expected gas cost in USD.',
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aave.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
     }
   )
 
@@ -3512,6 +3546,33 @@ function argParse () {
     }
   )
 
+	aaveDeposit.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveDeposit.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveDeposit.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
   var aaveWithdraw = aaveParser.addParser('withdraw', 
 		{
 			addHelp: true,
@@ -3535,6 +3596,33 @@ function argParse () {
     }
   )
 
+	aaveWithdraw.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveWithdraw.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveWithdraw.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
   var aaveColl = aaveParser.addParser('collateral', 
 		{
 			addHelp: true,
@@ -3551,12 +3639,40 @@ function argParse () {
   )
 
   aaveColl.addArgument(
-    ['--disable'],
+    ['--disable', '-d'],
     {
       action: 'storeTrue',
 			help: 'Disable to use token as collateral',
     }
   )
+
+	aaveColl.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveColl.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveColl.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
 
   var aaveBorrow = aaveParser.addParser('borrow', 
 		{
@@ -3589,6 +3705,33 @@ function argParse () {
     }
   )
 
+  aaveBorrow.addArgument(
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveBorrow.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveBorrow.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
   var aavePayback = aaveParser.addParser('payback', 
 		{
 			addHelp: true,
@@ -3613,10 +3756,37 @@ function argParse () {
   )
 
   aavePayback.addArgument(
-    ['--for', '-f'],
+    ['--for', '-o'],
     {
       action: 'store',
 			help: 'Payback for someone else.',
+    }
+  )
+
+	aavePayback.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aavePayback.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aavePayback.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
     }
   )
 
@@ -3632,6 +3802,33 @@ function argParse () {
     {
       action: 'store',
       help: 'Token to swap the rate between fixed and variable.',
+    }
+  )
+
+	aaveSwaprate.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveSwaprate.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveSwaprate.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
     }
   )
 
@@ -3655,6 +3852,33 @@ function argParse () {
     {
       action: 'store',
 			help: 'Address to rebalance for. Default: '+ config.get('web3.defaultFrom'),
+    }
+  )
+
+	aaveRebalance.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveRebalance.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveRebalance.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
     }
   )
 
@@ -3697,12 +3921,39 @@ function argParse () {
     }
   )
 
+	aaveLiquidate.addArgument( 
+    ['--from', "-f"],
+    {
+      action: 'store',
+      defaultValue: config.get('web3.defaultFrom'),
+      help: 'From Address defaults to web3.defaultFrom',
+    }
+  )
+
+  aaveLiquidate.addArgument(
+    ['--gas-limit', "-g"],
+    {
+      action: 'store',
+			dest: 'gaslimit',
+      help: 'Gaslimit of transaction',
+    }
+  )
+
+  aaveLiquidate.addArgument(
+    ['--gas-price', "-p"],
+    {
+      action: 'store',
+			dest: 'gasprice',
+      help: 'Gas price of transaction',
+    }
+  )
+
   var aaveInfo = aaveParser.addParser('info', 
 		{
 			addHelp: true,
 			description: 'Get info on reserves.'
 		}
-)
+	)
 
   var aaveI = aaveInfo.addSubparsers({
     title: 'subcommands',
@@ -3714,7 +3965,7 @@ function argParse () {
 			addHelp: true,
 			description: 'Get info on token reserve.'
 		}
-)
+	)
 
   aaveReserveconf.addArgument(
     ['token'],
@@ -3744,7 +3995,7 @@ function argParse () {
 			addHelp: true,
 			description: 'Get info on token reserves.'
 		}
-)
+	)
 
   aaveUserReserve.addArgument(
     ['token'],
@@ -3846,8 +4097,8 @@ function argParse () {
 
 module.exports = {
 	aaveBorrow, 					// tested
-	aaveCollateral,
-	aaveDeposit,
+	aaveCollateral,				// tested
+	aaveDeposit,					// tested
 	aaveEstimate,
 	aaveInfo,
 	aaveLiquidate,
