@@ -109,7 +109,7 @@ Get info on [Curve.fi](https://www.curve.fi):
 `$ cceb eth curve info`  
 
 See how much an ETH is worth on Uniswap.  
-`$ cceb eth tx UNISWAP_ROUTER2 getAmountsOut 1.000000000000000000 '["WETH","USDT"]'`  
+`$ cceb eth tx UNISWAP_ROUTER_V2 getAmountsOut 1.000000000000000000 '["WETH","USDT"]'`  
 
 Send 1 ETH to 0x0000000000000000000000000000000000000000:  
 `$ cceb eth tx ETH transfer ZERO_ADDRESS 1.000000000000000000`  
