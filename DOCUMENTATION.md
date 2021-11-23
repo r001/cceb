@@ -4,7 +4,7 @@
 
 ## Table of contents
 
-- [Whats new](#whats-new)
+- [What's new](#whats-new)
 - [Interact with exchanges](#interact-with-exchanges)
 	- [get deposit address for tokens](#deposit-tokens)
 	- [add limit or market order](#add-order)
@@ -28,15 +28,16 @@
 - [Ledger wallet interactions](#ledger-wallet-interactions)
 	- [list ledger addresses](#ledger-wallet-interactions)
 - [Telegram connect](#telegram-connect)
+
 ### Whats new 
+#### Changes from 1.1.x to 1.2.x
 
 Ethereum transactions (`cceb eth tx`) now accept the `--block` option. (It is relevant for 'call' type of transactions only.) Which define the block height the transaction refers to. With `--block` you can get the query the state from any previous blocks.  
   
 Ethereum transactions  (`cceb eth tx`) now accept the `--nonce` option. This is useful, if you want to create multiple transactions for an account without waiting for the previous transactions to be mined.  
   
 All the `web3` query functions and utility functions are now available from `cceb`.  
-Example: `$ cceb eth web3 web3.eth.getBlockNumber` will return the current block number. Please refer to [web3 documentation](https://web3js.readthedocs.io/en/v1.5.2/web3-shh.html) for details. For addresses names can be used as they will be automatically substituted to ethereum addresses.  
-
+Example: `$ cceb eth web3 web3.eth.getBlockNumber` will return the current block number. Please refer to [web3 documentation](https://web3js.readthedocs.io) for details. For addresses names can be used as they will be automatically substituted to ethereum addresses.  
 
 ### Interact with exchanges
 

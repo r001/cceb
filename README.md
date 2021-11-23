@@ -5,6 +5,18 @@
 
 > Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
 
+## What's new 
+### Changes from 1.1.x to 1.2.x
+
+Ethereum transactions (`cceb eth tx`) now accept the `--block` option to query previous state of blockchain.  
+  
+Multiple transactions can now be created without having to wait for them to succeed using the `--nonce` option. Use `$ cceb eth web3 web3.eth.getTransactionCount <account_address>` to get first nonce.  
+  
+All the `web3` query functions and utility functions are now available from `cceb`.  
+Example: `$ cceb eth web3 web3.eth.getBlockNumber` will return the current block number. Please refer to [web3 documentation](https://web3js.readthedocs.io) for details. For addresses names can be used as they will be automatically substituted to ethereum addresses.  
+  
+Tests were added.  
+
 ## Features
 
 * Support to operate with 150+ exchanges that are supported by [CCXT](https://github.com/ccxt/ccxt) library
