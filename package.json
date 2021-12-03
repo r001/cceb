@@ -1,6 +1,6 @@
 {
   "name": "cceb",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Bash program to trade on exchanges and interact with Ethereum smart contracts from bash",
   "main": "cceb",
   "scripts": {
