@@ -1,4 +1,4 @@
-const baseDir = '/home/user/ccxt/' 
+const baseDir = __dirname + '/../'
 process.env["NODE_CONFIG_DIR"] = baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/"
 var config = require('config')
 const qrEncoding = require('eth-airsign-util')
@@ -49,25 +49,6 @@ function toHex (value) {
 
 function getWeb3 (network) {
   var web3 = null
-  if (web3 === null && config.has(`web3.${network}.provider.alchemy.url`)) {
-    try {
-
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.WebsocketProvider(
-          config.get(`web3.${network}.provider.alchemy.url`) +
-          (
-            config.has(`web3.${network}.provider.alchemy.api-key`) ?
-            config.get(`web3.${network}.provider.alchemy.api-key`) 
-            :
-            ""
-          )
-        )
-      )
-
-      log.debug(`alchemy rpc provider used.`)
-    } catch (e) {web3 = null}
-  }
   if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
     try {
       web3 = new Web3(
@@ -87,6 +68,25 @@ function getWeb3 (network) {
     } catch (e) {web3 = null}
 
   } 
+  if (web3 === null && config.has(`web3.${network}.provider.alchemy.url`)) {
+    try {
+
+      web3 = new Web3(
+        Web3.givenProvider ||
+        new Web3.providers.WebsocketProvider(
+          config.get(`web3.${network}.provider.alchemy.url`) +
+          (
+            config.has(`web3.${network}.provider.alchemy.api-key`) ?
+            config.get(`web3.${network}.provider.alchemy.api-key`) 
+            :
+            ""
+          )
+        )
+      )
+
+      log.debug(`alchemy rpc provider used.`)
+    } catch (e) {web3 = null}
+  }
   if (web3 === null && config.has(`web3.${network}.provider.infura.url`)) {
     try {
 
@@ -538,7 +538,7 @@ async function getSourceCode (address) {
 
 async function getAbi (abi, address, recurseCount) {
   try {
-    var abiJson = JSON.parse(fs.readFileSync(`abi/${abi}`, 'utf8'))
+    var abiJson = JSON.parse(fs.readFileSync(`${baseDir}abi/${abi}`, 'utf8'))
   } catch (e) {
     try {
       log.debug('Downloading abi from etherscan.')
@@ -570,7 +570,7 @@ async function getAbi (abi, address, recurseCount) {
       log.debug(`Writing abi/${abi}`)
 
       fs.writeFileSync(
-        `abi/${abi}`,
+        `${baseDir}abi/${abi}`,
         JSON.stringify(abiJson),
         () => {
           throw Error(`File abi/${abi} could not be written.`)
@@ -657,7 +657,7 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
     var {name:toName, type} = await getAddressNameType(to)
     if (type === 'token') {
       const fs = require("fs"); 
-      if (fs.existsSync("abi/" + toName)) { // if he has his own abi
+      if (fs.existsSync(`${baseDir}abi/` + toName)) { // if he has his own abi
         abi = toName
       } else {
         abi = 'ERC20'
@@ -994,6 +994,29 @@ async function getAddress (address) {
   return addr
 }
 
+async function getAddressNames (regex, contractNamesOnly = false) {
+  const network = config.get('web3.network')
+
+  var accountNames = [] 
+  if (!contractNamesOnly) {
+    accountNames = 
+    Object.keys(config
+    .get('web3.account'))
+    .filter(accountName => accountName.match(new RegExp(regex)))
+  }
+
+  var contractNames = Object.keys(config.get(`web3.${network}`)).reduce(
+    (acc, type) => acc.concat(
+      Object.keys(
+        config.get(`web3.${network}.${type}`)
+      )
+      .filter(contractName => contractName.match(new RegExp(regex)))
+    )
+    , [])
+
+  return accountNames.concat(contractNames)
+}
+
 async function getAddressType (address) {
   const network = config.get('web3.network')
   if (!address || (typeof address === 'number' && address === 0)) return {address: '0x0000000000000000000000000000000000000000', type: null}
@@ -1108,6 +1131,7 @@ module.exports = {
   getAbiFunctions,
   getAddress,
   getAddressName,
+  getAddressNames,
   getAddressType,
   getGasPrice,
   getLedgerDerivePath,

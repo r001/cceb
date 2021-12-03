@@ -30,14 +30,71 @@
 - [Telegram connect](#telegram-connect)
 
 ### Whats new 
-#### Changes from 1.1.x to 1.2.x
+### Changes from 1.2.x to 1.3.x
 
-Ethereum transactions (`cceb eth tx`) now accept the `--block` option. (It is relevant for 'call' type of transactions only.) Which define the block height the transaction refers to. With `--block` you can get the query the state from any previous blocks.  
-  
-Ethereum transactions  (`cceb eth tx`) now accept the `--nonce` option. This is useful, if you want to create multiple transactions for an account without waiting for the previous transactions to be mined.  
-  
-All the `web3` query functions and utility functions are now available from `cceb`.  
-Example: `$ cceb eth web3 web3.eth.getBlockNumber` will return the current block number. Please refer to [web3 documentation](https://web3js.readthedocs.io) for details. For addresses names can be used as they will be automatically substituted to ethereum addresses.  
+#### Bash TAB completions added. You can use the TAB key to display possible command, or argument alternatives. Example:   
+`cceb eth tx MKR <TAB><TAB>` list abi functions of MKR contract.  
+`cceb eth tx WETH balanceOf E<TAB><TAB>` list ethereum addresses matching `E*`.  
+`cceb eth <TAB><TAB>` list possible eth commands.  
+
+#### New number constants are available. Followings are available:  
+|  Constant  |      Meaning      |               Example               |
+|:----------:|:-----------------:|:-----------------------------------:|
+| wei        | 1                 | 10wei = 10                          |
+| kwei       | 1,000             | .23kwei = 230                       |
+| babbage    | 1,000             | 1.1babbage = 1100                   |
+| mwei       | 1,000,000         | .001mwei = 1000                     |
+| lovelace   | 1,000,000         | 1lovelace = 1000000                 |
+| gwei       | 1,000,000,000     | 50gwei = 50,000,000,000             |
+| gw         | 1,000,000,000     | 50gwei = 50,000,000,000             |
+| shannon    | 1,000,000,000     | .25gwei = 250,000,000               |
+| terawei    | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
+| tw         | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
+| szabo      | 1,000,000,000,000 | 23terawei = 23,000,000,000,000      |
+| microether | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
+| petawei    | 10^15             | .002petawei = 2,000,000,000,000     |
+| pw         | 10^15             | .000001pw = 1,000,000,000           |
+| finney     | 10^15             | 100finney = 10^17                   |
+| milliether | 10^15             | 500milliether = 5*10^17             |
+| ether      | 10^18             | 1.12ether = 1.12*10^18              |
+| \<a\>E\<x\>| a*10^x            | 1E18 = 1ether 1E3 = 1000 .25E2 = 25 |	
+
+Number constants can be used wherever numbers are entered. 
+
+
+
+### Number constants
+
+Number constants can be used wherever numbers are entered.  
+
+|  Constant  |      Meaning      |               Example               |
+|:----------:|:-----------------:|:-----------------------------------:|
+| wei        | 1                 | 10wei = 10                          |
+| kwei       | 1,000             | .23kwei = 230                       |
+| babbage    | 1,000             | 1.1babbage = 1100                   |
+| mwei       | 1,000,000         | .001mwei = 1000                     |
+| lovelace   | 1,000,000         | 1lovelace = 1000000                 |
+| gwei       | 1,000,000,000     | 50gwei = 50,000,000,000             |
+| gw         | 1,000,000,000     | 50gwei = 50,000,000,000             |
+| shannon    | 1,000,000,000     | .25gwei = 250,000,000               |
+| terawei    | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
+| tw         | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
+| szabo      | 1,000,000,000,000 | 23terawei = 23,000,000,000,000      |
+| microether | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
+| petawei    | 10^15             | .002petawei = 2,000,000,000,000     |
+| pw         | 10^15             | .000001pw = 1,000,000,000           |
+| finney     | 10^15             | 100finney = 10^17                   |
+| milliether | 10^15             | 500milliether = 5*10^17             |
+| ether      | 10^18             | 1.12ether = 1.12*10^18              |
+| \<a\>E\<x\>| a*10^x            | 1E18 = 1ether 1E3 = 1000 .25E2 = 25 |	
+
+### Use TAB to get possible alternatives with Bash completion
+
+When TAB is pressed twice at command line interface, possible alternatives show up using Bash completion.  
+
+`cceb eth tx MKR <TAB><TAB>` list abi functions of MKR contract.  
+`cceb eth tx WETH balanceOf E<TAB><TAB>` list ethereum addresses matching `E*`.  
+`cceb eth <TAB><TAB>` list possible eth commands.  
 
 ### Interact with exchanges
 

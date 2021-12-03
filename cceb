@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Moving NODE_APP_INSTANCE aside during configuration loading
-const ArgumentParser = require('argparse').ArgumentParser
+const yargs = require('yargs/yargs')(process.argv.slice(2))
 const BN = require('bignumber.js')
 const Eth = require("@ledgerhq/hw-app-eth").default
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default
@@ -51,9 +51,12 @@ log.level = config.get('loglevel')
 
 var dust = 0.001
 if (require.main === module) {
-var args = argParse().parseArgs()
+var args = argParse()
+//if (!args.getYargsCompletions) console.log(args)
+//fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({args}));
+
 let exchange
-if ('exchange' === args.subCommand) {
+if ('exchange' === args._[0]) {
 	const exchangeType = config.get(`keys.${args.exchange}.type`)
 	if (exchangeType === 'centralized') {
 		exchange = ut.getExchange(args.exchange)
@@ -67,9 +70,9 @@ if ('exchange' === args.subCommand) {
 
 async function processArgs (exchange, args) {
 	try {
-		switch (args.subCommand) {
+		switch (args._[0]) {
 			case 'exchange':
-				switch (args.exchangeCommand) {
+				switch (args._[1]) {
 					case 'listorders':
 						await dispListOrders(exchange, args, undefined)
 						break
@@ -108,7 +111,7 @@ async function processArgs (exchange, args) {
 				}
 				break
 			case 'eth':
-				switch (args.ethCommand) {
+        switch (args._[1]) {
 					case 'tx':
 						await dispEthTransaction(args)
 						break
@@ -134,7 +137,7 @@ async function processArgs (exchange, args) {
 						await dispEthTransaction(args)
 						break
 					case 'maker':
-						switch (args.makerCommand) {
+						switch (args._[2]) {
 							case 'info':
 								await dispVaultInfo(args)
 								break
@@ -174,7 +177,7 @@ async function processArgs (exchange, args) {
 						} 
 						break
 					case 'aave':
-						switch (args.aaveCommand) {
+						switch (args._[2]) {
 							case 'deposit':
 								await dispAaveDeposit(args.block, args.token, args.amount, args.from, args.gaslimit, args.gasprice, args.nonce)
 								break
@@ -207,7 +210,7 @@ async function processArgs (exchange, args) {
 						}							
 						break
 					case 'curve':
-						switch (args.curveCommand) {
+						switch (args._[2]) {
 							case 'info':
 								await dispCurveInfo(args)
 								break
@@ -216,7 +219,7 @@ async function processArgs (exchange, args) {
 				}
 				break
 			case 'ledger':
-				switch (args.ledgerCommand) {
+				switch (args._[1]) {
 					case 'addresses':
 						await dispLedgerAddresses(args)
 						break
@@ -733,7 +736,7 @@ async function dispAaveInfo (args) {
 async function aaveInfo (args) {
 	const lendingPool = await w3.access(args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 	
-	if (args.aaveInfoCommand === 'reserve') {
+	if (args._[3] === 'reserve') {
 
 		var configdata =  await w3.access(
 			args.block,
@@ -747,11 +750,11 @@ async function aaveInfo (args) {
 
 		return {...configdata, ...configdata1}
 	
-	}	else if (args.aaveInfoCommand === 'account') {
+	}	else if (args._[3] === 'account') {
 		
 		return await w3.access(args.block, lendingPool, 'getUserAccountData', [args.from], 'AAVE_LENDING_POOL')		
 	
-	}	else if (args.aaveInfoCommand === 'user') {
+	}	else if (args._[3] === 'user') {
 	
 		return await w3.access(args.block, lendingPool, 'getUserReserveData', [args.token, args.from], 'AAVE_LENDING_POOL')		
 	}
@@ -1440,7 +1443,7 @@ async function getDeal (args) {
 }
 
 async function dispEthTransaction (args) {
-	if (args.ethCommand === 'source') {
+	if (args._[1] === 'source') {
 		console.log(await w3.getSourceCode(args.contractName))
 		return
 	}
@@ -1510,6 +1513,7 @@ async function getWeb3 (args) {
 	if (Number.isInteger(args.block)) {
 		w3.web3.eth.defaultBlock = w3.toHex(args.block)
 	}
+  args.function = web3MatchingCommands(args.function, true, true)[0]
 	var fn = await w3.getWeb3Function(args.function)
 	var parent = await w3.getWeb3Function(args.function.replace(/\.\w*\s*$/, ""))
 
@@ -1552,15 +1556,15 @@ async function getWeb3 (args) {
 
 async function getEthTransaction (args) {
 	
-	if (args.ethCommand === 'web3') {
+	if (args._[1] === 'web3') {
 		return await getWeb3(args)
 	}
 
-	if (args.ethCommand === 'import') {
+	if (args._[1] === 'import') {
 		return await w3.importAddress(args)
 	}
 
-	if (args.ethCommand === 'address') {
+	if (args._[1] === 'address') {
 		if (args.contr.match(/^0x[A-Fa-f0-9]{40}$/i)) {
 			return await w3.getAddressName(args.contr)
 		} else {
@@ -1568,7 +1572,7 @@ async function getEthTransaction (args) {
 		}
 	}	
 	
-	if (args.ethCommand === 'send') {
+	if (args._[1] === 'send') {
 		const tx = JSON.parse(args.txjson)
 		return await w3.broadcastTx(
 			tx.from,
@@ -1582,12 +1586,12 @@ async function getEthTransaction (args) {
 		)
 	}
 
-	if (args.ethCommand === 'nonce') {
-		var acc = args.from.match(/^0x[0-9a-fA-F]{40}$/) ? args.account : await w3.getAddress(args.account)
+	if (args._[1] === 'nonce') {
+		var acc = args.account.match(/^0x[0-9a-fA-F]{40}$/) ? args.account : await w3.getAddress(args.account)
 		return await w3.getNonce(acc)
 	}
 
-	if (args.ls || args.ls === '' || args.ethCommand === 'abi') {
+	if (args.ls || args.ls === '' || args._[1] === 'abi') {
 		
 		args.ls = (!args.ls || args.ls === '') ? '.*' : args.ls
 		return await w3.getAbiFunctions(args.abi || args.contract, args.ls)
@@ -1615,6 +1619,10 @@ async function getEthTransaction (args) {
 	}
 
 	//handle array arguments
+  if (typeof args.args !== 'object') {
+    args.args = [args.args]
+  }
+
 	args.args = args.args.map(
 		arg => arg.match(/^\s*\[.*]\s*$/) ?
 		Array.from(JSON.parse(arg)) :
@@ -1650,7 +1658,7 @@ async function startProc (args) {
 	const writeFile = promisify(fs.writeFile)
 	await connect()
 
-	var procName = path.basename(__filename) + '-' + args.subCommand
+	var procName = path.basename(__filename) + '-' + args._[0]
 	const listPm2 = await list()
 	while (listPm2.findIndex(desc => desc.name === procName) !== -1) {
 		procName += 'I'
@@ -2103,13 +2111,13 @@ async function addOrderUniswap (args, amount, buy) {
 		)
 	}
 	
-	if (args.exchangeCommand !== 'trickle' ||
+	if (args._[1] !== 'trickle' ||
 		( buy && priceToken.lt(args.batchMinRate)) ||
 		(!buy && priceToken.gt(args.batchMinRate))) {
 
 		log.debug(`Final params:`, {a})
 		
-		const receipt = await w3.access(args.block, ...a, null, args.exchangeCommand === 'trickle')
+		const receipt = await w3.access(args.block, ...a, null, args._[1] === 'trickle')
 		
     if (!receipt.status) {
       log.error(`Transaction reverted`)
@@ -2613,1936 +2621,1607 @@ async function listBalances (exchange, args, params = {}) {
 }
 
 function argParse () {
-
-  var parser = new ArgumentParser({
-    version: '0.0.1',
-    addHelp: true,
-    description: 'Exchange money and interact with Ethereum blockchain.',
+	
+return yargs
+  .option('pm2', {
+    type: 'string',
+    boolean: true,
+    desc: 'Current process is a pm2 started one'
   })
+  .command({
+    //cceb
+    command: 'exchange <exchangeCommand>',
+    desc: 'Exchange tokens via centralized or decentralized exchanges',
+    builder: (yargs) => {
+      yargs.command({
+          //cceb exchange
+          command: 'listorders <exchange> [token] [closed] [pair]',
+          desc: 'List all open orders on exchange',
+          builder: (yargs) =>
+            yargs
+              .positional('exchange', {
+                desc: 'Name of exchange',
+                type: 'string',
+                choices: Object.keys(config.get('keys')),
+              }) 
+              .option('token', {
+                alias: 't',
+                type: 'string',
+                desc: 'Token to list'
+              })
+              .option('closed', {
+                alias: 'c',
+                type: 'boolean',
+                desc: 'List closed offers'
+              })
+              .option('pair', {
+                alias: 'p',
+                type: 'string',
+                desc: 'The pair to look orders for'
+              })
+              .strict()
+          ,
+      })
+        .command({
+          //cceb exchange
+          command: 'add [exchange] [side] [type] [amount] [pair] [price]',
+          desc: 'Add new order to exchange',
+          builder: yargs => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                desc: 'Name of exchange',
+                choices: Object.keys(config.get('keys')),
+              })
+              .positional('side', {
+                type: 'string',
+                desc: 'The order side',
+                choices: ['buy', 'sell'],
+              })
+              .positional('type', {
+                type: 'string',
+                desc: 'The order side',
+                choices: ['limit', 'market'],
+              })
+              .positional('amount', {
+								type: 'string',
+                desc: 'The order amount to buy or sell. Should be a number or an expression of "max" to do the max available',
+              }
+              )
+							.coerce('amount', amount => numberFormatted(amount))
 
-  parser.addArgument(
-    ['--pm2'],
-    {
-      action: 'storeTrue',
-      help: 'Current process is a pm2 started one.',
+              .positional('pair', {
+								type: 'string',
+                desc: 'The standard names of token pair eg: "ETH/USD"',
+              }
+              )
+
+              .positional('price', {
+								type: 'string',
+                desc: 'Price of the order. Ignored if market order',
+              }
+              )
+
+              .option('due-time', {
+                type: 'string',
+                alias: ['dueTime', 't'],
+                default: '10 minutes from now',
+                desc: 'Uniswap only. Minimum amount requeseted. Uses free text to define end time using chrono lib',
+              }
+              )
+
+              .option('min-percent', {
+                alias: ['m', 'minPercent'],
+                type: 'number',
+                default: 1,
+                desc: 'Uniswap only. The minimum output amount can be this percent less then calculated output amount',
+              }
+              )
+
+              .option('max-slippage', {
+                type: 'string',
+                alias: ['s', 'maxSlippage'],
+                desc: 'Uniswap only. Maximum allowed slippage',
+              }
+              )
+
+              .option('path', {
+                type: 'string',
+                alias: 'x',
+                desc: 'Uniswap only. Path to exchange sell- to buyToken. ',
+              }
+              )
+
+              .option('from', {
+                type: 'string',
+                alias:'f',
+                default: config.get('web3.defaultFrom'),
+                desc: 'Decentralized swaps only. From Address defaults to web3.defaultFrom',
+              }
+              )
+
+              .option('gaslimit', {
+                type: 'string',
+                alias:'g',
+                desc: 'Decentralized swaps only. Gaslimit of transaction',
+              }
+              )
+
+              .option('to', {
+                type: 'string',
+                alias:'o',
+                desc: 'Uniswap only. Recipient of output tokens',
+              }
+              )
+
+              .option('gasprice', {
+                type: 'string',
+                alias:'p',
+                desc: 'Decentralized swaps only. Gas price of transaction',
+              }
+              )
+
+              .option('params', {
+                type: 'string',
+                desc: 'Extra parameters for exchange in json string format',
+              }
+              )
+
+          }
+
+        })
+        .command({
+          //cceb exchange
+          command: 'rm <exchange> <order>',
+          desc: 'Remove order from exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .positional('order', {
+                type: 'string',
+                desc: 'The order id to cancel',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'rmall <exchange> <order>',
+          desc: 'Remove all open orders from exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'listbalances <exchange> [token] [dust-limit]',
+          desc: 'List all non-dust balances on exchange',
+          builder: (yargs) => {
+            yargs
+
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .option('token', {
+                type: 'string',
+                alias: 't',
+                desc: 'Token to list',
+              }
+              )
+
+              .option('dust-limit', {
+                alias: ['d', 'dust'],
+                type: 'number',
+                default: dust,
+                desc: 'Amounts less than dust-limit will not be listed',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'withdraw <exchange> <token> <amount> <destination> [digits]',
+          desc: 'Withdraw token from exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .option('digits', {
+                alias: 'd',
+                type: 'number',
+                default: 2,
+                desc: 'Digits used after dot for withdrawal',
+              }
+              )
+
+              .positional('token', {
+                type: 'string',
+                desc: 'Token to withdraw',
+              }
+              )
+
+              .positional('amount', {
+                type: 'string',
+                desc: 'Amount to withdraw. Can be "max"',
+              }
+              )
+							.coerce('amount', amount => numberFormatted(amount))
+
+              .positional('destination', {
+                type: 'string',
+                desc: 'Destination to withdraw to',
+              }
+              )
+
+
+          }
+        })
+        .command({
+          //cceb exchange
+					command: 'deposit <exchange> <token>',
+          desc: 'Get deposit address of token for exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .positional('token', {
+                type: 'string',
+                desc: 'Token to deposit',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'markets <exchange>',
+          desc: 'Display all token pairs on an exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'price <exchange> <pair> [amount] [sell] [usd] [eur]',
+          desc: 'Display all token pairs on an exchange. (not implemented)',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .positional('pair', {
+                type: 'string',
+                desc: 'Tokenpair to get price for',
+              }
+              )
+
+              .option('amount', {
+                type: 'string',
+                alias: 'a',
+                desc: 'Get average price for buying "amount" from token based on orderbook',
+              }
+              )
+							.coerce('amount', amount => numberFormatted(amount))
+
+              .option('sell', {
+                alias: 's',
+                type: 'boolean',
+                desc: 'Get average price for selling amount from token',
+              }
+              )
+
+              .option('usd', {
+                alias: 'u',
+                type: 'boolean',
+                desc: 'Get price in USD from coinbasepro',
+              }
+              )
+
+              .option('eur', {
+                alias: 'e',
+                type: 'boolean',
+                desc: 'Get price in USD from coinbasepro',
+              }
+              )
+          }
+        })
+        . command({
+          //cceb exchange
+          command: 'orderbook <exchange> <pair> [limit] [price-precision] [amount-precision]',
+          desc: 'Download orderbook from exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .positional('pair', {
+                type: 'string',
+                desc: 'Tokenpair to get price for',
+              }
+              )
+
+              .option('currency', {
+                type: 'string',
+                alias: 'c',
+                desc: 'Show prices in currency instead of the quote currency',
+              }
+              )
+
+              .option('other-exchange', {
+                type: 'string',
+                alias: ['o', 'otherExchange'],
+                default: 'coinbasepro',
+                desc: 'The other exchange to get currency price from',
+              }
+              )
+
+              .option('limit', {
+                type: 'string',
+                alias: 'l',
+                desc: 'Limit of the number of items in orderbook',
+              }
+              )
+
+              .option('price-precision', {
+                alias: ['p', 'pPrecision'],
+                type: 'number',
+                desc: 'Precision of prices in digits after zero',
+              }
+              )
+
+              .option('amount-precision', {
+                alias: ['a', 'aPrecision'],
+                type: 'number',
+                desc: 'Precision of amounts in digits after zero',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'trickle <exchange> <side> <type> <amount> <pair> <price> [batch-size] [batch-size-variance] [batch-min-rate] [batch-retry-time] [batch-time] [batch-time-variance] [params] [due-time] [min-percent] [max-slippage] [path] [from] [gaslimit] [to] [gasprice]',
+          desc: 'Buy or sell in small batches not to ruin market price',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+
+              .positional('side', {
+                type: 'string',
+                choices: ['buy', 'sell'],
+                desc: 'The order side',
+              }
+              )
+
+              .positional('type', {
+                type: 'string',
+                choices: ['limit', 'market'],
+                desc: 'The order side',
+              }
+              )
+
+              .positional('amount', {
+                type: 'string',
+                desc: 'The order amount to buy or sell. Should be a number or an expression of "max" to do the max available',
+              }
+              )
+							.coerce('amount', amount => numberFormatted(amount))
+
+              .positional('pair', {
+                type: 'string',
+                desc: 'The standard names of token pair eg: "ETH/USD"',
+              }
+              )
+
+              .positional('price', {
+                type: 'string',
+                desc: 'Price of the order. Ignored if market order',
+              }
+              )
+
+              .option('batch-size', {
+                alias: ['s', 'batchSize'],
+                type: 'number',
+                desc: 'Buy/sell this much at one batch',
+              }
+              )
+
+              .option('batch-size-variance', {
+                alias: ['v', 'batchSizeVariance'],
+                type: 'number',
+                default: 0,
+                desc: 'Maximum this much is added to batch size. Evenly distributed random number generated',
+              }
+              )
+
+              .option('batch-min-rate', {
+                alias: ['m', 'batchMinRate'],
+                type: 'number',
+                desc: 'Minimum/maximum rate at which the trade executes',
+              }
+              )
+
+              .option('batch-retry-time', {
+                alias: ['y', 'batchRetrySec'],
+                type: 'number',
+                default: 60,
+                desc: 'Retry time after offer skipped because price was less than args.batchMinRate',
+              }
+              )
+
+              .option('batch-time', {
+                alias: ['t', 'batchTime'],
+                type: 'number',
+                desc: 'Sell a batch every batch-time seconds',
+              }
+              )
+
+              .option('batch-time-variance', {
+                alias: ['r', 'batchTimeVariance'],
+                type: 'number',
+                default: 0,
+                desc: 'Maximum this much is added to batch time. Evenly distributed random number generated',
+              }
+              )
+
+              .option('params', {
+                type: 'string',
+                desc: 'Extra parameters for exchange in json string format',
+              }
+              )
+
+              .option('due-time', {
+                type: 'string',
+                alias: ['u', 'dueTime'],
+                default: '30 minutes from now',
+                desc: 'Uniswap only. Minimum amount requeseted. Uses free text to define end time using chrono lib',
+              }
+              )
+
+              .option('min-percent', {
+                alias: ['p', 'minPercent'],
+                type: 'number',
+                default: '1',
+                desc: 'Uniswap only. The minimum output amount can be this percent less then calculated output amount',
+              }
+              )
+
+              .option('max-slippage', {
+                type: 'string',
+                alias: ['l', 'maxSlippage'],
+                desc: 'Uniswap only. Maximum allowed slippage',
+              }
+              )
+
+              .option('path', {
+                type: 'string',
+                alias: 'x',
+                desc: 'Uniswap only. Path to exchange sell- to buyToken. ',
+              }
+              )
+
+              .option('from', {
+                type: 'string',
+                alias:'f',
+                default: config.get('web3.defaultFrom'),
+                desc: 'Decentralized swaps only. From Address defaults to web3.defaultFrom',
+              }
+              )
+
+              .option('gaslimit', {
+                type: 'string',
+                alias:'g',
+                desc: 'Decentralized swaps only. Gaslimit of transaction',
+              }
+              )
+
+              .option('to', {
+                type: 'string',
+                alias:'o',
+                desc: 'Uniswap only. Recipient of output tokens',
+              }
+              )
+
+              .option('gasprice', {
+                type: 'string',
+                alias:'c',
+                desc: 'Decentralized swaps only. Gas price of transaction',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb exchange
+          command: 'rmall <exchange> <order>',
+          desc: 'Remove all open orders from exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('exchange', {
+                type: 'string',
+                choice: Object.keys(config.get('keys')),
+                desc: 'Name of exchange',
+              }
+              )
+          }
+        })
+        .demandCommand()
     }
-  )
-
-  var subparsers = parser.addSubparsers({
-    title: 'subcommands',
-    dest: 'subCommand',
   })
+  .command({
+    //cceb
+    command: 'eth <ethCommand> [from] [gaslimit] [gasprice] [nonce] [block]',
+    desc: 'Do stuff with the Ethereum blockchain',
+    builder: (yargs) => {
+      yargs
+        .option('from', {
+          alias:'f',
+          default: config.get('web3.defaultFrom'),
+          desc: 'From address defaults to web3.defaultFrom',
+					type: 'string',
+        }
+        )
 
-  var exchange = subparsers.addParser('exchange', 
-		{
-			addHelp: true,
-			description: 'Exchange tokens via centralized or decentralized exchanges.'
-		}
-)
+        .option('gaslimit', {
+          alias:['g'], 
+          desc: 'Gas limit of transaction',
+					type: 'string',
+        }
+        )
+				.coerce('gaslimit', gaslimit => numberFormatted(gaslimit))
 
-  var exchangeparsers = exchange.addSubparsers({
-    title: 'subcommands',
-    dest: 'exchangeCommand',
+        .option('gasprice', {
+          alias:['p'], 
+          desc: 'Gas price of transaction',
+					type: 'string',
+        }
+        )
+				.coerce('gasprice', gasprice => numberFormatted(gasprice))
+        .option('nonce', {
+          alias:'n',
+          desc: 'Nonce of transaction',
+					type: 'string',
+        }
+        )
+
+        .option('block', {
+          alias:'b',
+          type: 'number',
+          desc: 'Block height of transaction. (Only used with call transactions.)',
+        }
+        )
+
+        .command({
+          //cceb eth
+          command: 'web3 <function> [parameters..]',
+          desc: 'Display all token pairs on an exchange',
+          builder: (yargs) => {
+            yargs
+              .positional('function', {
+                desc: 'Web3 function or parameter to use (eg.: web3.eth.getAccounts)',
+								type: 'string',
+              }
+              )
+
+              .positional('parameters', {
+                type: 'string',
+                desc: 'Web3 function parameters',
+                default: []
+              }
+              )
+							.coerce('parameters', 
+								parameters => parameters.map(parameter => numberFormatted(parameter))
+							)
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'tx [contract] [func] [args..]',
+          desc: 'Create an ethereum transaction. Send or call method is used automatically based on abi',
+          builder: (yargs) => {
+            yargs
+              .positional('contract', {
+                desc: 'Contract address',
+								type: 'string',
+              }
+              )
+
+              .positional('func', {
+                type: 'string',
+                desc: 'Function name to call or send',
+              }
+              )
+
+              .positional('args', {
+                desc: 'Called function\'s arguments',
+								type: 'string',
+                default: [],
+              }
+              )
+							.coerce('args', args => args.map(arg => numberFormatted(arg)))
+
+              .option('abi', {
+                alias:'a',
+                desc: 'Abi defaults to <contract>.abi',
+								type: 'string',
+              }
+              )
+
+              .option('value', {
+                alias:'v',
+                desc: 'Eth value to send',
+								type: 'string',
+              }
+              )
+							.coerce('value', value => numberFormatted(value))
+
+              .option('ls', {
+                alias:'l',
+                desc: 'List functions in abi matching pattern',
+								type: 'string',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'abi <contract> [ls]',
+          desc: 'Displays abi of smart contract',
+          builder: (yargs) => {
+            yargs
+              .positional('contract', {
+                desc: 'Contract address',
+								type: 'string',
+              }
+              )
+
+              .option('ls', {
+                alias: 'l',
+                default: '.*',
+                desc: 'List functions matching regex pattern',
+								type: 'string',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'send <txjson> <signature>',
+          desc: 'Sends a prepared transaction (json formatted) to the blockchain',
+          builder: (yargs) => {
+            yargs
+
+              .positional('txjson', {
+                desc: 'Json file of the transaction',
+								type: 'string',
+              }
+              )
+
+              .positional('signature', {
+                type: 'string',
+                desc: 'Signature created by external signer',
+              }
+              )
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'address <contr>',
+          desc: 'Get contract address from contract name, or vica versa',
+          builder: (yargs) => {
+            yargs
+
+              .positional('contr', {
+                desc: 'Contract address or contract name',
+								type: 'string',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'source <contractName>',
+          alias: ['so'],
+          desc: 'Download and display source code of contract',
+          builder: (yargs) => {
+            yargs
+
+              .positional('contractName', {
+                desc: 'Contract name',
+								type: 'string',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'import <contractName> <contractAddress> [location]',
+          alias: ['im'],
+          desc:'Map contract address to a human readable name and download and store contract abi',
+          builder: (yargs) => {
+            yargs
+
+              .positional('contractName', {
+                desc: 'Human readable shorthand name for contract. When contract name is used later on, it will be substituted by contract address automatically',
+								type: 'string',
+              }
+              )
+
+              .positional('contractAddress', {
+                desc: 'Contract address',
+								type: 'string',
+              }
+              )
+
+              .option('location', {
+                alias: 'l',
+                desc: 'Insert contract into path in "./config/default.yaml"',
+								type: 'string',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'nonce <account>',
+          alias: ['no'],
+          desc:'Get highest nonce of account',
+          builder: (yargs) => {
+            yargs
+
+              .positional('account', {
+                desc: 'Account to get nonce for',
+								type: 'string',
+              }
+              )
+
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'maker <makerCommand> [vault] [from] [estimate]',
+          desc: 'Commands to operate MakerDao vaults',
+          builder: (yargs) => {
+            yargs
+              .option('vault', {
+                alias: 'v',
+                type: 'number',
+                default: 0,
+                desc: 'The number of vault to operate with',
+              }
+              )
+
+              .option('from', {
+                default: config.get('web3.defaultFrom'),
+                desc: 'From Address defaults to web3.defaultFrom',
+								type: 'string',
+              }
+              )
+
+              .option('estimate', {
+                alias:'e',
+                type: 'boolean',
+                desc: 'Returns expected gas cost in USD',
+              }
+              )
+              .command({
+                //cceb eth maker
+                command: 'info <type>',
+                desc: 'Get vault info',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('type', {
+                      desc: 'Type of vault to get info from. Eg.: USDC-A',
+											type: 'string',
+                    }
+                    )
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'open <type>',
+                desc: 'Open new MakerDao vault',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('type', {
+                      desc: 'Type of vault to get info from. Eg.: USDC-A',
+											type: 'string',
+                    }
+                    )
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'deposit <type> <amount>',
+                desc: 'Deposit collateral to vault',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('type', {
+                      desc: 'Type of vault that will be deposited to. Eg.: ETH-A',
+											type: 'string',
+                    }
+                    )
+
+                    .positional('amount', {
+                      desc: 'Deposit amount of collateral',
+											type: 'string',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                    .option('draw', {
+                      alias: 'd',
+                      type: 'number',
+                      default: 0,
+                      desc: 'Draw create DAI to the urn in one step',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'withdraw <type> <amount>',
+                desc: 'Withdraw collateral from vault',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('type', {
+                      desc: 'Type of vault that will be withdrawn from. Eg.: ETH-A',
+											type: 'string',
+                    }
+                    )
+
+                    .positional('amount', {
+                      desc: 'Withdraw amount of collateral',
+											type: 'string',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'generate <type> <amount>',
+                desc: 'Generate DAI stablecoin',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('type', {
+											type: 'string',
+                      desc: 'Type of vault that DAI will be generated from. Eg.: ETH-A',
+                    }
+                    )
+
+                    .positional('amount', {
+											type: 'string',
+                      desc: 'Amount of DAI to generate',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'payback <type> <amount>',
+                desc: 'Payback an amount of DAI to vault type',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('type', {
+                      type: 'string',
+                      desc: 'Type of vault that DAI will be paid back to. Eg.: ETH-A',
+                    }
+                    )
+
+                    .positional('amount', {
+                      type: 'string',
+                      desc: 'Amount of DAI paid back',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'estimate',
+                desc: 'Estimate gas cost of ??. Don\'t use this!',
+              })
+              .command({
+                //cceb eth maker
+                command: 'flop [count]',
+                desc: 'Make a count of new bids',
+                builder: (yargs) => {
+                  yargs
+
+                    .option('count', {
+                      type: 'string',
+                      alias: 'c',
+                      desc: 'Number of new bids to make',
+                    }
+                    )
+										.coerce('count', count => numberFormatted(count))
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'tick <id>',
+                desc: 'Bid a better price for an expired auction',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('id', {
+                      type: 'string',
+                      desc: 'Make an expired auction have better price',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'dent <id> [amount]',
+                desc: 'Bid for an auction of id',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('id', {
+                      type: 'string',
+                      desc: 'Identifier of auction to make bid for',
+                    }
+                    )
+
+                    .option('amount', {
+                      type: 'string',
+                      alias: 'a',
+                      desc: 'Amount to bid. Default amount is the minimal necessary',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                }
+              })
+              .command({
+                //cceb eth maker
+                command: 'deal <id>',
+                desc: 'Finish an auction and receive MKR',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('id', {
+                      type: 'string',
+                      desc: 'Idealifier of auction to finish',
+                    }
+                    )
+                }
+              }).command({
+                //cceb eth maker
+                command: 'flog <contract> [from-block] [to-block] [amount]',
+                desc: 'Get events of bad debt from contract from blocknumber to blocknumber',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('contract', {
+                      type: 'string',
+                      desc: 'Contract to get events from',
+                    }
+                    )
+
+                    .option('from-block', {
+                      type: 'string',
+                      alias: 'f',
+                      default: 'latest',
+                      desc: 'Startblock to get events from',
+                    }
+                    )
+
+                    .option('to-block', {
+                      type: 'string',
+                      alias: 't',
+                      default: 'latest',
+                      desc: 'End block to get events from',
+                    }
+                    )
+
+                    .option('amount', {
+                      alias: 'a',
+                      default: 50000,
+                      type: 'number',
+                      desc: 'Amount of max. dai to allow auction for',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                }
+              })
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'aave <aaveCommand> [referral] [estimate]',
+          desc: 'Commands accessing https://aave.com lending protocol',
+          builder: (yargs) => {
+            yargs
+              .option('referral', {
+                type: 'string',
+                alias: 'r',
+                default: '0',
+                desc: 'Referral code in AAVE system',
+              }
+              )
+
+              .option('estimate', {
+                alias:'e',
+                type: 'boolean',
+                desc: 'Returns expected gas cost in USD',
+              }
+              )
+
+              .command({
+                //cceb eth aave 
+                command: 'deposit <amount> <token>', 
+                desc: 'Deposit an amount of token to aave',
+                builder: (yargs) => {
+                  yargs
+                    .positional('amount', {
+                      type: 'string',
+                      desc: 'Amount you want to deposit',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token you want to deposit',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'withdraw <amount> <token>', 
+                desc: 'Withdraw an amount of token from aave',
+                builder: (yargs) => {
+                  yargs
+                    .positional('amount', {
+                      type: 'string',
+                      desc: 'Amount you want to withdraw',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token you want to withdraw',
+                    }
+                    )
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'collateral <token> [disable]', 
+                desc: 'Enable(/disable) token as collateral in aave',
+                builder: (yargs) => {
+                  yargs
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token you want to use as collateral',
+                    }
+                    )
+
+                    .option('disable', {
+                      alias: 'd',
+                      type: 'boolean',
+                      desc: 'Disable to use token as collateral',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'borrow <amount> <token> [fixed]', 
+                desc: 'Borrow an amount of token against a collateral in aave',
+                builder: (yargs) => {
+                  yargs
+                    .positional('amount', {
+                      type: 'string',
+                      desc: 'Deposit amount of collateral',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token that w',
+                    }
+                    )
+
+                    .option('fixed', {
+                      alias: 'd',
+                      type: 'boolean',
+                      desc: 'Use fixed interests. Default: variable interests',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'payback <amount> <token> [for]', 
+                desc: 'Payback an amount of token for ourselfes or others',
+                builder: (yargs) => {
+                  yargs
+                    .positional('amount', {
+                      type: 'string',
+                      desc: 'Amount to payback',
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token to payback',
+                    }
+                    )
+
+                    .option('for', {
+                      type: 'string',
+                      alias: 'o',
+                      desc: 'Payback for someone else',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'swaprate <token> [for]', 
+                desc: 'Toggle between fixed and variable rate for token',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token to swap the rate between fixed and variable',
+                    }
+                    )
+
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'rebalance <token> [for]', 
+                desc: 'Rebalancei (actualize) fixed interest rate for token for ourselves or others',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('token', {
+                      type: 'string',
+                      desc: 'Token to rebalance interest rate for',
+                    }
+                    )
+
+                    .option('for', {
+                      type: 'string',
+                      desc: 'Address to rebalance for. Default: '+ config.get('web3.defaultFrom'),
+                    }
+                    )
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'liquidate <collateraltoken> <loantoken> <user> <amount>', 
+                desc: 'Liquidate undercollaterized position for collateral token and loan token owned by address',
+                builder: (yargs) => {
+                  yargs
+
+                    .positional('collateraltoken', {
+                      type: 'string',
+                      desc: 'Token that is the collateral',
+                    }
+                    )
+
+                    .positional('loantoken', {
+                      type: 'string',
+                      desc: 'Token that is used for the loan',
+                    }
+                    )
+
+                    .positional('user', {
+                      type: 'string',
+                      desc: 'Address of user who has the loan',
+                    }
+                    )
+
+                    .positional('amount', {
+                      type: 'string',
+                      desc: 'Amount of collateral to buy(???)', //FIXME: have no idea what that is
+                    }
+                    )
+										.coerce('amount', amount => numberFormatted(amount))
+                }
+              })
+              .command({
+                //cceb eth aave 
+                command: 'info <aaveInfoCommand>', 
+                desc: 'Get info on reserves',
+                builder: (yargs) => {
+                  yargs
+                    .command({
+                      //cceb eth aave info
+                      command: 'reserve <token>', 
+                      desc: 'Get info on token reserve',
+                      builder: (yargs) => {
+                        yargs
+                          .positional('token', {
+                            type: 'string',
+                            desc: 'Get info for token reserve',
+                          }
+                          )
+
+                      }
+                    })
+                    .command({
+                      //cceb eth aave info
+                      command: 'account', 
+                      desc: 'Get account info for account address',
+                    })
+                    .command({
+                      //cceb eth aave info
+                      command: 'user <token>', 
+                      desc: 'Get info on user\'s token reserves',
+                      builder: (yargs) => {
+                        yargs
+                          .positional('token', {
+                            type: 'string',
+                            desc: 'Get info for token reserve',
+                          }
+                          )
+
+                      }
+                    })
+
+                }
+              })
+
+
+
+          }
+        })
+        .command({
+          //cceb eth
+          command: 'curve <curveCommand>',
+          desc: 'Commands accessing https://curve.fi protocol',
+          builder: (yargs) => {
+            yargs
+
+              .command({
+                //cceb eth curve
+                command: 'info',
+                desc: 'Commands accessing https://curve.fi protocol',
+              })
+
+          }
+        })
+    },
+    handler: (argv) => {
+      console.log(`setting ${argv.key} to ${argv.value}`)
+    }
   })
-
-  var listOrders = exchangeparsers.addParser('listorders', 
-		{
-			addHelp: true,
-			description: 'List all open orders on exchange.'
-		}
-)
-
-  listOrders.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  listOrders.addArgument(
-    ['--token', '-t'],
-    {
-      action: 'store',
-      help: 'Token to list',
-    }
-  )
-
-  listOrders.addArgument(
-    ['--closed', '-c'],
-    {
-      action: 'storeTrue',
-      help: 'List closed offers.',
-    }
-  )
-
-  listOrders.addArgument(
-    ['--pair', '-p'],
-    {
-      action: 'store',
-      help: 'The pair to look orders for.',
-    }
-  )
-
-  var add = exchangeparsers.addParser('add', 
-		{
-			addHelp: true,
-			description: 'Add new order to exchange.'
-		}
-)
-
-  add.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  add.addArgument(
-    ['side'],
-    {
-      action: 'store',
-      choices: ['buy', 'sell'],
-      help: 'The order side',
-    }
-  )
-
-  add.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      choices: ['limit', 'market'],
-      help: 'The order side',
-    }
-  )
-
-  add.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'The order amount to buy or sell. Should be a number or an expression of "max" to do the max available.',
-    }
-  )
-
-  add.addArgument(
-    ['pair'],
-    {
-      action: 'store',
-      help: 'The standard names of token pair eg: "ETH/USD".',
-    }
-  )
-
-  add.addArgument(
-    ['price'],
-    {
-      action: 'store',
-      help: 'Price of the order. Ignored if market order.',
-    }
-  )
-
-	add.addArgument(
-    ['--due-time', '-t'],
-    {
-      action: 'store',
-      defaultValue: '10 minutes from now',
-      dest: 'dueTime',
-      help: 'Uniswap only. Minimum amount requeseted. Uses free text to define end time using chrono lib.',
-    }
-  )
-
-	add.addArgument(
-    ['--min-percent', '-m'],
-    {
-      action: 'store',
-      dest: 'minPercent',
-      type: Number,
-      defaultValue: '1',
-      help: 'Uniswap only. The minimum output amount can be this percent less then calculated output amount.',
-    }
-  )
-
-	add.addArgument(
-    ['--max-slippage', '-s'],
-    {
-      action: 'store',
-			dest: 'maxSlippage',
-      help: 'Uniswap only. Maximum allowed slippage.',
-    }
-  )
-
-	add.addArgument(
-		['--path', '-x'],
-    {
-      action: 'store',
-      help: 'Uniswap only. Path to exchange sell- to buyToken. ',
-    }
-  )
-
-  add.addArgument(
-    ['--from', "-f"],
-    {
-      action: 'store',
-			defaultValue: config.get('web3.defaultFrom'),
-      help: 'Decentralized swaps only. From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  add.addArgument(
-    ['--gaslimit', "-g"],
-    {
-      action: 'store',
-      help: 'Decentralized swaps only. Gaslimit of transaction',
-    }
-  )
-
-  add.addArgument(
-    ['--to', "-o"],
-    {
-      action: 'store',
-      help: 'Uniswap only. Recipient of output tokens',
-    }
-  )
-
-  add.addArgument(
-    ['--gasprice', "-p"],
-    {
-      action: 'store',
-      help: 'Decentralized swaps only. Gas price of transaction',
-    }
-  )
-
-  add.addArgument(
-    ['--params'],
-    {
-      action: 'store',
-      help: 'Extra parameters for exchange in json string format.',
-    }
-  )
-
-  var remove = exchangeparsers.addParser('rm', 
-		{
-			addHelp: true,
-			description: 'Remove order from exchange.'
-		}
-)
-
-  remove.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  remove.addArgument(
-    ['order'],
-    {
-      action: 'store',
-      type: String,
-      help: 'The order id to cancel',
-    }
-  )
-
-  var removeAll = exchangeparsers.addParser('rmall', 
-		{
-			addHelp: true,
-			description: 'Remove all open orders from exchange.'
-		}
-)
-
-  removeAll.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  var listBalances = exchangeparsers.addParser('listbalances', 
-		{
-			addHelp: true,
-			description: 'List all non-dust balances on exchange.'
-		}
-)
-
-  listBalances.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  listBalances.addArgument(
-    ['--token', '-t'],
-    {
-      action: 'store',
-      help: 'Token to list',
-    }
-  )
-
-  if (config.has('dust-limit')) {
-    dust = config.get('dust-limit')
-  }
-
-  listBalances.addArgument(
-    ['--dust-limit', '-d'],
-    {
-      action: 'store',
-      type: Number,
-      defaultValue: dust,
-      dest: 'dust',
-      help: 'Amounts less than dust-limit will not be listed',
-    }
-  )
-
-  var withdraw = exchangeparsers.addParser('withdraw', 
-		{
-			addHelp: true,
-			description: 'Withdraw token from exchange.'
-		}
-)
-
-  withdraw.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  withdraw.addArgument(
-    ['--digits', '-d'],
-    {
-      action: 'store',
-      type: Number,
-      defaultValue: 2,
-      help: 'Digits used after comma for withdrawal.',
-    }
-  )
-
-  withdraw.addArgument(
-    ['token'],
-    {
-      action: 'store',
-      help: 'Token to withdraw.',
-    }
-  )
-
-  withdraw.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Amount to withdraw. Can be "max".',
-    }
-  )
-
-  withdraw.addArgument(
-    ['destination'],
-    {
-      action: 'store',
-      help: 'Destination to withdraw to.',
-    }
-  )
-
-  var deposit = exchangeparsers.addParser('deposit', 
-		{
-			addHelp: true,
-			description: 'Get deposit address of token for exchange.'
-		}
-)
-
-  deposit.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  deposit.addArgument(
-    ['token'],
-    {
-      action: 'store',
-      help: 'Token to deposit.',
-    }
-  )
-
-  const market = exchangeparsers.addParser('markets', 
-		{
-			addHelp: true,
-			description: 'Display all token pairs on exchange.'
-		}
-)
-
-  market.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  var price = exchangeparsers.addParser('price', 
-		{
-			addHelp: true,
-			description: 'Get price of token.'
-		}
-)
-
-  price.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  price.addArgument(
-    ['pair'],
-    {
-      action: 'store',
-      help: 'Tokenpair to get price for.',
-    }
-  )
-
-  price.addArgument(
-    ['--amount', '-a'],
-    {
-      action: 'store',
-      help: 'Get average price for buying "amount" from token based on orderbook.',
-    }
-  )
-
-  price.addArgument(
-    ['--sell', '-s'],
-    {
-      action: 'storeTrue',
-      help: 'Get average price for selling amount from token.',
-    }
-  )
-
-  price.addArgument(
-    ['--usd', '-u'],
-    {
-      action: 'storeTrue',
-      help: 'Get price in USD from coinbasepro',
-    }
-  )
-
-  price.addArgument(
-    ['--eur', '-e'],
-    {
-      action: 'storeTrue',
-      help: 'Get price in USD from coinbasepro',
-    }
-  )
-
-  var orderbook = exchangeparsers.addParser('orderbook', 
-		{
-			addHelp: true,
-			description: 'Download orderbook from exchange.'
-		}
-)
-
-  orderbook.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  orderbook.addArgument(
-    ['pair'],
-    {
-      action: 'store',
-      help: 'Tokenpair to get price for.',
-    }
-  )
-
-  orderbook.addArgument(
-    ['--currency', '-c'],
-    {
-      action: 'store',
-      help: 'Show prices in currency instead of the quote currency.',
-    }
-  )
-
-  orderbook.addArgument(
-    ['--other-exchange', '-o'],
-    {
-      action: 'store',
-      dest: 'otherExchange',
-      defaultValue: 'coinbasepro',
-      help: 'The other exchange to get currency price from.',
-    }
-  )
-
-  orderbook.addArgument(
-    ['--limit', '-l'],
-    {
-      action: 'store',
-      help: 'Limit of the number of items in orderbook.',
-    }
-  )
-
-  orderbook.addArgument(
-    ['--price-precision', '-p'],
-    {
-      action: 'store',
-      dest: 'pPrecision',
-      type: Number,
-      help: 'Precision of prices.',
-    }
-  )
-
-  orderbook.addArgument(
-    ['--amount-precision', '-a'],
-    {
-      action: 'store',
-      dest: 'aPrecision',
-      type: Number,
-      help: 'Precision of amounts.',
-    }
-  )
-
-  var trickle = exchangeparsers.addParser('trickle', 
-		{
-			addHelp: true,
-			description: 'Buy or sell in small batches not to ruin market price.'
-		}
-)
-
-  trickle.addArgument(
-    ['--batch-size', '-s'],
-    {
-      action: 'store',
-      dest: 'batchSize',
-      type: Number,
-      help: 'Buy/sell this much at one batch.',
-    }
-  )
-
-  trickle.addArgument(
-    ['--batch-size-variance', '-v'],
-    {
-      action: 'store',
-      dest: 'batchSizeVariance',
-      type: Number,
-      defaultValue: 0,
-      help: 'Maximum this much is added to batch size. Evenly distributed random number generated.',
-    }
-  )
-
-  trickle.addArgument(
-    ['--batch-min-rate', '-m'],
-    {
-      action: 'store',
-      dest: 'batchMinRate',
-      type: Number,
-      help: 'Minimum/maximum rate at which the trade executes.',
-    }
-  )
-
-  trickle.addArgument(
-    ['--batch-retry-time', '-y'],
-    {
-      action: 'store',
-      dest: 'batchRetrySec',
-      type: Number,
-      defaultValue: 60,
-      help: 'Retry time after offer skipped because price was less than args.batchMinRate.',
-    }
-  )
-
-  trickle.addArgument(
-    ['--batch-time', '-t'],
-    {
-      action: 'store',
-      dest: 'batchTime',
-      type: Number,
-      help: 'Sell a batch every batch-time seconds.',
-    }
-  )
-
-  trickle.addArgument(
-    ['--batch-time-variance', '-r'],
-    {
-      action: 'store',
-      dest: 'batchTimeVariance',
-      type: Number,
-      defaultValue: 0,
-      help: 'Maximum this much is added to batch time. Evenly distributed random number generated.',
-    }
-  )
-
-  trickle.addArgument(
-    ['--params'],
-    {
-      action: 'store',
-      help: 'Extra parameters for exchange in json string format.',
+  .command({
+    //cceb
+    command: 'ledger <ledgerCommand>',
+    desc: 'Do stuff with Ledger cold wallet https://www.ledger.com/ ',
+    builder: (yargs) => {
+      yargs
+        .command({
+          //cceb ledger
+          command: 'addresses [wallet] [live] [start-position] [count]',
+          desc: 'List first ten addresses',
+          builder: (yargs) => {
+            yargs
+              .option('wallet', {
+                type: 'string',
+                alias:'w',
+                choices: ['Ethereum'],
+                default: 'Ethereum',
+                desc: 'Wallet to connect to. Currently only Ethereum is supported',
+              }
+              )
+
+              .option('live', {
+                type: 'string',
+                alias:'l',
+                desc: 'Connect to ledger live vallets only',
+              }
+              )
+
+              .option('start-position', {
+                type: 'string',
+                alias:['s', 'startPosition'], 
+                default: 0,
+                desc: 'List accounts starting from this position. Starting at 0',
+              }
+              )
+
+              .option('count', {
+                alias:'c',
+                type: 'number',
+                default: 10,
+                desc: 'List this many addresses each',
+              }
+              )
+							.coerce('count', count => numberFormatted(count))
+
+          }
+        })
     }
-  )
-
-	trickle.addArgument(
-    ['--due-time', '-u'],
-    {
-      action: 'store',
-      defaultValue: '30 minutes from now',
-      dest: 'dueTime',
-      help: 'Uniswap only. Minimum amount requeseted. Uses free text to define end time using chrono lib.',
-    }
-  )
-
-	trickle.addArgument(
-    ['--min-percent', '-p'],
-    {
-      action: 'store',
-      dest: 'minPercent',
-      type: Number,
-      defaultValue: '1',
-      help: 'Uniswap only. The minimum output amount can be this percent less then calculated output amount.',
-    }
-  )
-
-	trickle.addArgument(
-    ['--max-slippage', '-l'],
-    {
-      action: 'store',
-			dest: 'maxSlippage',
-      help: 'Uniswap only. Maximum allowed slippage.',
-    }
-  )
-
-	trickle.addArgument(
-		['--path', '-x'],
-    {
-      action: 'store',
-      help: 'Uniswap only. Path to exchange sell- to buyToken. ',
-    }
-  )
-
-  trickle.addArgument(
-    ['--from', "-f"],
-    {
-      action: 'store',
-			defaultValue: config.get('web3.defaultFrom'),
-      help: 'Decentralized swaps only. From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  trickle.addArgument(
-    ['--gaslimit', "-g"],
-    {
-      action: 'store',
-      help: 'Decentralized swaps only. Gaslimit of transaction',
-    }
-  )
-
-  trickle.addArgument(
-    ['--to', "-o"],
-    {
-      action: 'store',
-      help: 'Uniswap only. Recipient of output tokens',
-    }
-  )
-
-  trickle.addArgument(
-    ['--gasprice', "-c"],
-    {
-      action: 'store',
-      help: 'Decentralized swaps only. Gas price of transaction',
-    }
-  )
-
-  trickle.addArgument(
-    ['exchange'],
-    {
-      action: 'store',
-      choice: Object.keys(config.get('keys')),
-      help: 'Name of exchange.',
-    }
-  )
-
-  trickle.addArgument(
-    ['side'],
-    {
-      action: 'store',
-      choices: ['buy', 'sell'],
-      help: 'The order side',
-    }
-  )
-
-  trickle.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      choices: ['limit', 'market'],
-      help: 'The order side',
-    }
-  )
-
-  trickle.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'The order amount to buy or sell. Should be a number or an expression of "max" to do the max available.',
-    }
-  )
-
-  trickle.addArgument(
-    ['pair'],
-    {
-      action: 'store',
-      help: 'The standard names of token pair eg: "ETH/USD".',
-    }
-  )
-
-  trickle.addArgument(
-    ['price'],
-    {
-      action: 'store',
-      help: 'Price of the order. Ignored if market order.',
-    }
-  )
-
-  var eth = subparsers.addParser('eth', 
-		{
-			addHelp: true,
-			description: 'Do stuff with the Ethereum blockchain.'
-		}
-)
-
-	eth.addArgument( 
-		['--from', "-f"],
-		{
-			action: 'store',
-			defaultValue: config.get('web3.defaultFrom'),
-			help: 'From Address defaults to web3.defaultFrom',
-		}
-	)
-
-  eth.addArgument(
-    ['--gaslimit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  eth.addArgument(
-    ['--gasprice', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  eth.addArgument(
-    ['--nonce', "-n"],
-    {
-      action: 'store',
-      help: 'Nonce of transaction.',
-    }
-  )
-
-  eth.addArgument(
-    ['--block', "-b"],
-    {
-      action: 'store',
-      type: Number,
-      help: 'Block height of transaction. (Only used with call transactions.)',
-    }
-  )
-
-  var ethparsers = eth.addSubparsers({
-    title: 'subcommands',
-    dest: 'ethCommand',
   })
-
-	var web3 = ethparsers.addParser('web3', 
-		{
-			addHelp: true,
-			description: 'Calling functions or get parameters from web3 library.'
-		}
-	)
-
-	web3.addArgument(
-		['function'],
-		{
-			action: 'store',
-			help: 'Web3 function or parameter to use (eg.: web3.eth.getAccounts)',
-		}
-	)
-
-	web3.addArgument(
-		['parameters'],
-		{
-			action: 'store',
-			nargs: '*',
-			help: 'Web3 function parameters',
-		}
-	)
-
-	var tx = ethparsers.addParser('tx', 
-		{
-			addHelp: true,
-			description: 'Create an ethereum transaction. Send or call method is used automatically based on abi.'
-		}
-)
-
-  tx.addArgument(
-    ['contract'],
-    {
-      action: 'store',
-      help: 'Contract address',
-    }
-  )
-
-  tx.addArgument(
-    ['func'],
-    {
-      action: 'store',
-      help: 'Function name to call or send',
-    }
-  )
-
-  tx.addArgument(
-    ['args'],
-    {
-      action: 'store',
-      nargs: '*',
-      help: 'Called function\'s arguments',
-    }
-  )
-
-  tx.addArgument(
-    ['--abi', "-a"],
-    {
-      action: 'store',
-      help: 'Abi defaults to <contract>.abi',
-    }
-  )
-
-  tx.addArgument(
-    ['--value', "-v"],
-    {
-      action: 'store',
-      help: 'Eth value to send',
-    }
-  )
-
-  tx.addArgument(
-    ['--ls', "-l"],
-    {
-      action: 'store',
-      help: 'List functions in abi matching pattern.',
-    }
-  )
-
-	tx.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  tx.addArgument(
-    ['--gaslimit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  tx.addArgument(
-    ['--gasprice', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  tx.addArgument(
-    ['--nonce', "-n"],
-    {
-      action: 'store',
-      help: 'Nonce of transaction.',
-    }
-  )
-
-  tx.addArgument(
-    ['--block', "-b"],
-    {
-      action: 'store',
-      type: Number,
-      help: 'Block height of transaction. (Only used with call transactions.)',
-    }
-  )
-
-  const abi = ethparsers.addParser('abi', 
-		{
-			addHelp: true,
-			description: 'Displays abi of smart contract.'
-		}
-)
-
-  abi.addArgument(
-    ['contract'],
-    {
-      action: 'store',
-      help: 'Contract address',
-    }
-  )
-
-  abi.addArgument(
-    ['--ls', '-l'],
-    {
-      action: 'store',
-			defaultValue: '.*',
-      help: 'List functions matching regex pattern.',
-    }
-  )
-
-  const send = ethparsers.addParser('send', 
-		{
-			addHelp: true,
-			description: 'Sends a prepared transaction (json formatted) to the blockchain.'
-		}
-)
-
-  send.addArgument(
-    ['txjson'],
-    {
-      action: 'store',
-      help: 'Json file of the transaction',
-    }
-  )
-
-  send.addArgument(
-    ['signature'],
-    {
-      action: 'store',
-      help: 'Signature created by external signer',
-    }
-  )
-
-  const address = ethparsers.addParser('address', 
-		{
-			addHelp: true,
-			description: 'Get contract address from contract name, or vica versa.'
-		}
-)
-
-  address.addArgument(
-    ['contr'],
-    {
-      action: 'store',
-      help: 'Contract address or contract name',
-    }
-  )
-
-  const source = ethparsers.addParser('source',
-		{
-			addHelp: true,
-			description: 'Download and display source code of contract.'
-		}
-	)
-
-  source.addArgument(
-    ['contractName'],
-    {
-      action: 'store',
-      help: 'Contract name',
-    }
-  )
-
-	const im = ethparsers.addParser('import',
-		{
-			description:'Map contract address to a human readable name and download and store contract abi.',
-			addHelp: true,
+  .demandCommand()
+  .completion('completion', function (current, argv, completionFilter, done) {
+    // if 'apple' present return default completions
+    //fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({current, argv}));
+    if (tab('cceb eth web3', argv)) {
+				handleEthWeb3(current, argv, done, completionFilter)
+			} else if (tab('cceb eth source', argv)) {
+				handleEthTxContract(current, argv, done, completionFilter)
+			} else if (tab('cceb eth nonce', argv)) {
+				handleEthTxArgs(current, argv, done, completionFilter)
+			} else if (tab('cceb eth abi', argv)) {
+				handleEthTxContract(current, argv, done, completionFilter)
+			} else if (tab('cceb eth address', argv)) {
+				handleEthTxArgs(current, argv, done, completionFilter)
+			} else if (tab('cceb eth tx', argv)) {
+				handleEthTxContract(current, argv, done, completionFilter)
+			} else if (tab('cceb eth tx .*', argv)) {
+				handleEthTxFunc(current, argv, done, completionFilter)
+			} else if (tab('cceb eth tx .* .*', argv, true)) {
+				handleEthTxArgs(current, argv, done, completionFilter)
+			} else if (tab('cceb exchange add', argv)) {
+				done(Object.keys(config.get('keys')))	
+			} else if (tab('cceb exchange add .*', argv)) {
+				done(['buy', 'sell'])	
+			} else if (tab('cceb exchange add .* .*', argv)) {
+				done(['limit', 'market'])	
+			} else if (tab('cceb exchange add .* .* .*', argv)) {
+				done(['max', '<amount>'])	
+			} else if (tab('cceb exchange add .* .* .* .*', argv)) {
+				done(['aaa', ' aaa'])	
+			} else if (tab('cceb exchange add .* .* .* .* .*', argv)) {
+				done([' ', '<price>'])	
+			} else {
+		//fs.writeFileSync("/home/user/cceb/args.txt", `completionFilter: whyyyyy?`)
+				completionFilter()
+			}
 		})
+		.help()
+		.epilogue('More info: https://www.npmjs.com/package/cceb')
+		.argv
+	}
 
-  im.addArgument(
-    ['contractName'],
-    {
-      action: 'store',
-      help: 'Human readable shorthand name for contract. When contract name is used later on, it will be substituted by contract address automatically.',
+function numberFormatted (numString) {
+
+	const exponent = {
+		wei: 0,
+		kwei: 3,
+		babbage: 3,
+		mwei: 6,
+		lovelace: 6,
+		gwei: 9,
+		gw: 9,
+		shannon: 9,
+		terawei: 12,
+		tw: 12,
+		szabo: 12,
+		microether: 12,
+		petawei: 15,
+		pw: 15,
+		finney: 15,	
+		milliether: 15,
+		ether: 18,
+	}
+
+	const units = Object.keys(exponent)	
+	
+	numString = units.reduce((acc, unit) => 
+		acc && acc.replace(new RegExp('^\\s*([-+]?[0-9.]*)\\s*' + unit, 'i'), (match, p1) =>
+			BN(p1 || 1).times(BN(10).pow(exponent[unit])).toFixed())
+	, numString)
+
+	numString = numString && numString.replace(/^\s*([-0-9.]*)E(-?[0-9]+)/i, (match, p1, p2) => {
+		return BN(p1 || 1).times(BN(10).pow(p2)).toFixed()
+	})
+
+	return numString
+}
+
+	async function handleEthTxArgs (current, argv, done, completionFilter) {
+		return await Promise.all(completionFilter(async (err, comp) => {
+			if (current.match(/[A-Z]/) && !current.match(/[a-z]/)) {
+				comp = await w3.getAddressNames('^'+ current)	
+			}
+			done(comp)
+		}))
+	}
+
+	async function handleEthTxFunc (current, argv, done, completionFilter) {
+		return await Promise.all(completionFilter(async (err, comp) => {
+			if (argv._[3] === 'ETH') {
+				comp = ['balance', 'balanceOf', 'transfer']
+			} else {
+				comp = (await w3.getAbiFunctions(argv._[3], '.*'))
+					.filter(fn => fn.match(new RegExp('^' + current)))
+					.map(fn => fn.replace(/ /g, '_'))
+			}
+
+			var funcNames = comp.map(fn => fn.replace(/\(.*/, ''))
+			funcNames = [...new Set(funcNames)]
+			if (funcNames.length === 1) {
+				comp = funcNames
+			}
+			//fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify(comp) + `argv: ${JSON.stringify(argv)}`)
+			done(comp)
+		}))
+	}
+
+	async function handleEthTxContract (current, argv, done, completionFilter) {
+		return await Promise.all(completionFilter(async (err, comp) => {
+			comp = await w3.getAddressNames('^'+ current, true)	
+			//fs.writeFileSync("/home/user/cceb/args.txt", "handleEthTxContract: " + JSON.stringify(comp))
+			done(comp)
+		}))
+	}
+
+	async function handleEthWeb3 (current, argv, done, completionFilter) {
+  completionFilter((err, comp) => {
+    if (current.match(/^web3.eth.I/)) {
+      comp = comp.concat(ibanFuncs().map(key => 'web3.eth.Iban.' + key))
+
+    } else if (current.match(/^web3.eth.n/)) {
+      comp = comp.concat(Object.keys(w3.web3.eth.net).filter(
+        key => ![
+          'setProvider',
+          'BatchRequest',
+        ].includes(key)).map(key => 'web3.eth.net.' + key))
+
+    } else if (current.match(/^web3.u/)) {
+      
+      comp = comp.concat(Object.keys(w3.web3.utils).map(key => 'web3.utils.' + key))
+
+    } else if (current.match(/^web3.e/)) {
+      
+      comp = comp.concat(Object.keys(w3.web3.eth).filter(
+        key => ![
+          'subscribe',
+          'Contract',
+          'setProvider',
+          'clearSubscriptions',
+          'handleRevert',
+          'BatchRequest',
+        ].includes(key)).map(key => 'web3.eth.' + key))
+    
+    } else if (current.match(/^w/)) {
+      
+      comp.push("web3.eth")
+      comp.push("web3.utils")
+    } else {
+      let funcsOffered = web3MatchingCommands(current) 
+      
+      // if after multiple occurances removed from array it remains same length => 
+      // func has unique name  
+      if ([...new Set(funcsOffered)].length < funcsOffered.length) {
+        throw new Error('Fucnction occurs in multiple places use full path eg: web3.eth.getBlockNumber')
+      }
+      comp = funcsOffered.concat(['web3'])
+      
     }
-  )
-
-  im.addArgument(
-    ['contractAddress'],
-    {
-      action: 'store',
-      help: 'Contract address',
-    }
-  )
-
-  im.addArgument(
-    ['--location', '-l'],
-    {
-      action: 'store',
-      help: 'Insert contract into path in "./config/default.yaml".'
-    }
-  )
-
-	const nonce = ethparsers.addParser('nonce',
-		{
-			description:'Get highest nonce of account.',
-			addHelp: true,
-		})
-
-  nonce.addArgument(
-    ['account'],
-    {
-      action: 'store',
-      help: 'Account to get nonce for.',
-    }
-  )
-
-	//---------------------------
-  var maker = ethparsers.addParser('maker', 
-		{
-			addHelp: true,
-			description: 'Commands to operate MakerDao vaults.'
-		}
-)
-
-  maker.addArgument(
-    ['--vault', '-v'],
-    {
-      action: 'store',
-      type: Number,
-			defaultValue: 0,
-			help: 'The number of vault to operate with',
-    }
-  )
-
-	maker.addArgument( //FIXME: not implemented in methods.
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  maker.addArgument(
-    ['--estimate', "-e"],
-    {
-      action: 'storeTrue',
-      help: 'Returns expected gas cost in USD.',
-    }
-  )
-
-  var makerparser = maker.addSubparsers({
-    title: 'subcommands',
-    dest: 'makerCommand',
+      done(comp)
   })
-
-  var vaultInfo = makerparser.addParser('info', 
-		{
-			addHelp: true,
-			description: 'Get vault info.'
-		}
-)
-
-  vaultInfo.addArgument(
-    ['type'],
-    {
-      action: 'store',
-			help: 'Type of vault to get info from. Eg.: USDC-A',
-    }
-  )
-
-  var open = makerparser.addParser('open', 
-		{
-			addHelp: true,
-			description: 'Open new MakerDao vault.'
-		}
-)
-
-  open.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      help: 'Type of vault that will be created',
-    }
-  )
-
-  var collateralDeposit = makerparser.addParser('deposit', 
-		{
-			addHelp: true,
-			description: 'Deposit collateral to vault.'
-		}
-)
-
-  collateralDeposit.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      help: 'Type of vault that will be deposited to. Eg.: ETH-A',
-    }
-  )
-
-  collateralDeposit.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Deposit amount of collateral.',
-    }
-  )
-
-  collateralDeposit.addArgument(
-    ['--draw', '-d'],
-    {
-      action: 'store',
-			type: Number,
-			defaultValue: 0,
-      help: 'Draw create DAI to the urn in one step',
-    }
-  )
-
-  var collateralWithdraw = makerparser.addParser('withdraw', 
-		{
-			addHelp: true,
-			description: 'Withdraw collateral from vault.'
-		}
-)
-
-  collateralWithdraw.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      help: 'Type of vault that will be withdrawn from. Eg.: ETH-A',
-    }
-  )
-
-  collateralWithdraw.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Withdraw amount of collateral.',
-    }
-  )
-
-  var generate = makerparser.addParser('generate', 
-		{
-			addHelp: true,
-			description: 'Generate DAI stablecoin.'
-		}
-)
-
-  generate.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      help: 'Type of vault that DAI will be generated from. Eg.: ETH-A',
-    }
-  )
-
-  generate.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Amount of DAI to generate.',
-    }
-  )
-
-  var payback = makerparser.addParser('payback', 
-		{
-			addHelp: true,
-			description: 'Payback an amount of DAI to vault type.'
-		}
-)
-
-  payback.addArgument(
-    ['type'],
-    {
-      action: 'store',
-      help: 'Type of vault that DAI will be paid back to. Eg.: ETH-A',
-    }
-  )
-
-  payback.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Amount of DAI paid back.',
-    }
-  )
-  // eslint-disable-next-line
-  var estimate = makerparser.addParser('estimate', 
-		{
-			addHelp: true,
-			description: 'Estimate gas cost of ??. Don\'t use this!'
-		}
-)
-
-  var flop = makerparser.addParser('flop', 
-		{
-			addHelp: true,
-			description: 'Make a count of new bids.'
-		}
-)
-
-  flop.addArgument(
-    ['--count', '-c'],
-    {
-      action: 'store',
-      help: 'Number of new bids to make',
-    }
-  )
-
-  var tick = makerparser.addParser('tick', 
-		{
-			addHelp: true,
-			description: 'Bid a better price for an expired auction.'
-		}
-)
-
-  tick.addArgument(
-    ['id'],
-    {
-      action: 'store',
-      help: 'Make an expired auction have better price.',
-    }
-  )
-
-  var dent = makerparser.addParser('dent', 
-		{
-			addHelp: true,
-			description: 'Bid for an auction of id.'
-		}
-)
-
-  dent.addArgument(
-    ['id'],
-    {
-      action: 'store',
-      help: 'Identifier of auction to make bid for.',
-    }
-  )
-
-  dent.addArgument(
-    ['--amount', '-a'],
-    {
-      action: 'store',
-      help: 'Amount to bid. Default amount is the minimal necessary.',
-    }
-  )
-
-  var deal = makerparser.addParser('deal', 
-		{
-			addHelp: true,
-			description: 'Finish an auction and receive MKR'
-		}
-)
-
-  deal.addArgument(
-    ['id'],
-    {
-      action: 'store',
-      help: 'Idealifier of auction to finish.',
-    }
-  )
-
-  var flog = makerparser.addParser('flog', 
-		{
-			addHelp: true,
-			description: 'Get events of bad debt from contract from blocknumber to blocknumber.'
-		}
-)
-
-  flog.addArgument(
-    ['contract'],
-    {
-      action: 'store',
-      help: 'Contract to get events from',
-    }
-  )
-
-  flog.addArgument(
-    ['--from-block', '-f'],
-    {
-      action: 'store',
-      defaultValue: 'latest',
-      help: 'Startblock to get events from',
-    }
-  )
-
-  flog.addArgument(
-    ['--to-block', '-t'],
-    {
-      action: 'store',
-      defaultValue: 'latest',
-      help: 'End block to get events from.',
-    }
-  )
-
-  flog.addArgument(
-    ['--amount', '-a'],
-    {
-      action: 'store',
-      defaultValue: 50000,
-      type: Number,
-      help: 'Amount of max. dai to allow auction for.',
-    }
-  )
-
-  var aave = ethparsers.addParser('aave', 
-		{
-			addHelp: true,
-			description: 'Commands accessing https://aave.com lending protocol.'
-		}
-)
-
-  aave.addArgument(
-    ['--referral', '-r'],
-    {
-      action: 'store',
-			defaultValue: '0',
-			help: 'Referral code in AAVE system.',
-    }
-  )
-
-  aave.addArgument(
-    ['--estimate', "-e"],
-    {
-      action: 'storeTrue',
-      help: 'Returns expected gas cost in USD.',
-    }
-  )
-
-	aave.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aave.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aave.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveParser = aave.addSubparsers({
-    title: 'subcommands',
-    dest: 'aaveCommand',
-  })
-
-  var aaveDeposit = aaveParser.addParser('deposit', 
-		{
-			addHelp: true,
-			description: 'Deposit an amount of token to aave.'
-		}
-)
-
-  aaveDeposit.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-			help: 'Amount you want to deposit',
-    }
-  )
-
-  aaveDeposit.addArgument(
-    ['token'],
-    {
-      action: 'store',
-			help: 'Token you want to deposit',
-    }
-  )
-
-	aaveDeposit.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveDeposit.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveDeposit.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveWithdraw = aaveParser.addParser('withdraw', 
-		{
-			addHelp: true,
-			description: 'Withdraw an amount of token from aave.'
-		}
-)
-
-  aaveWithdraw.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-			help: 'Amount you want to withdraw',
-    }
-  )
-
-  aaveWithdraw.addArgument(
-    ['token'],
-    {
-      action: 'store',
-			help: 'Token you want to withdraw',
-    }
-  )
-
-	aaveWithdraw.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveWithdraw.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveWithdraw.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveColl = aaveParser.addParser('collateral', 
-		{
-			addHelp: true,
-			description: 'Enable(/disable) token as collateral in aave.'
-		}
-)
-
-  aaveColl.addArgument(
-    ['token'],
-    {
-      action: 'store',
-			help: 'Token you want to use as collateral',
-    }
-  )
-
-  aaveColl.addArgument(
-    ['--disable', '-d'],
-    {
-      action: 'storeTrue',
-			help: 'Disable to use token as collateral',
-    }
-  )
-
-	aaveColl.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveColl.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveColl.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-
-  var aaveBorrow = aaveParser.addParser('borrow', 
-		{
-			addHelp: true,
-			description: 'Borrow an amount of token against a collateral in aave.'
-		}
-)
-
-  aaveBorrow.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Deposit amount of collateral.',
-    }
-  )
-
-  aaveBorrow.addArgument(
-    ['token'],
-    {
-      action: 'store',
-      help: 'Token that w',
-    }
-  )
-
-  aaveBorrow.addArgument(
-    ['--fixed', '-d'],
-    {
-      action: 'storeTrue',
-			help: 'Use fixed interests. Default: variable interests.',
-    }
-  )
-
-  aaveBorrow.addArgument(
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveBorrow.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveBorrow.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aavePayback = aaveParser.addParser('payback', 
-		{
-			addHelp: true,
-			description: 'Payback an amount of token for ourselfes or others.'
-		}
-)
-
-  aavePayback.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-      help: 'Amount to payback',
-    }
-  )
-
-  aavePayback.addArgument(
-    ['token'],
-    {
-      action: 'store',
-      help: 'Token to payback.',
-    }
-  )
-
-  aavePayback.addArgument(
-    ['--for', '-o'],
-    {
-      action: 'store',
-			help: 'Payback for someone else.',
-    }
-  )
-
-	aavePayback.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aavePayback.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aavePayback.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveSwaprate = aaveParser.addParser('swaprate', 
-		{
-			addHelp: true,
-			description: 'Toggle between fixed and variable rate for token.'
-		}
-)
-
-  aaveSwaprate.addArgument(
-    ['token'],
-    {
-      action: 'store',
-      help: 'Token to swap the rate between fixed and variable.',
-    }
-  )
-
-	aaveSwaprate.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveSwaprate.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveSwaprate.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveRebalance = aaveParser.addParser('rebalance', 
-		{
-			addHelp: true,
-			description: 'Rebalancei (actualize) fixed interest rate for token for ourselves or others.'
-		}
-)
-
-  aaveRebalance.addArgument(
-    ['token'],
-    {
-      action: 'store',
-      help: 'Token to rebalance interest rate for.',
-    }
-  )
-
-  aaveRebalance.addArgument(
-    ['--for'],
-    {
-      action: 'store',
-			help: 'Address to rebalance for. Default: '+ config.get('web3.defaultFrom'),
-    }
-  )
-
-	aaveRebalance.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveRebalance.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveRebalance.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveLiquidate = aaveParser.addParser('liquidate', 
-		{
-			addHelp: true,
-			description: 'Liquidate undercollaterized position for collateral token and loan token owned by address.'
-		}
-)
-
-  aaveLiquidate.addArgument(
-    ['collateraltoken'],
-    {
-      action: 'store',
-      help: 'Token that is the collateral.',
-    }
-  )
-
-  aaveLiquidate.addArgument(
-    ['loantoken'],
-    {
-      action: 'store',
-      help: 'Token that is used for the loan',
-    }
-  )
-
-  aaveLiquidate.addArgument(
-    ['user'],
-    {
-      action: 'store',
-			help: 'Address of user who has the loan.',
-    }
-  )
-
-  aaveLiquidate.addArgument(
-    ['amount'],
-    {
-      action: 'store',
-			help: 'Amount of collateral to buy(???)', //FIXME: have no idea what that is
-    }
-  )
-
-	aaveLiquidate.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  aaveLiquidate.addArgument(
-    ['--gas-limit', "-g"],
-    {
-      action: 'store',
-			dest: 'gaslimit',
-      help: 'Gaslimit of transaction',
-    }
-  )
-
-  aaveLiquidate.addArgument(
-    ['--gas-price', "-p"],
-    {
-      action: 'store',
-			dest: 'gasprice',
-      help: 'Gas price of transaction',
-    }
-  )
-
-  var aaveInfo = aaveParser.addParser('info', 
-		{
-			addHelp: true,
-			description: 'Get info on reserves.'
-		}
-	)
-
-  var aaveI = aaveInfo.addSubparsers({
-    title: 'subcommands',
-    dest: 'aaveInfoCommand',
-  })
-
-  var aaveReserveconf = aaveI.addParser('reserve', 
-		{
-			addHelp: true,
-			description: 'Get info on token reserve.'
-		}
-	)
-
-  aaveReserveconf.addArgument(
-    ['token'],
-    {
-      action: 'store',
-			help: 'Get info for token reserve',
-    }
-  )
-
-  var aaveUserAccount = aaveI.addParser('account', 
-		{
-			addHelp: true,
-			description: 'Get account info for account address.'
-		}
-)
-
-	aaveUserAccount.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-			help: 'Account address. (Defaults to ./config/default.yaml -> web3.defaultFrom)'
-    })
-
-  var aaveUserReserve = aaveI.addParser('user', 
-		{
-			addHelp: true,
-			description: 'Get info on token reserves.'
-		}
-	)
-
-  aaveUserReserve.addArgument(
-    ['token'],
-    {
-      action: 'store',
-			help: 'Get info for token reserve',
-    }
-  )
-  // eslint-disable-next-line
-  var aaveEstimate = aaveParser.addParser('estimate', {addHelp: true})
-
-  var curve = ethparsers.addParser('curve', 
-		{
-			addHelp: true,
-			description: 'Commands accessing https://curve.fi protocol.'
-		}
-)
-
-  var curveparsers = curve.addSubparsers({
-    title: 'subcommands',
-    dest: 'curveCommand',
-  })
-
-  var info = curveparsers.addParser('info', 
-		{
-			addHelp: true,
-			description: 'Get info on all curve pools, own deposits, daily CRV amounts, future boost, depositable amounts for maximum boost.'
-		}
-)
-
-	info.addArgument( 
-    ['--from', "-f"],
-    {
-      action: 'store',
-      defaultValue: config.get('web3.defaultFrom'),
-      help: 'From Address defaults to web3.defaultFrom',
-    }
-  )
-
-  info.addArgument(
-    ['--block', "-b"],
-    {
-      action: 'store',
-      type: Number,
-      help: 'Block height of transaction. (Only used with call transactions.)',
-    }
-  )
-
-  var ledger = subparsers.addParser('ledger', 
-		{
-			addHelp: true,
-			description: 'Do stuff with Ledger cold wallet https://www.ledger.com/ .'
-		}
-)
-
-  var ledgerparsers = ledger.addSubparsers({
-    title: 'subcommands',
-    dest: 'ledgerCommand',
-  })
-
-  var addresses = ledgerparsers.addParser('addresses', 
-		{
-			addHelp: true,
-			description: 'List first ten addresses.'
-		}
-	)
-
-	addresses.addArgument( 
-    ['--wallet', "-w"],
-    {
-      action: 'store',
-      choices: ['Ethereum'],
-      defaultValue: 'Ethereum',
-      help: 'Wallet to connect to. Currently only Ethereum is supported.',
-    }
-  )
-
-	addresses.addArgument( 
-    ['--live', "-l"],
-    {
-      action: 'store',
-      help: 'Connect to ledger live vallets only.',
-    }
-  )
-
-	addresses.addArgument( 
-    ['--start-position', "-s"],
-    {
-      action: 'store',
-			dest: 'startPosition',
-      defaultValue: 0,
-      help: 'List accounts starting from this position. Starting at 0.',
-    }
-  )
-
-	addresses.addArgument( 
-    ['--count', "-c"],
-    {
-      action: 'store',
-      type: Number,
-      defaultValue: 10,
-      help: 'List this many addresses each.',
-    }
-  )
-
-  return parser
+}
+
+function ibanFuncs () {
+   return [
+      'toAddress',
+      'toIban',
+      'fromAddress',
+      'fromBban',
+      'createIndirect',
+      'isValid',
+    ]
+
+}
+
+function web3MatchingCommands (command, fullPath = false, exact = false) {
+  return Object.keys(w3.web3.eth)
+		.filter(key => ('web3.eth.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+    .map(key => fullPath ? 'web3.eth.' + key :key)
+    .concat(
+      Object.keys(w3.web3.utils)
+      .filter(key => ('web3.utils.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+      .map(key => fullPath ? 'web3.utils.' + key :key)
+    )
+    .concat(
+      ibanFuncs()
+      .filter(key => ('web3.eth.Iban.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+      .map(key => fullPath ? 'web3.eth.Iban' + key :key)
+    )
+}
+
+function tab (commands, argv, commandLengthCanBeGreaterArgsLength = false) {
+  var comms = commands.split(/\s+/).slice(1)
+	
+	var commandsEqualsArgv = comms.reduce(
+    (acc, command, idx) =>  acc && (!argv._[idx + 1] || (argv._[idx + 1]).match(new RegExp('^' + command + '$')))
+  , true)
+
+	var matches = commandsEqualsArgv && 
+		(
+			(
+				!commandLengthCanBeGreaterArgsLength &&
+				comms.length + 2 === argv._.length
+			) ||
+			(
+				commandLengthCanBeGreaterArgsLength &&
+				comms.length + 2 <= argv._.length
+			)
+		)
+
+	//fs.writeFileSync("/home/user/cceb/args.txt", `tab(${matches}): commands:` + JSON.stringify(commands) + 'argv: ' + JSON.stringify(argv))
+
+	return matches
 }
 
 module.exports = {

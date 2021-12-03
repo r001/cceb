@@ -19,7 +19,7 @@ web3:
   mainnet:
     provider:
       http:
-        url: 'http://localhost:8545'
+        url: 'http://192.168.0.2:8545'
       ws: null
       infura:
         url: 'wss://mainnet.infura.io/ws/v3/'
@@ -431,6 +431,10 @@ web3:
         address: '0x835482FE0532f169024d5E9410199369aAD5C77E'
       RARI_FUSE_8_TRIBE_REWARDS:
         address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'
+      RARI_LP_F_TRIBE_IMPLEMENTATION:
+        address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
+      RARI_LP_F_TRIBE_IMPLEMENTATION_IMPLEMENTATION:
+        address: '0x0000000000000000000000000000000000000000'
     snow:
       SNOW_POOL_YSNOW:
         address: '0x4571753311e37ddb44faa8fb78a6df9a6e3c6c0b'
