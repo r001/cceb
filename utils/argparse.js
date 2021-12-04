@@ -1668,4 +1668,5 @@ function tab (commands, argv, commandLengthCanBeGreaterArgsLength = false) {
 
 module.exports = {
   argParse,
+  web3MatchingCommands,
 }

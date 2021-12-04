@@ -29,7 +29,7 @@ const config = require('config')
 const w3 = require('./utils/web3.js')
 const ut = require('./utils/util')
 const util = require('util')
-const {argParse} = require('./utils/argparse.js')
+const {argParse, web3MatchingCommands} = require('./utils/argparse.js')
 const yaml = require('js-yaml')
 const radix = require('./utils/radix.js')
 
