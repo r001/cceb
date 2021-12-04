@@ -4,8 +4,7 @@
   "description": "Bash program to trade and interact with RadixDLT and Ethereum",
   "main": "cceb",
   "scripts": {
-    "test": "mocha",
-    "postinstall": "./install-tab-completion.sh"
+    "test": "mocha"
   },
   "keywords": [
     "radix",
@@ -27,9 +26,6 @@
     "cceb-telegram": "./bin/telegram.js"
   },
   "dependencies": {
-    "@ledgerhq/hw-app-eth": "^5.47.3",
-    "@ledgerhq/hw-transport-node-hid-singleton": "^5.46.0",
-    "@ledgerhq/logs": "^5.46.0",
     "@metamask/eth-sig-util": "^4.0.1",
     "@radixdlt/account": "^3.0.6",
     "@walletconnect/client": "^1.7.8",

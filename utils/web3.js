@@ -20,8 +20,6 @@ var fs = require('fs')
 const network = config.get('web3.network')
 const pressAnyKey = require('press-any-key')
 const shell = require('shelljs')
-const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
-const Eth = require("@ledgerhq/hw-app-eth").default;
 const sigUtil = require('@metamask/eth-sig-util')
 // console.log(network)
 
@@ -307,15 +305,15 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
       case 'airsign':
         signature = await getAirsignSignature(rawTx, 'sign_transaction')
         break
-      case 'ledger':
-        signature = await getLedgerSignature(web3, rawTx, 'sign_transaction')
-        break
       case 'privatekey':
         signature = await getPrivateKeySignature(web3, rawTx, 'sign_transaction')
         break
       default:
         throw new Error(`Unknown account type ${accountType}`)
     }
+
+    signature = signature.replace(/^.*0x/, '') 
+    
   }
 
   if (signature) {
@@ -376,36 +374,6 @@ async function getLedgerDerivePath (web3, wallet, from, transport) {
     default:
       throw new Error(`Ledger wallet '${wallet}' not supported yet.`)
   }
-}
-
-async function getLedgerEthereumDerivePath (web3, from, transport) {
-  const fromName = await getAddressName(from)
-  from = await getAddress(from)
-  const derivePathLoc = `web3.account.${fromName}.derivePath`
-  if (config.has(derivePathLoc)) {
-    return config.get(derivePathLoc)
-  }
-  transport = transport || await TransportNodeHid.create();
-  const eth = new Eth(transport)
-  var derivePathNotFound = true
-  var loc = 0
-  var derivePathLegacy = `44'/60'/0'/${loc}`
-  var derivePathLive = `44'/60'/${loc}`
-  var address = (await eth.getAddress(derivePathLegacy)).address
-  while (derivePathNotFound) {
-    if (address.toLowerCase() === from.toLowerCase()) {
-      return derivePathLegacy
-    }
-    address = (await eth.getAddress(derivePathLive)).address
-    if (address.toLowerCase() === from.toLowerCase()) {
-      return derivePathLive
-    }
-    loc++;
-    derivePathLegacy = `44'/60'/0'/${loc}`
-    derivePathLive = `44'/60'/${loc}`
-    address = (await eth.getAddress(derivePathLegacy)).address
-  }
-  await transport.close()
 }
 
 async function getGasPrice (web3) {
