@@ -411,8 +411,6 @@ Optional arguments:
                         Nonce of transaction.
 ```
 
-- [RadixDLT interactions](#radixdlt-interactions)
-	- [commands](#radixdlt-commands)	
 ### (RadixDLT)(https://www.radixdlt.com) interactions
 
 Preliminary interactions added to `cceb`. All the current RPC commands are supported. You can use Bash TAB autocompletion to get possible alternatives.   
