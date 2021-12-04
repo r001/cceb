@@ -15,6 +15,9 @@
 	- [show orderbook](#show-orderbook)
 	- [show price](#show-price-not-implemented)
 	- [trickle - automatically create many small orders or one large order if price reaches a threshold value ](#trickle)
+- [RadixDLT interactions](#radixdlt-interactions)
+	- [commands](#radixdlt-commands)	
+	- [authentication](#radixdlt-authentication)
 - [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
 	- [call web3 query functions](#call-any-web3-query-function)
 	- [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
@@ -30,38 +33,9 @@
 - [Telegram connect](#telegram-connect)
 
 ### Whats new 
-### Changes from 1.2.x to 1.3.x
+### Changes from 1.3.x to 1.4.x
 
-#### Bash TAB completions added. You can use the TAB key to display possible command, or argument alternatives. Example:   
-`cceb eth tx MKR <TAB><TAB>` list abi functions of MKR contract.  
-`cceb eth tx WETH balanceOf E<TAB><TAB>` list ethereum addresses matching `E*`.  
-`cceb eth <TAB><TAB>` list possible eth commands.  
-
-#### New number constants are available. Followings are available:  
-|  Constant  |      Meaning      |               Example               |
-|:----------:|:-----------------:|:-----------------------------------:|
-| wei        | 1                 | 10wei = 10                          |
-| kwei       | 1,000             | .23kwei = 230                       |
-| babbage    | 1,000             | 1.1babbage = 1100                   |
-| mwei       | 1,000,000         | .001mwei = 1000                     |
-| lovelace   | 1,000,000         | 1lovelace = 1000000                 |
-| gwei       | 1,000,000,000     | 50gwei = 50,000,000,000             |
-| gw         | 1,000,000,000     | 50gwei = 50,000,000,000             |
-| shannon    | 1,000,000,000     | .25gwei = 250,000,000               |
-| terawei    | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| tw         | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| szabo      | 1,000,000,000,000 | 23terawei = 23,000,000,000,000      |
-| microether | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| petawei    | 10^15             | .002petawei = 2,000,000,000,000     |
-| pw         | 10^15             | .000001pw = 1,000,000,000           |
-| finney     | 10^15             | 100finney = 10^17                   |
-| milliether | 10^15             | 500milliether = 5*10^17             |
-| ether      | 10^18             | 1.12ether = 1.12*10^18              |
-| \<a\>E\<x\>| a*10^x            | 1E18 = 1ether 1E3 = 1000 .25E2 = 25 |	
-
-Number constants can be used wherever numbers are entered. 
-
-
+[RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented. 
 
 ### Number constants
 
@@ -436,6 +410,121 @@ Optional arguments:
 	--nonce NONCE, -n NONCE
                         Nonce of transaction.
 ```
+
+- [RadixDLT interactions](#radixdlt-interactions)
+	- [commands](#radixdlt-commands)	
+### (RadixDLT)(https://www.radixdlt.com) interactions
+
+Preliminary interactions added to `cceb`. All the current RPC commands are supported. You can use Bash TAB autocompletion to get possible alternatives.   
+  
+Note: The address naming feature is not yet available.   
+
+#### Commands
+
+Please refer to [RadixDLT API reference](https://documenter.getpostman.com/view/14449947/TzscoSDW) for detailed information on RadixDLT RPC commands.   
+You can also get help from `cceb` the following way:  
+`cceb radix <radix_command> --help`
+  
+RadixDLT ommands are available through:  
+`cceb radix <radix_command> [radix_command_args...]`  
+
+##### Full command list
+
+The following is a complete list of supported commands.  
+
+`cceb radix account.get_balances <address>` - Get the token balances for an address.      `cceb radix account.get_info` - Your account's address and balances.  
+  
+`cceb radix account.get_stake_positions <address>` - Get stakes that have not been requested to be unstaked.  
+  
+`cceb radix account.get_transaction_history <address> <size> [cursor] [verbose]` - Get the paginated transaction history for an address.  
+  
+`cceb radix account.get_unstake_positions <address>` - Get unstake history for an address.  
+  
+`cceb radix account.submit_transaction_single_step <actions> [message] [disableResourceAllocationAndDestroy]` - One step transaction submission.  Resulting transaction is signed with nodes' private key  
+  
+`cceb radix api.get_configuration` - Get active configuration parameters for api  
+  
+`cceb radix api.get_data` - Get data for api  
+  
+`cceb radix bft.get_configuration` - Get active configuration parameters for consensus  
+  
+`cceb radix bft.get_data` - Get data for consensus  
+  
+`cceb radix checkpoints.get_checkpoints` - Get genesis txn and proof,  
+  
+`cceb radix construction.build_transaction <actions> <feePayer> [message] [disableResourceAllocationAndDestroy]` - Get an unsigned transaction.  
+  
+`cceb radix construction.finalize_transaction <blob> <signatureDER> <publicKeyOfSigner> [immediateSubmit]` - Finalizes a signed transaction before submitting it.  
+  
+`cceb radix construction.submit_transaction <blob> [txID]` - Submits a transaction to be dispatched to Radix network.  
+  
+`cceb radix ledger.get_latest_epoch_proof` - Get the latest known ledger epoch proof  
+  
+`cceb radix ledger.get_latest_proof` - Get the latest known ledger proof  
+  
+`cceb radix mempool.get_configuration` - Get active configuration parameters for mempool  
+  
+`cceb radix mempool.get_data` - Get data for mempool  
+  
+`cceb radix network.get_demand` - Average number of transactions submitted to the mempool per second.  
+  
+`cceb radix network.get_id` - Get the network id, a number that uniquely identifies the network. This network id must match the one used to derive addresses.  
+  
+`cceb radix network.get_throughput` - Returns the average number of transaction per second committed to the ledger.  
+  
+`cceb radix networking.get_address_book` - Get information about known peer nodes  
+  
+`cceb radix networking.get_configuration` - Get active configuration parameters for networking  
+  
+`cceb radix networking.get_data` - Get data for networking  
+  
+`cceb radix networking.get_peers` - Get information about connected peer nodes  
+  
+`cceb radix radix_engine.get_configuration` - Get active configuration parameters for radix engine  
+  
+`cceb radix radix_engine.get_data` - Get data for radix engine  
+  
+`cceb radix sync.get_configuration` - Get active configuration parameters for sync  
+  
+`cceb radix sync.get_data` - Get data for sync  
+  
+`cceb radix tokens.get_info <rri>` - Return token information on the provided RRI.  
+  
+`cceb radix tokens.get_native_token` - Returns information about the native token of the network.  
+  
+`cceb radix transactions.get_transaction_status <txID>` - Returns the status of a transaction.  
+  
+`cceb radix transactions.lookup_transaction <txID>` - Get a transaction from its txID.  
+  
+`cceb radix validation.get_current_epoch_data` - Get information about the current epoch's validator set  
+  
+`cceb radix validation.get_node_info` - Get information about node as a validator - stakes, registration status, etc.  
+  
+`cceb radix validators.get_next_epoch_set <size> [cursor]` - Get a paginated validator list, ordered by XRD staked descending.  
+  
+`cceb radix validators.lookup_validator <validatorAddress>` - Lookup a single validator by its validator address.  
+  
+
+##### Examples
+
+Get native token for RadixDLT:  
+`cceb radix tokens.get_native_token`  
+  
+Get info on XRD token:  
+`cceb radix tokens.get_info xrd_rr1qy5wfsfh`  
+  
+Get transaction history of an account:  
+` cceb radix account.get_transaction_history rdx1qspu9v8xsfn30n8nsua7jf8rac0lr8yccdety8hpwmesaxqwc3fy95s267mqj 10`  
+  
+
+### RadixDLT authentication 
+
+Whenever a command that requires authentication with node is executed, you can enter your credentials the following way:  
+`cceb radix --username <username> --password <password> <radix_command> [radix_command_args...]`  
+
+Note: `-u` and `-p` can be used for username and password respectively as a shortcut.
+
+
 ### [Ethereum](https://ethereum.org/en/) blockchain interactions
 
 When interacting with Ethereum contracts, `cceb` returns fixed digits (decimals fitted for each token) numbers when `balanceOf`, or `totalSupply` is requested. When numbers are entered to `cceb eth tx` then dot is disregarded, and number is taken as an integer. So make sure you DO NOT delete any digits from fractional numbers.

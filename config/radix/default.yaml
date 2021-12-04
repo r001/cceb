@@ -1,0 +1,5 @@
+xrd:
+  provider:
+    - http:
+        url: 'https://mainnet.radixdlt.com'
+

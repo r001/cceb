@@ -1,5 +1,13 @@
 const baseDir = __dirname + '/../'
-process.env["NODE_CONFIG_DIR"] = baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/"
+
+process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
+  ?
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
+  :
+    "")
+  + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/" +
+   require('path').delimiter + "config/radix/" 
+
 var config = require('config')
 const qrEncoding = require('eth-airsign-util')
 const QRCode = require('qrcode')

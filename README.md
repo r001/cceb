@@ -3,39 +3,12 @@
 [![NPM version](https://img.shields.io/npm/v/cceb.svg?style=flat)](https://www.npmjs.org/package/cceb)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fcceb08733804)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Ftwitter.com%2Fcceb08733804)
 
-> Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
+> Bash cli for trading, and to interact with RadixDLT and Ethereum.
 
 ## What's new 
-### Changes from 1.2.x to 1.3.x
+### Changes from 1.3.x to 1.4.x
 
-#### Bash TAB completions added. You can use the TAB key to display possible command, or argument alternatives. Example:   
-`cceb eth tx MKR <TAB><TAB>` list abi functions of MKR contract.  
-`cceb eth tx WETH balanceOf E<TAB><TAB>` list ethereum addresses matching `E*`.  
-`cceb eth <TAB><TAB>` list possible eth commands.  
-
-#### New number constants are available. Followings are available:  
-|  Constant  |      Meaning      |               Example               |
-|:----------:|:-----------------:|:-----------------------------------:|
-| wei        | 1                 | 10wei = 10                          |
-| kwei       | 1,000             | .23kwei = 230                       |
-| babbage    | 1,000             | 1.1babbage = 1100                   |
-| mwei       | 1,000,000         | .001mwei = 1000                     |
-| lovelace   | 1,000,000         | 1lovelace = 1000000                 |
-| gwei       | 1,000,000,000     | 50gwei = 50,000,000,000             |
-| gw         | 1,000,000,000     | 50gwei = 50,000,000,000             |
-| shannon    | 1,000,000,000     | .25gwei = 250,000,000               |
-| terawei    | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| tw         | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| szabo      | 1,000,000,000,000 | 23terawei = 23,000,000,000,000      |
-| microether | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| petawei    | 10^15             | .002petawei = 2,000,000,000,000     |
-| pw         | 10^15             | .000001pw = 1,000,000,000           |
-| finney     | 10^15             | 100finney = 10^17                   |
-| milliether | 10^15             | 500milliether = 5*10^17             |
-| ether      | 10^18             | 1.12ether = 1.12*10^18              |
-| \<a\>E\<x\>| a*10^x            | 1E18 = 1ether 1E3 = 1000 .25E2 = 25 |	
-
-Number constants can be used wherever numbers are entered. 
+[RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented. 
 
 ## Features
 
