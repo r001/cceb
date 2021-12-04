@@ -1,7 +1,7 @@
 {
   "name": "cceb",
-  "version": "1.4.0",
-  "description": "Bash program to trade on exchanges and interact with Ethereum smart contracts from bash",
+  "version": "1.4.1",
+  "description": "Bash program to trade and interact with RadixDLT and Ethereum",
   "main": "cceb",
   "scripts": {
     "test": "mocha",
