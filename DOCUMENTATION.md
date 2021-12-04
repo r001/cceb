@@ -1,4 +1,4 @@
-# Documentation - cceb
+﻿# Documentation - cceb
 
 > Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
 
@@ -60,7 +60,7 @@ Number constants can be used wherever numbers are entered.
 | finney     | 10^15             | 100finney = 10^17                   |
 | milliether | 10^15             | 500milliether = 5*10^17             |
 | ether      | 10^18             | 1.12ether = 1.12*10^18              |
-| \<a\>E\<x\>| a*10^x            | 1E18 = 1ether 1E3 = 1000 .25E2 = 25 |	
+| \<number\>E\<exponent\>| number*10^exponent            | 1E18 = 1ether |	
 
 ### Use TAB to get possible alternatives with Bash completion
 
@@ -411,13 +411,13 @@ Optional arguments:
                         Nonce of transaction.
 ```
 
-### [RadixDLT](https://www.radixdlt.com) interactions
+### RadixDLT interactions
 
-Preliminary interactions added to `cceb`. All the current RPC commands are supported. You can use Bash TAB autocompletion to get possible alternatives.   
+Preliminary [RadixDLT](https://www.radixdlt.com) interactions added to `cceb`. All the current RPC commands are supported. You can use Bash TAB autocompletion to get possible command alternatives.   
   
-Note: The address naming feature is not yet available.   
+Note: Names for addresses can not yet be used.   
 
-#### Commands
+#### RadixDLT Commands
 
 Please refer to [RadixDLT API reference](https://documenter.getpostman.com/view/14449947/TzscoSDW) for detailed information on RadixDLT RPC commands.   
 You can also get help from `cceb` the following way:  
@@ -430,7 +430,9 @@ RadixDLT ommands are available through:
 
 The following is a complete list of supported commands.  
 
-`cceb radix account.get_balances <address>` - Get the token balances for an address.      `cceb radix account.get_info` - Your account's address and balances.  
+`cceb radix account.get_balances <address>` - Get the token balances for an address.   
+
+ `cceb radix account.get_info` - Your account's address and balances.  
   
 `cceb radix account.get_stake_positions <address>` - Get stakes that have not been requested to be unstaked.  
   
