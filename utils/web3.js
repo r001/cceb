@@ -135,80 +135,6 @@ async function getPrivateKeySignature (web3, rawTx, type) {
   }
 }
 
-async function getLedgerSignature (web3, rawTx, type) {
-
-  const derivePath = await getLedgerDerivePath(web3, 'Ethereum', rawTx.from)
-  log.debug({derivePath})
-  const transport = await TransportNodeHid.create();
-  const eth = new Eth(transport)
-
-  var signed, rawLedger, typedData, sanitizedData, domainSeparator,
-    typedDataHash
-
-  switch (type) {
-    case 'sign_transaction':
-      rawLedger = {...rawTx,
-        chainId: config.get(`web3.${network}.chainid`),
-        v: toHex(config.get(`web3.${network}.chainid`)),
-        r: '0x00',
-        s: '0x00',
-      }
-
-      log.debug({rawLedger})
-      var lTx = new Transaction(rawLedger)
-
-      log.debug({
-        serialized:lTx.serialize().toString("hex"),
-        r: lTx.r.toString("hex"),
-        s:lTx.s.toString("hex"),
-        v:lTx.v.toString("hex")
-      })
-
-      signed = await eth.signTransaction(
-        derivePath,
-        lTx.serialize().toString("hex")
-      )
-
-      break
-    case 'sign_personal_message':
-      signed = await eth.signPersonalMessage(derivePath, rawTx.data)
-      signed.v = calcV(signed.v)
-      break
-    case 'sign_typed_data':
-      typedData = rawTx.data
-      sanitizedData = sigUtil.TypedDataUtils.sanitizeData(typedData)
-
-      domainSeparator = sigUtil.TypedDataUtils.hashStruct(
-        'EIP712Domain',
-        sanitizedData.domain,
-        sanitizedData.types,
-        rawTx.version
-      )
-
-      typedDataHash = sigUtil.TypedDataUtils.hashStruct(
-        rawTx.data.primaryType,
-        sanitizedData.message,
-        sanitizedData.types,
-        rawTx.version,
-      )
-
-      signed = await eth.signEIP712HashedMessage(
-        derivePath,
-        domainSeparator.toString('hex'),
-        typedDataHash.toString('hex')
-      )
-
-      signed.v = calcV(signed.v)
-      break
-    default:
-      throw new Error(`Unsupported type ${type}`)
-  }
-
-  const signature = signed.r + signed.s + signed.v
-  await transport.close()
-  return signature
-}
-
 async function calcV (v) {
   v -= 27;
   v = v.toString(16);
@@ -313,7 +239,6 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
     }
 
     signature = signature.replace(/^.*0x/, '') 
-    
   }
 
   if (signature) {
@@ -367,16 +292,7 @@ async function sendTransaction (web3, serializedTx) {
   return txReceipt
 }
 
-async function getLedgerDerivePath (web3, wallet, from, transport) {
-  switch (wallet) {
-    case 'Ethereum':
-      return await getLedgerEthereumDerivePath(web3, from, transport)
-    default:
-      throw new Error(`Ledger wallet '${wallet}' not supported yet.`)
-  }
-}
-
-async function getGasPrice (web3) {
+async function getGasPrice () {
   let gasPrice
   var ethGasstationWorked = true
   var gasPrices = {}
@@ -1364,9 +1280,6 @@ module.exports = {
   getAddressType,
   getAirsignSignature,
   getGasPrice,
-  getLedgerDerivePath,
-  getLedgerEthereumDerivePath,
-  getLedgerSignature,
   getNonce,
   getPath,
   getPrivateKeySignature,
