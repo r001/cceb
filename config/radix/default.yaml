@@ -2,4 +2,5 @@ xrd:
   provider:
     - http:
         url: 'https://mainnet.radixdlt.com'
-
+    - http:
+        url: 'https://192.168.0.2:10443'

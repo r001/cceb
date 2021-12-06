@@ -1,3 +1,4 @@
+const https = require('https');
 const baseDir = __dirname + '/../'
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
@@ -59,7 +60,9 @@ async function queryRpc (method, params) {
       id: 1,
     }
 
-  var conf = {}
+  var conf = {
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+  }
 
   if (params.username) {
     conf.auth = {
@@ -74,7 +77,7 @@ async function queryRpc (method, params) {
   }
 
   return (await axios.post(
-    config.get(`xrd.provider`)[0].http.url + "/" + endPoint,
+    config.get(`xrd.provider`)[1].http.url + "/" + endPoint,
     postData, conf
       )).data.result
   
