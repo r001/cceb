@@ -53,9 +53,6 @@ web3:
       FARM_VAULT:
         remark: 'FARM VAULT IMPLEMENTATION - same for all vaults'
         address: '0x9B3bE0cc5dD26fd0254088d03D8206792715588B'
-      FARM_VAULT_DAI:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0xab7fa2b2985bccfc13c6d86b1d5a17486ab1e04c'
       FARM_VAULT_CRVRENBTC:
         remark: 'Use with --abi FARM_VAULT '
         address: '0x9aA8F427A17d6B0d91B6262989EdC7D45d6aEdf8'
@@ -120,6 +117,10 @@ web3:
         address: '0xF1181A71CC331958AE2cA2aAD0784Acfc436CB93'
       FARM_FARM_USDC_UNISWAP:
         address: '0x514906fc121c7878424a5c928cad1852cc545892'
+      FARM_VAULT_DAI:
+        address: '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C'
+      FARM_VAULT_DAI_IMPLEMENTATION:
+        address: '0x9b3be0cc5dd26fd0254088d03d8206792715588b'
     unit:
       UNIT_VAULT:
         address: '0xb1cFF81b9305166ff1EFc49A129ad2AfCd7BCf19'

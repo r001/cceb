@@ -518,7 +518,7 @@ async function getSourceCode (addressName) {
 
   var code = source.data.result[0].SourceCode.replace(/\r/g, '')
   var remark = "//"
-  if (code.slice(2) === '{{' && code.slice(-2) === '}}') {
+  if (code.slice(0, 2) === '{{' && code.slice(-2) === '}}') {
     code = code.slice(1, -1)
   }
   try {
