@@ -61,7 +61,7 @@ async function queryRpc (method, params) {
     }
 
   var conf = {
-      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      httpsAgent: new https.Agent({rejectUnauthorized: false}),
   }
 
   if (params.username) {
@@ -77,7 +77,7 @@ async function queryRpc (method, params) {
   }
 
   return (await axios.post(
-    config.get(`xrd.provider`)[1].http.url + "/" + endPoint,
+    config.get(`radix.provider`)[1].http.url + "/" + endPoint,
     postData, conf
       )).data.result
   

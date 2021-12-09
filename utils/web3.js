@@ -441,7 +441,7 @@ async function getAbiFunctions (abi, regexp) {
 async function extractAbi (abi, regexp, type) {
   log.debug(`abi: ${abi}`)
   log.debug(`regexp: ${regexp}`)
-  const abiJson = await getAbi(abi)
+  const abiJson = await getAbi(abi, await getAddress(abi))
   const contract = new web3.eth.Contract(abiJson) 
   return contract.options.jsonInterface
     .filter(abi =>
@@ -505,10 +505,11 @@ async function getWeb3Function (functionString) {
   , web3)
 }
 
-async function getSourceCode (address) {
+async function getSourceCode (addressName) {
+  const address = await getAddress(addressName)
   try {
     var source = await axios.get(
-      config.get('web3.etherscan.contract_url') + config.get('web3.etherscan.api-key') + '&action=getsourcecode&address=' + await getAddress(address),
+      config.get('web3.etherscan.contract_url') + config.get('web3.etherscan.api-key') + '&action=getsourcecode&address=' + address,
       {timeout: config.get('web3.etherscan.timeout')}
     )
   } catch (e) {
@@ -516,13 +517,14 @@ async function getSourceCode (address) {
   }
 
   var code = source.data.result[0].SourceCode.replace(/\r/g, '')
+  var remark = "//"
   try {
     if (code[0] === '{' && code.slice(-1) === '}') {
       code = code.slice(1, -1)
     }
     code = JSON.parse(code)
     const remarks = {Solidity: "// ", Vyper: "# "}
-    const remark = remarks[code.language]
+    remark = remarks[code.language]
     log.debug({remarks, remark, language: code.language, code})
     if (code.sources) {
       const sources = Object.keys(code.sources)
@@ -539,7 +541,19 @@ async function getSourceCode (address) {
       , '') 
     } 
   } catch (e) {
-    return code 
+    log.debug(e)
+  }
+
+  var implAddr = proxyImplAddress(await getAbi(addressName, address), address)
+  
+  if (implAddr) {
+
+    code = `${remark} ------ BEGIN PROXY CONTRACT SOURCE ******\n` +
+      code +
+      `\n${remark} ------ END PROXY CONTRACT SOURCE ******\n\n` +
+      `${remark} ------ BEGIN IMPLEMENTATION SOURCE ******\n\n` +
+      await getSourceCode(addressName + "_IMPLEMENTATION") +
+      `\n${remark} ------ END IMPLEMENTATION SOURCE ******`
   }
     return code
 }
@@ -588,19 +602,23 @@ async function getAbi (abi, address, recurseCount) {
       throw Error(`Could not download abi. Either timeout error, or valid value missing in config/default.yaml->web3->etherscan.`)
     }
   }
-
-  if (await hasImplementation(abiJson) && (recurseCount === null || recurseCount < 1)) {
+  try {
+    log.debug({abiJson, address})
+    var implAddr = await proxyImplAddress(abiJson, address)
+    log.debug({implAddr})
+  } catch (e) {
+    throw Error(e)
+  }
+  log.debug({recurseCount})
+  if (implAddr && (!recurseCount || recurseCount < 1)) {
 
     log.debug('here getAbi')
 
-    // abi contains a Truffle implementation() scheme  
-    const contract = new web3.eth.Contract(abiJson, address || await getAddress(abi))
-    const impAddress = await contract.methods['implementation']().call()
-    log.debug({impAddress})
+    log.debug({implAddr})
     
     const abiImpl = await getAbi(
       `${abi}_IMPLEMENTATION`,
-      impAddress,
+      implAddr,
       1
     )
 
@@ -899,11 +917,11 @@ async function getPath (sellToken, buyToken, pathString) {
         const pathLoc = `web3.${network}.uniswap.paths`
         var paths = config.get(pathLoc)
         paths = {...paths, [pathKey]: path}
-        const conf = yaml.load(fs.readFileSync('./config/default.yaml', 'utf-8'))
+        const conf = yaml.load(fs.readFileSync(`${baseDir}config/default.yaml`, 'utf-8'))
         set(conf, pathLoc, paths)
 
         fs.writeFileSync(
-          './config/default.yaml',
+          `${baseDir}config/default.yaml`,
           yaml.dump(conf, {forceQuotes: true}),
           () => {
             throw Error(`File config could not be written.`)
@@ -926,7 +944,7 @@ async function importAddress (args) {
   }
   const yaml = require('js-yaml');
   const set = require('set-value');
-  const conf = yaml.load(fs.readFileSync('./config/default.yaml', 'utf-8'))
+  const conf = yaml.load(fs.readFileSync(`${baseDir}config/default.yaml`, 'utf-8'))
   const network = config.get('web3.network')
   if (args.location === '' || !args.location) {
     // find insert location based on contractName
@@ -953,7 +971,7 @@ async function importAddress (args) {
   set(conf, args.location, change);
 
   fs.writeFileSync(
-    './config/default.yaml',
+    `${baseDir}/config/default.yaml`,
     yaml.dump(conf, {forceQuotes: true}),
     () => {
       throw Error(`File config could not be written.`)
@@ -965,19 +983,21 @@ async function importAddress (args) {
   config = require('config')
 
   const abiJson = await getAbi(args.contractName, args.contractAddress)
-  if ( await hasImplementation(abiJson)) {
+  var implAddr
+  try {
+   implAddr = await proxyImplAddress(abiJson, args.contractAddress)
+  } catch (e) {
+    throw Error('Wrong proxy')
+  }
+  if (implAddr) {
 
     log.debug('here importAddress')
-
-    // abi contains a Truffle implementation() scheme  
-    const contract = new web3.eth.Contract(abiJson, args.contractAddress)
-    const impAddress = await contract.methods['implementation']().call()
 
     await importAddress(
       {
         ...args,
         contractName: `${args.contractName}_IMPLEMENTATION`,
-        contractAddress: impAddress
+        contractAddress: implAddr
       }
     )
 
@@ -985,15 +1005,75 @@ async function importAddress (args) {
   return ''
 }
 
-async function hasImplementation (abiJson) {
-  const res =  abiJson.find(a => 
+async function proxyImplAddress (abiJson, address) {
+
+  var res_EIP_897 
+  var res_EIP_1967
+
+  address = await getAddress(address)
+
+  const address_EIP_1967 = '0x' + (
+    await web3.eth.getStorageAt(
+      address,
+      '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc')
+  ).slice(-40)  
+
+  log.debug({address_EIP_1967})
+
+  if (address_EIP_1967.match(/0x0{40}/)) {
+    const beacon_EIP_1967 = '0x' + (
+      await web3.eth.getStorageAt(
+        address,
+        '0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50')
+    ).slice(-40)
+
+    log.debug({beacon_EIP_1967})
+
+    if (!beacon_EIP_1967.match(/0x0{40}/)) {
+      const contract = new web3.eth.Contract(
+        [{name: "implementation",
+          type: "function",
+          inputs:[],
+          outputs:['address'],
+          stateMutability: 'view'}
+        ],
+        beacon_EIP_1967)
+
+      res_EIP_1967 = await contract.methods['implementation']().call()
+    }
+  } else {
+    res_EIP_1967 = address_EIP_1967
+  }
+
+  if (!res_EIP_1967) {
+    var res_EIP_1822 = '0x' + (
+      await web3.eth.getStorageAt(
+        address,
+        '0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7')
+    ).slice(-40)
+
+    log.debug({res_EIP_1822})
+    if (res_EIP_1822.match(/0x0{40}/)) {
+      res_EIP_1822 = null
+
+      res_EIP_897 =  abiJson.find(a => 
         a.name === 'implementation' &&
         a.type === 'function' && 
         a.outputs[0].type === 'address' &&
         a.stateMutability === 'view'
-  ) 
+      )
 
-  return res !== undefined
+      log.debug({res_EIP_897})
+
+      if (res_EIP_897) {
+        const contract = new web3.eth.Contract(abiJson, address)
+        res_EIP_897 = await contract.methods['implementation']().call()
+        log.debug({res_EIP_897})
+      } 
+    }
+  } 
+  // we should return null if none of the proxy methods apply
+  return res_EIP_897 || res_EIP_1822 || res_EIP_1967 
 }
 
 /* Translates address id like 'DAI' to real address and */

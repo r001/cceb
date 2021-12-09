@@ -1,4 +1,4 @@
-xrd:
+radix:
   provider:
     - http:
         url: 'https://mainnet.radixdlt.com'

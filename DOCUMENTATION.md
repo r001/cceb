@@ -1,10 +1,13 @@
 ﻿# Documentation - cceb
 
-> Bash cli for trading centralized and Ethereum exchanges, and interact with Ethereum smart contracts.
+> Bash cli for trading, and to interact with RadixDLT and Ethereum.
 
 ## Table of contents
 
 - [What's new](#whats-new)
+- [General usage](#general-usage)
+	- [Number constants](#number-constants)
+	- [TAB completion](#tab-completion)
 - [Interact with exchanges](#interact-with-exchanges)
 	- [get deposit address for tokens](#deposit-tokens)
 	- [add limit or market order](#add-order)
@@ -19,6 +22,10 @@
 	- [commands](#radixdlt-commands)	
 	- [authentication](#radixdlt-authentication)
 - [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
+	- [number format](#number-format)
+	- [default from address](#default-from-address)
+	- [Ethereum account types](#ethereum-account-types)
+	- [proxy support](#proxy-support)
 	- [call web3 query functions](#call-any-web3-query-function)
 	- [send or call ethereum contracts,](#send-or-call-ethereum-contracts)
 	- [display abi of smart contracts in a human readable way](#display-abi-of-smart-contracts-in-a-human-readable-way)
@@ -33,42 +40,57 @@
 - [Telegram connect](#telegram-connect)
 
 ### Whats new 
-### Changes from 1.3.x to 1.4.x
+#### Changes from 1.3.x to 1.4.x
 
+##### [RadixDLT](https://www.radixdlt.com) support
 [RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented. 
+ ##### Proxy support
+`cceb` supports the following proxy designs:
+ - [EIP-897](https://eips.ethereum.org/EIPS/eip-897)  Delegate Proxy
+ - [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967) Standard Proxy Storage Slots
+ - [EIP-1822](https://eips.ethereum.org/EIPS/eip-1822) Universal Upgradeable Proxy Standard
 
-### Number constants
+### General usage 
+`cceb` has four main commands:  
+- `exchange` - to interact with [centralized exchanges, and Uniswap v2 contracts.](#interact-with-exchanges)
+- `radix` - interact with [RadixDLT network](#radixdlt-interactions)
+- `eth` - interact with [Ethereum network](#ethereum-blockchain-interactions)
+- `ledger` - interact with [Ledger wallet](#ledger-wallet-interactions)
 
-Number constants can be used wherever numbers are entered.  
 
-|  Constant  |      Meaning      |               Example               |
-|:----------:|:-----------------:|:-----------------------------------:|
-| wei        | 1                 | 10wei = 10                          |
-| kwei       | 1,000             | .23kwei = 230                       |
-| babbage    | 1,000             | 1.1babbage = 1100                   |
-| mwei       | 1,000,000         | .001mwei = 1000                     |
-| lovelace   | 1,000,000         | 1lovelace = 1000000                 |
-| gwei       | 1,000,000,000     | 50gwei = 50,000,000,000             |
-| gw         | 1,000,000,000     | 50gwei = 50,000,000,000             |
-| shannon    | 1,000,000,000     | .25gwei = 250,000,000               |
-| terawei    | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| tw         | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| szabo      | 1,000,000,000,000 | 23terawei = 23,000,000,000,000      |
-| microether | 1,000,000,000,000 | 5terawei = 5,000,000,000,000        |
-| petawei    | 10^15             | .002petawei = 2,000,000,000,000     |
-| pw         | 10^15             | .000001pw = 1,000,000,000           |
-| finney     | 10^15             | 100finney = 10^17                   |
-| milliether | 10^15             | 500milliether = 5*10^17             |
-| ether      | 10^18             | 1.12ether = 1.12*10^18              |
+#### Number constants
+
+Number constants can be used wherever numbers are entered.  Number constants are case insensitive.
+
+|  Constant  |             Value |               Example               |
+|:----------:|------------------:|:-----------------------------------:|
+| wei        |                 1 |              10wei = 10             |
+| kwei       |             1,000 |            .23kwei = 230            |
+| babbage    |             1,000 |          1.1babbage = 1100          |
+| mwei       |         1,000,000 |           .001mwei = 1000           |
+| lovelace   |         1,000,000 |         1lovelace = 1000000         |
+| gwei       |     1,000,000,000 |       50gwei = 50,000,000,000       |
+| gw         |     1,000,000,000 |        50gw = 50,000,000,000        |
+| shannon    |     1,000,000,000 |      .25shannon = 250,000,000       |
+| terawei    | 1,000,000,000,000 |     5terawei = 5,000,000,000,000    |
+| tw         | 1,000,000,000,000 |       5tw = 5,000,000,000,000       |
+| szabo      | 1,000,000,000,000 |     23szabo = 23,000,000,000,000    |
+| microether | 1,000,000,000,000 |   5microether = 5,000,000,000,000   |
+| petawei    |             10^15 |   .002petawei = 2,000,000,000,000   |
+| pw         |             10^15 |      .000001pw = 1,000,000,000      |
+| finney     |             10^15 |          100finney = 10^17          |
+| milliether |             10^15 |       500milliether = 5*10^17       |
+| ether      |             10^18 |        1.12ether = 1.12*10^18       |
 | \<number\>E\<exponent\>| number*10^exponent            | 1E18 = 1ether |	
 
-### Use TAB to get possible alternatives with Bash completion
+#### TAB completion
 
 When TAB is pressed twice at command line interface, possible alternatives show up using Bash completion.  
 
 `cceb eth tx MKR <TAB><TAB>` list abi functions of MKR contract.  
 `cceb eth tx WETH balanceOf E<TAB><TAB>` list ethereum addresses matching `E*`.  
-`cceb eth <TAB><TAB>` list possible eth commands.  
+`cceb eth <TAB><TAB>` list possible eth commands. 
+`cceb radix <TAB><TAB>` list possible radix commands. 
 
 ### Interact with exchanges
 
@@ -106,7 +128,10 @@ When stating amount, any javascript accepted mathematical expression can be used
 
 Add order buying Ether for half of all the USDT we have, at a limit price of 1500:  
 `$ cceb exchange add binance buy limit max/2 ETH/USDT 1500`  
-  
+
+To buy 1.2 Ether even on Uniswap:
+`$ cceb exchange add uniswap buy market 1.2 ETH/USDT 0` 
+
 Sell all the WBTC we have (note we just set a price of 0, as it is ignored anyway when adding market orders):  
 `$ cceb exchange add uniswap sell market max WBTC/USDT 0`  
 
@@ -527,16 +552,27 @@ Note: `-u` and `-p` can be used for username and password respectively as a shor
 
 ### [Ethereum](https://ethereum.org/en/) blockchain interactions
 
+#### Number format
 When interacting with Ethereum contracts, `cceb` returns fixed digits (decimals fitted for each token) numbers when `balanceOf`, or `totalSupply` is requested. When numbers are entered to `cceb eth tx` then dot is disregarded, and number is taken as an integer. So make sure you DO NOT delete any digits from fractional numbers.
-  
+
+#### Default from address
 From address is not needed, because if not provided `cceb` will use default address defined in `$(npm root -g)/cceb/config/default.yaml -> web3.defaultFrom`  
   
+ #### Ethereum account types
 There are three types of Ethereum accounts can be defined in `$(npm root -g)/cceb/config/secrets/default.yaml -> web3.account`:
 - `privatekey` - UNSAFE!!! the privatekey is stored  in `$(npm root -g)/cceb/config/secrets/default.yaml web3.account.<account_name>.privatekey`. If the file gets compromised, attacker has total authority on account.
 - `airsign` - (SAFE) [airsign](https://github.com/r001/airsign) accounts store the privatekeys on a mobile phone that communicates `cceb` using QR codes to sign transactions and signatures. 
 - `ledger` - (SAFE) [ledger](https://www.ledger.com) accounts use Ledger cold wallets to sign transactions
 
-#### Call web3 query functions
+ #### Proxy support
+`cceb` supports the following proxy designs:
+ - [EIP-897](https://eips.ethereum.org/EIPS/eip-897)  Delegate Proxy
+ - [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967) Standard Proxy Storage Slots
+ - [EIP-1822](https://eips.ethereum.org/EIPS/eip-1822) Universal Upgradeable Proxy Standard
+ 
+ This means that `cceb eth tx <contract>` , `cceb eth abi <contract>`, and `cceb eth source <contract>` commands can handle proxy `<contract>` of the above standards.
+ 
+ #### Call web3 query functions
 
 Any web3 function that returns a single value or a set of values can be called. You can not call functions that return handles (you can not subscribe to events). You can substitute names for addresses and `cceb` will translate them to addresses. 
 
@@ -567,6 +603,15 @@ Address substitutions do work. Get 0th storage from old MKR token:
 `cceb eth web3 web3.eth.getStorageAt MKR_OLD 0`  
   
 #### Send or call ethereum contracts
+All numbers entered are taken as integers. You can enter numbers with dot ("."), but that dot is disregarded. When numbers are returned, if the decimals can be determined from contract, then those decimals will be displayed, if not 18 decimals will be used as default. For example If `ETH-5` address has 1 USDC balance, the following command:
+`$ cceb eth tx USDC balanceOf ̇ETH-1` 
+will return:
+`1.000000` 
+if `ETH-1` has 0 balance of USDT:
+`$ cceb eth tx USDC balanceOf ETH-1`
+will return:
+`.000000`
+The numbers can be copied and pasted as number arguments of successive `cceb eth tx` commands.
 
 ##### Examples
 

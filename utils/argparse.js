@@ -1482,15 +1482,22 @@ function buildRadixCommands (yargs) {
 } 
 
 function buildArgs (yargs, method) {
-  method.params.reduce((yargs, param) => 
+  method.params.reduce((yargs, param) => { 
     param.required ?
     yargs.positional(param.name, {
-      type: param.schema.type === 'integer' ? 'number': !param.schema.type ? 'string' : param.schema.type,
+      type: param.schema.type === 'integer' ? 'string': !param.schema.type ? 'string' : param.schema.type,
     })
     :
     yargs.option(param.name, {
-      type: param.schema.type === 'integer' ? 'number': !param.schema.type ? 'string' : param.schema.type,
+      type: param.schema.type === 'integer' ? 'string': !param.schema.type ? 'string' : param.schema.type,
     })
+
+    if (param.schema.type === 'integer') {
+      yargs.coerce(param.name, int => numberFormatted(int))
+    }
+
+    return yargs
+  }
     , yargs)
 }
 

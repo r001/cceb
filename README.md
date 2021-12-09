@@ -6,9 +6,15 @@
 > Bash cli for trading, and to interact with RadixDLT and Ethereum.
 
 ## What's new 
-### Changes from 1.3.x to 1.4.x
+#### Changes from 1.3.x to 1.4.x
 
-[RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented. 
+##### [RadixDLT](https://www.radixdlt.com) support
+[RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented.
+ ##### Proxy support
+`cceb` supports the following proxy designs:
+ - [EIP-897](https://eips.ethereum.org/EIPS/eip-897)  Delegate Proxy
+ - [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967) Standard Proxy Storage Slots
+ - [EIP-1822](https://eips.ethereum.org/EIPS/eip-1822) Universal Upgradeable Proxy Standard
 
 ## Features
 
