@@ -521,20 +521,24 @@ async function getSourceCode (addressName) {
   if (code.slice(2) === '{{' && code.slice(-2) === '}}') {
     code = code.slice(1, -1)
   }
-  code = JSON.parse(code)
-  const sources = Object.keys(code.sources || code)
-  remark = sources[0] && sources[0].slice(-3) === 'sol' ? '//' : '#'
+  try {
+    code = JSON.parse(code)
+    const sources = Object.keys(code.sources || code)
+    remark = sources[0] && sources[0].slice(-3) === 'sol' ? '//' : '#'
 
-  log.debug({remark, language: code.language, code})
+    log.debug({remark, language: code.language, code})
 
-  code = `${remark} ------ File contains multiple sources. Can not be compiled as is.\n` +
-    sources.reduce((acc, source) => 
-    acc +
-    `\n${remark} ------ Source of ${source} ------\n` +
-    (code.sources ? 
-      code.sources[source].content.replace(/\r/g, '') :
-      code[source].content.replace(/\r/g, ''))
-    , '') 
+    code = `${remark} ------ File contains multiple sources. Can not be compiled as is.\n` +
+      sources.reduce((acc, source) => 
+        acc +
+        `\n${remark} ------ Source of ${source} ------\n` +
+        (code.sources ? 
+          code.sources[source].content.replace(/\r/g, '') :
+          code[source].content.replace(/\r/g, ''))
+        , '') 
+  } catch (e) {
+    log.debug(e) 
+  }
 
   var implAddr = await proxyImplAddress(await getAbi(addressName, address), address)
   if (implAddr && !implAddr.match(/0x0{40}/)) {
@@ -546,7 +550,7 @@ async function getSourceCode (addressName) {
       await getSourceCode(addressName + "_IMPLEMENTATION") +
       `\n${remark} ------ END IMPLEMENTATION SOURCE ------`
   }
-    return code
+  return code
 }
 
 async function getAbi (abi, address, recurseCount) {

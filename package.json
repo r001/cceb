@@ -1,6 +1,6 @@
 {
   "name": "cceb",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Bash program to trade and interact with RadixDLT and Ethereum",
   "main": "cceb",
   "scripts": {
