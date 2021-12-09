@@ -518,42 +518,33 @@ async function getSourceCode (addressName) {
 
   var code = source.data.result[0].SourceCode.replace(/\r/g, '')
   var remark = "//"
-  try {
-    if (code[0] === '{' && code.slice(-1) === '}') {
-      code = code.slice(1, -1)
-    }
-    code = JSON.parse(code)
-    const remarks = {Solidity: "// ", Vyper: "# "}
-    remark = remarks[code.language]
-    log.debug({remarks, remark, language: code.language, code})
-    if (code.sources) {
-      const sources = Object.keys(code.sources)
-      return sources.reduce((acc, source, index) => 
-        acc +
-        `${
-          index === 0 
-            ? 
-              `${remark} ------ File contains multiple sources. Can not be compiled as is.\n` 
-            : 
-              "\n"
-          }${remark || "# "} ------ Source of ${source} ------\n` +
-          code.sources[source].content.replace(/\r/g, '')
-      , '') 
-    } 
-  } catch (e) {
-    log.debug(e)
+  if (code.slice(2) === '{{' && code.slice(-2) === '}}') {
+    code = code.slice(1, -1)
   }
+  code = JSON.parse(code)
+  const sources = Object.keys(code.sources || code)
+  remark = sources[0] && sources[0].slice(-3) === 'sol' ? '//' : '#'
 
-  var implAddr = proxyImplAddress(await getAbi(addressName, address), address)
-  
-  if (implAddr) {
+  log.debug({remark, language: code.language, code})
 
-    code = `${remark} ------ BEGIN PROXY CONTRACT SOURCE ******\n` +
+  code = `${remark} ------ File contains multiple sources. Can not be compiled as is.\n` +
+    sources.reduce((acc, source) => 
+    acc +
+    `\n${remark} ------ Source of ${source} ------\n` +
+    (code.sources ? 
+      code.sources[source].content.replace(/\r/g, '') :
+      code[source].content.replace(/\r/g, ''))
+    , '') 
+
+  var implAddr = await proxyImplAddress(await getAbi(addressName, address), address)
+  if (implAddr && !implAddr.match(/0x0{40}/)) {
+
+    code = `${remark} ------ BEGIN PROXY CONTRACT SOURCE ------\n` +
       code +
-      `\n${remark} ------ END PROXY CONTRACT SOURCE ******\n\n` +
-      `${remark} ------ BEGIN IMPLEMENTATION SOURCE ******\n\n` +
+      `\n${remark} ------ END PROXY CONTRACT SOURCE ------\n\n` +
+      `${remark} ------ BEGIN IMPLEMENTATION SOURCE ------\n\n` +
       await getSourceCode(addressName + "_IMPLEMENTATION") +
-      `\n${remark} ------ END IMPLEMENTATION SOURCE ******`
+      `\n${remark} ------ END IMPLEMENTATION SOURCE ------`
   }
     return code
 }
@@ -602,13 +593,9 @@ async function getAbi (abi, address, recurseCount) {
       throw Error(`Could not download abi. Either timeout error, or valid value missing in config/default.yaml->web3->etherscan.`)
     }
   }
-  try {
-    log.debug({abiJson, address})
-    var implAddr = await proxyImplAddress(abiJson, address)
-    log.debug({implAddr})
-  } catch (e) {
-    throw Error(e)
-  }
+  log.debug({abiJson, address})
+  const implAddr = await proxyImplAddress(abiJson, address)
+  log.debug({implAddr})
   log.debug({recurseCount})
   if (implAddr && (!recurseCount || recurseCount < 1)) {
 
@@ -1040,6 +1027,12 @@ async function proxyImplAddress (abiJson, address) {
         beacon_EIP_1967)
 
       res_EIP_1967 = await contract.methods['implementation']().call()
+      if (
+        res_EIP_1967.match(/0x0{40}/) || 
+        !res_EIP_1967.match(/^0x[0-9a-zA-Z]{40}$/)
+      ) {
+        res_EIP_1967 = null
+      }
     }
   } else {
     res_EIP_1967 = address_EIP_1967
@@ -1053,10 +1046,14 @@ async function proxyImplAddress (abiJson, address) {
     ).slice(-40)
 
     log.debug({res_EIP_1822})
-    if (res_EIP_1822.match(/0x0{40}/)) {
+    if (
+      res_EIP_1822.match(/0x0{40}/) ||
+      !res_EIP_1822.match(/^0x[0-9a-zA-Z]{40}$/)
+
+    ) {
       res_EIP_1822 = null
 
-      res_EIP_897 =  abiJson.find(a => 
+      res_EIP_897 =  abiJson && abiJson.find(a => 
         a.name === 'implementation' &&
         a.type === 'function' && 
         a.outputs[0].type === 'address' &&
@@ -1068,8 +1065,15 @@ async function proxyImplAddress (abiJson, address) {
       if (res_EIP_897) {
         const contract = new web3.eth.Contract(abiJson, address)
         res_EIP_897 = await contract.methods['implementation']().call()
-        log.debug({res_EIP_897})
-      } 
+        if (
+          res_EIP_897.match(/0x0{40}/) ||
+          !res_EIP_897.match(/^0x[0-9a-zA-Z]{40}$/)
+        ) {
+          res_EIP_897 = null
+
+          log.debug({res_EIP_897})
+        } 
+      }
     }
   } 
   // we should return null if none of the proxy methods apply

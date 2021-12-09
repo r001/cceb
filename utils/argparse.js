@@ -1547,13 +1547,17 @@ function numberFormatted (numString) {
 	}
 
 	async function handleEthTxFunc (current, argv, done, completionFilter) {
-		return await Promise.all(completionFilter(async (err, comp) => {
+    try {
+		var ret = await Promise.all(completionFilter(async (err, comp) => {
 			if (argv._[3] === 'ETH') {
 				comp = ['balance', 'balanceOf', 'transfer']
 			} else {
+        //fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({err, comp}) + `argv: ${JSON.stringify(argv)} \n`)
+
 				comp = (await w3.getAbiFunctions(argv._[3], '.*'))
-					.filter(fn => fn.match(new RegExp('^' + current)))
+					.filter(fn => fn.match(new RegExp('^' + (current || ''))))
 					.map(fn => fn.replace(/ /g, '_'))
+
 			}
 
 			var funcNames = comp.map(fn => fn.replace(/\(.*/, ''))
@@ -1561,9 +1565,13 @@ function numberFormatted (numString) {
 			if (funcNames.length === 1) {
 				comp = funcNames
 			}
-			//fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify(comp) + `argv: ${JSON.stringify(argv)}`)
 			done(comp)
 		}))
+    } catch (e) {
+    
+      //fs.writeFileSync("/home/user/cceb/args.txt", e.stack)
+    }
+    return ret 
 	}
 
 	async function handleEthTxContract (current, argv, done, completionFilter) {

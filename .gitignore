@@ -3,3 +3,5 @@ UNISWAP_PAIR*
 node_modules
 pairs
 ETH-*
+abi/*.vy
+abi/*.sol
