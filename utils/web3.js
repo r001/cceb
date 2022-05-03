@@ -645,7 +645,7 @@ async function getAddressAndCheck (to) {
   return toAddr
 }
 
-async function access (block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse) {
+async function access (block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata) {
 
   if (multipleUse) {
     web3 = getWeb3(network)
@@ -666,7 +666,8 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
     (nonce ? ` nonce ${nonce}` : '') +
     (block ? ` block ${block}` : '') +
     (inputs ? ` inputs ${inputs}` : '') +
-    (multipleUse ? ` multipleUse ${multipleUse}` : '')
+    (multipleUse ? ` multipleUse ${multipleUse}` : '') +
+    (calldata ? ` calldata ${calldata}` : '')
 
   log.info(dispCall)
 
@@ -705,78 +706,90 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
   var contract
   var methodName
   var funcObject
-  if (!ether) {
-    const abiJson = await getAbi(abi, to)
-    contract = new web3.eth.Contract(abiJson, to)
-    const funcNameReg = new RegExp('^' + funcName + '$', '')
+	var funcNameReg
+	if (!ether) {
+		const abiJson = await getAbi(abi, to)
+		contract = new web3.eth.Contract(abiJson, to)
+		if (!calldata) {
+			funcNameReg = new RegExp('^' + funcName + '$', '')
+		}
 
-    funcObject = contract.options.jsonInterface
-      .filter(abi =>
-        (
-          abi.type === 'function' ||
-          !abi.type
-        ) &&
+		funcObject = contract.options.jsonInterface
+			.filter(abi =>
+				(
+					abi.type === 'function' ||
+					!abi.type
+				) &&
 
-        funcNameReg.test(abi.name) &&
+				(calldata ? 
 
-        (!inputs || (abi.inputs.filter((input, index) => input.type === inputs[index]).length === inputs.length &&
-          inputs.length === abi.inputs.length)) &&
+				web3.eth.abi.encodeFunctionSignature(abi.name +
+					'(' +
+					abi.inputs.reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
+					')') === calldata.slice(0, 10)
+				: (
+					funcNameReg.test(abi.name) &&
 
-        args.length === abi.inputs.length
+					(!inputs || (abi.inputs.filter((input, index) => input.type === inputs[index]).length === inputs.length &&
+						inputs.length === abi.inputs.length)) &&
 
-      )[0]
+					args.length === abi.inputs.length
 
-    try {
-      funcName = funcObject['name']
-    } catch (e) {
-      throw new Error(`Function "${funcName}" not found at contract ${to}.`)
-    }
+				)))[0]
 
-    methodName = funcName +
-      '(' +
-      funcObject['inputs'].reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
-      ')'
+		try {
+			funcName = funcObject['name']
+		} catch (e) {
+			throw new Error(`Function "${funcName}" not found at contract ${to}.`)
+		}
 
-    log.debug(`Method is: ${methodName}`)
-    const inputTypes = funcObject['inputs'].map(input => input.type)
-    //log.debug(`inputTypes: ${inputTypes}`)
+		methodName = funcName +
+			'(' +
+			funcObject['inputs'].reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
+			')'
 
-    log.debug(`Args originally are: ${args}`)
+		log.debug(`Method is: ${methodName}`)
+		const inputTypes = funcObject['inputs'].map(input => input.type)
+		//log.debug(`inputTypes: ${inputTypes}`)
 
-    if (args.length !== inputTypes.length) {
-      throw Error(`Wrong number of args. Should be ${inputTypes.length} and it is ${args.length}.`)
-    }
+		log.debug(`Args originally are: ${args}`)
 
-    // substitute address name with address from config, remove all dots from uint values
-    log.debug({args: JSON.stringify(args)})
+		if (!calldata && args.length !== inputTypes.length) {
+			throw Error(`Wrong number of args. Should be ${inputTypes.length} and it is ${args.length}.`)
+		}
 
-    args = await Promise.all(inputTypes.map(async (type, index) =>
-      type === 'address' ? await getAddress(args[index]) : 
-      type.match(/address\[\d*\]/) ? await Promise.all(args[index].map(async (address) => await getAddress(address))) :
+		// substitute address name with address from config, remove all dots from uint values
+		log.debug({args: JSON.stringify(args)})
 
-      type.match(/uint\d*$/) ? args[index].replace(/\./g, "") :
-      type.match(/uint\d*\[\d*\]/) ? args[index].map((uint) => String(uint).replace(/\./g, "")) :
-      args[index]
-    ))
+		if(!calldata) {
+			args = await Promise.all(inputTypes.map(async (type, index) =>
+				type === 'address' ? await getAddress(args[index]) : 
+				type.match(/address\[\d*\]/) ? await Promise.all(args[index].map(async (address) => await getAddress(address))) :
 
-    log.debug(`Args expanded are: ${JSON.stringify(args)}`)
+				type.match(/uint\d*$/) ? args[index].replace(/\./g, "") :
+				type.match(/uint\d*\[\d*\]/) ? args[index].map((uint) => String(uint).replace(/\./g, "")) :
+				args[index]
+			))
+		}
 
-    var isCall =
-      (
-        funcObject['stateMutability'] &&
-        (
-          funcObject['stateMutability'] === 'pure' ||
-          funcObject['stateMutability'] === 'view'
-        )
-      ) ||
-      (
-        funcObject['constant'] &&
-        (
-          funcObject['constant'] === true ||
-          funcObject['constant'] === 'true'
-        )
-      )
-  } else {
+		log.debug(`Args expanded are: ${JSON.stringify(args)}`)
+
+		var isCall =
+			(
+				funcObject['stateMutability'] &&
+				(
+					funcObject['stateMutability'] === 'pure' ||
+					funcObject['stateMutability'] === 'view'
+				)
+			) ||
+			(
+				funcObject['constant'] &&
+				(
+					funcObject['constant'] === true ||
+					funcObject['constant'] === 'true'
+				)
+			)
+	} else {
     if (['transfer', 'transferFrom'].includes(funcName)) {
       isCall = false
     } else {
@@ -791,10 +804,14 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
       try {
         ret = await contract.methods[methodName](...args).call()
       } catch (e) {
-        var parameters = web3.eth.abi.encodeParameters(funcObject.inputs, args) 
-        var signature = web3.eth.abi.encodeFunctionSignature(methodName)
-        var data = signature + parameters.slice(2)
-        ret = await web3.eth.call({to, data, from})
+				if (calldata) {
+					ret = await web3.eth.call({to, calldata, from})
+				} else {
+					var parameters = web3.eth.abi.encodeParameters(funcObject.inputs, args) 
+					var signature = web3.eth.abi.encodeFunctionSignature(methodName)
+					var data = signature + parameters.slice(2)
+					ret = await web3.eth.call({to, data, from})
+				}
       }
       log.debug(`Result: ${JSON.stringify(ret)}`)
     } else {
@@ -807,17 +824,23 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
   } else {
     log.debug(`Send method is used to access ${methodName} function.`)
 
-    var txData = ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
+		var txData = calldata ? calldata : ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
     if (!gasPrice) gasPrice = await getGasPrice()
 
     if (!gasLimit) {
       if (!ether) {
         try {
-          gasLimit = await contract.methods[methodName](...args).estimateGas({
-            from,
-            value,
-          })
-
+					if (calldata) {
+						gasLimit = await web3.eth.estimateGas({
+							to,
+							data: calldata
+})
+					} else {
+						gasLimit = await contract.methods[methodName](...args).estimateGas({
+							from,
+							value,
+						})
+					}
          console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
           gasLimit += config.get(`web3.gasOverhead`)
           console.log(`netw est. gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)

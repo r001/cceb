@@ -536,7 +536,7 @@ async function aaveDeposit (block, token, amount, from, gaslimit, gasprice, nonc
 		(token === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? depositAmt.toFixed() : 0),
 		gaslimit,
 		gasprice,
-	  nonce)
+		nonce)
 		
 
 	return ''
@@ -1660,7 +1660,10 @@ async function getEthTransaction (args) {
 		args.value,
 		args.gaslimit,
 		args.gasprice,
-		args.nonce
+		args.nonce,
+		null, // inputs
+		null, // multiple use
+		args.calldata
 	)
 }
 

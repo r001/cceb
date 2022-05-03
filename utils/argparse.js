@@ -701,6 +701,13 @@ return yargs
 								type: 'string',
               }
               )
+
+              .option('calldata', {
+                alias:['c', 'd'],
+                desc: 'Hex calldata to be sent to contract.',
+								type: 'string',
+              }
+              )
           }
         })
         .command({
@@ -1400,7 +1407,7 @@ return yargs
                 desc: 'List this many addresses each',
               }
               )
-							.coerce('count', count => numberFormatted(count))
+							.coerce('count', count => numberFormatted(Number.toString(count)))
 
           }
         })
@@ -1594,6 +1601,9 @@ function numberFormatted (numString) {
           'BatchRequest',
         ].includes(key)).map(key => 'web3.eth.net.' + key))
 
+    } else if (current.match(/^web3.eth.a/)) {
+      comp = comp.concat(Object.keys(w3.web3.eth.abi).map(key => 'web3.eth.abi.' + key))
+
     } else if (current.match(/^web3.u/)) {
       
       comp = comp.concat(Object.keys(w3.web3.utils).map(key => 'web3.utils.' + key))
@@ -1655,6 +1665,11 @@ function web3MatchingCommands (command, fullPath = false, exact = false) {
       .filter(key => ('web3.eth.Iban.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
       .map(key => fullPath ? 'web3.eth.Iban' + key :key)
     )
+		.concat(
+			Object.keys(w3.web3.eth.abi)
+			.filter(key => ('web3.eth.abi.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+			.map(key => fullPath ? 'web3.eth.abi.' + key :key)
+		)
 }
 
 function tab (commands, argv, commandLengthCanBeGreaterArgsLength = false) {

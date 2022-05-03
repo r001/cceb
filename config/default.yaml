@@ -488,6 +488,14 @@ web3:
           - 'WETH'
           - 'DUCK'
           - 'USDP'
+        TRIBE-WETH:
+          - 'TRIBE'
+          - 'FEI'
+          - 'WETH'
+        TRIBE-ETH:
+          - 'TRIBE'
+          - 'FEI'
+          - 'ETH'
       UNISWAP_FACTORY_V2:
         address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
       UNISWAP_ROUTER_V2:

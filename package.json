@@ -8,12 +8,14 @@
     "postinstall": "./install-tab-completion.sh"
   },
   "keywords": [
+    "radix",
+    "radixdlt",
+    "ethereum",
     "ccxt",
     "bash",
     "crypto",
     "ledger",
     "smart contract",
-    "ethereum",
     "cli",
     "airsign",
     "aave"
@@ -28,6 +30,7 @@
     "@ledgerhq/hw-app-eth": "^5.47.3",
     "@ledgerhq/hw-transport-node-hid-singleton": "^5.46.0",
     "@ledgerhq/logs": "^5.46.0",
+    "@radixdlt/account": "^3.0.6",
     "argparse": "^1.0.10",
     "axios": "^0.21.4",
     "bignumber.js": "^9.0.0",
