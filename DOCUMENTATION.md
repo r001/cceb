@@ -1,6 +1,6 @@
 ﻿# Documentation - cceb
 
-> Bash cli for trading, and to interact with RadixDLT and Ethereum.
+> Bash wallet for Ethereum and RadixDLT
 
 ## Table of contents
 
@@ -32,23 +32,25 @@
 	- [get address of a contract name, or name of a contract address](#get-address-of-a-contract-name-or-name-of-a-contract-address)
 	- [display source code of smart contracts](#display-source-code-of-smart-contracts)
 	- [import smart contract name and abi](#import-smart-contract-name-and-abi)
-	- [interact with Makerdao](#interact-with-makerdao)
-	- [interact with Aave](#interact-with-aave) 
-	- [interact with Curve](#interact-with-curve)
+	- [Makerdao integration](#interact-with-makerdao)
+	- [Aave integration](#interact-with-aave) 
+	- [Curve integration](#interact-with-curve)
+	- [WalletConnect integration](#wallet-connect-integration)
 - [Ledger wallet interactions](#ledger-wallet-interactions)
 	- [list ledger addresses](#ledger-wallet-interactions)
 - [Telegram connect](#telegram-connect)
 
 ### Whats new 
-#### Changes from 1.3.x to 1.4.x
+#### Changes from 1.4.x to 1.5.x
 
-##### [RadixDLT](https://www.radixdlt.com) support
-[RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented. 
- ##### Proxy support
-`cceb` supports the following proxy designs:
- - [EIP-897](https://eips.ethereum.org/EIPS/eip-897)  Delegate Proxy
- - [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967) Standard Proxy Storage Slots
- - [EIP-1822](https://eips.ethereum.org/EIPS/eip-1822) Universal Upgradeable Proxy Standard
+##### [WalletConnect](https://www.walletconnect.com) support
+
+It is possible to connect to web3 pages through Walletconnect. 
+1. If you chose to use Walletconnect at a web3 site. It will provide a QR code.
+2. Copy the QR code clicking the `Copy to clipboard` button.
+3. Paste your code like this:
+	- `cceb eth walletconnect connect "<walletconnect qrcode content>"`
+4. Done, you are connected. Use your Ledger, Private Key, or Airsign to sign transactions.
 
 ### General usage 
 `cceb` has four main commands:  
@@ -691,7 +693,8 @@ Optional arguments:
                         Nonce of transaction.
   --block BLOCK, -b BLOCK
                         Block height of transaction. (Only used with call
-                        transactions.)
+                        transactions.) Use negative number to show block 
+												backwards, relative to current highest blocknumber.
 ```
 #### Display abi of smart contracts in a human readable way
 
@@ -1246,6 +1249,44 @@ When `cceb eth curve info` issued the following fields are displayed:
 - `D_LP_MAX_BOOST` - amount of LP tokens that currently can be added to maintain max boost for gauge
 - `GAUGE_PERCENT` - gauge relative weight in percentage points compared to total weight of all gauges in receiving CRV income. Note if total value is less than 100, then there are unlisted gauges. Gauge addresses can be retrieved from CRV_GAUGE_CONTROLLER the following way: `cceb eth tx CRV_GAUGE_CONTROLLER gauges 0` (returns the address of the first gauge)
 - `DEPOSIT_USD` - total deposits in gauge in USD
+
+#### [WalletConnect](https://www.walletconnect.com) interactions
+
+WalletConnect is a protocol that connects web3 sites with `cceb` over internet. The protocol does not require the browser to have ANY add-ons or extensions to be installed. It works out of the box by using a QR code that must be shown or given to the wallet to connect to the site.
+
+To connect to a web3 pages through Walletconnect: 
+1. If you chose to use Walletconnect at a web3 site. It will provide a QR code.
+2. Copy the QR code clicking the `Copy to clipboard` button.
+3. Paste your code like this:
+	- `cceb eth walletconnect connect "<walletconnect qrcode content>"`
+4. Done, you are connected. Use your Ledger, Private Key, or Airsign to sign transactions.
+
+```
+cceb eth walletconnect connect <uri> [accounts..]
+
+Connect to Walletconnect
+
+Positionals:
+  uri       Walletconnect uri from Qr code                   [string] [required]
+  accounts  Accounts to connect to site             [array] [default: ["ETH-1"]]
+
+Options:
+      --version                       Show version number              [boolean]
+      --help                          Show help                        [boolean]
+  -b, --block                         Block height of transaction. (Only used
+                                      with call transactions.)          [number]
+  -c, --chainid                       Chain id of Ethereum network      [number]
+  -t, --theirgas                      Use site's gas estimation if possible
+                                                                       [boolean]
+  -g, --gasoverhead                   Gas that is added to estimated gaslimit
+                                                           [number] [default: 0]
+  -f, --overridefrom, --from          From address defaults to web3.defaultFrom
+                                                     [string] [default: "ETH-1"]
+  -g, --overridegaslimit, --gaslimit  Gas limit of transaction          [number]
+  -p, --overridegasprice, --gasprice  Gas price of transaction          [string]
+  -n, --overridenonce, --nonce        Nonce of transaction              [string]
+
+```
 
 #### [Ledger](https://www.ledger.com) wallet interactions
 

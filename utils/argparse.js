@@ -627,10 +627,92 @@ return yargs
         .option('block', {
           alias:'b',
           type: 'number',
-          desc: 'Block height of transaction. (Only used with call transactions.)',
+          desc: 'Block height of transaction. (Only used with call transactions.) Use negative number to show block backwards, relative to current highest blocknumber.',
         }
         )
 
+        .command({
+          //cceb eth
+          command: 'walletconnect <walletConnectCommand>',
+          desc: 'Display all token pairs on an exchange',
+          builder: (yargs) => {
+            yargs
+							.command({
+								//cceb eth walletconnect	
+								command: 'connect <uri> [accounts..]',
+								desc: 'Connect to Walletconnect',
+								builder: (yargs) => {
+									yargs
+										.positional('uri', {
+											desc: 'Walletconnect uri from Qr code',
+											type: 'string',
+										}
+										)
+
+										.positional('accounts', {
+											type: 'string',
+											desc: 'Accounts to connect to site',
+											default: [config.get('web3.defaultFrom')]
+										}
+										)
+
+										.option('chainid', {
+											alias:'c',
+											desc: 'Chain id of Ethereum network',
+											type: 'number',
+										}
+										)
+
+										.option('theirgas', {
+											alias:'t',
+											desc: 'Use site\'s gas estimation if possible',
+											type: 'boolean',
+										}
+										)
+
+										.option('gasoverhead', {
+											alias:'g',
+											desc: 'Gas that is added to estimated gaslimit',
+											type: 'number',
+											default: 0,
+										}
+										)
+										.coerce('gasoverhead', gasprice => numberFormatted(gasprice))
+										.option('overridefrom', {
+											alias: ['f', 'from'],
+											default: config.get('web3.defaultFrom'),
+											desc: 'Override from address (defaults to web3.defaultFrom) of all tx',
+											type: 'string',
+										}
+										)
+
+										.option('overridegaslimit', {
+											alias:['g', 'gaslimit'], 
+											desc: 'Override gas limit of all tx',
+											type: 'string',
+										}
+										)
+										.coerce('overridegaslimit', gaslimit => numberFormatted(gaslimit))
+
+										.option('overridegasprice', {
+											alias:['p', 'gasprice'],
+											desc: 'override gas price of all tx',
+											type: 'string',
+										}
+										)
+										.coerce('overridegasprice', gasprice => numberFormatted(gasprice))
+
+										.option('overridenonce', {
+											alias:['n', 'nonce'],
+											desc: 'Nonce of transaction',
+											type: 'string',
+										}
+										)
+										.coerce('overridenonce', gasprice => numberFormatted(gasprice))
+								}
+							})
+					}
+				})
         .command({
           //cceb eth
           command: 'web3 <function> [parameters..]',

@@ -22,6 +22,8 @@ const pressAnyKey = require('press-any-key')
 const shell = require('shelljs')
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
 const Eth = require("@ledgerhq/hw-app-eth").default;
+const sigUtil = require('@metamask/eth-sig-util')
+
 // console.log(network)
 
 log4js.configure(
@@ -57,25 +59,6 @@ function toHex (value) {
 
 function getWeb3 (network) {
   var web3 = null
-  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
-    try {
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.HttpProvider(
-          config.get(`web3.${network}.provider.http.url`) +
-          (
-            config.has(`web3.${network}.provider.http.api-key`) ?
-            config.get(`web3.${network}.provider.http.api-key`)
-            : 
-            ""
-          )
-        )
-      )
-
-      log.debug(`http rpc provider used.`)
-    } catch (e) {web3 = null}
-
-  } 
   if (web3 === null && config.has(`web3.${network}.provider.alchemy.url`)) {
     try {
 
@@ -95,6 +78,25 @@ function getWeb3 (network) {
       log.debug(`alchemy rpc provider used.`)
     } catch (e) {web3 = null}
   }
+  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
+    try {
+      web3 = new Web3(
+        Web3.givenProvider ||
+        new Web3.providers.HttpProvider(
+          config.get(`web3.${network}.provider.http.url`) +
+          (
+            config.has(`web3.${network}.provider.http.api-key`) ?
+            config.get(`web3.${network}.provider.http.api-key`)
+            : 
+            ""
+          )
+        )
+      )
+
+      log.debug(`http rpc provider used.`)
+    } catch (e) {web3 = null}
+
+  } 
   if (web3 === null && config.has(`web3.${network}.provider.infura.url`)) {
     try {
 
@@ -139,8 +141,174 @@ function getWeb3 (network) {
   return web3
 }
 
+async function getPrivateKeySignature (rawTx, type) {
+	var tx
+	const	account = await getAddressName(rawTx.from)
+  const privateKey = Buffer.from(config.get(`web3.account.${account}.privatekey`), 'hex')
+	switch (type) {
+		case 'sign_transaction':
+			tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
+			log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
+			log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
+			log.debug('value: ', '0x' + tx.value.toString("hex"))
+
+			tx.sign(privateKey)
+			return tx.r.toString("hex") + tx.s.toString("hex") + tx.v.toString("hex")
+		case 'sign_message':
+		case 'sign_personal_message':
+			return sigUtil.personalSign({privateKey, data: rawTx.data})
+		case 'sign_typed_data':
+			return sigUtil.signTypedData({privateKey, data: rawTx.data, version:rawTx.version})
+		default:
+			throw new Error(`Unsupported signature type: ${type}`)
+	}
+}
+	
+async function getLedgerSignature (rawTx, type) {
+
+	const derivePath = await getLedgerDerivePath('Ethereum', rawTx.from)
+	log.debug({derivePath})
+	const transport = await TransportNodeHid.create();
+	const eth = new Eth(transport)
+
+	var signed, rawLedger, typedData, sanitizedData, domainSeparator,
+		typedDataHash
+
+	switch (type) {
+		case 'sign_transaction':
+			rawLedger = {...rawTx,
+				chainId: config.get(`web3.${network}.chainid`),
+				v: toHex(config.get(`web3.${network}.chainid`)),
+				r: '0x00',
+				s: '0x00',
+			}
+
+			log.debug({rawLedger})
+			var lTx = new Transaction(rawLedger)
+
+			log.debug({
+				serialized:lTx.serialize().toString("hex"),
+				r: lTx.r.toString("hex"),
+				s:lTx.s.toString("hex"),
+				v:lTx.v.toString("hex")
+			})
+
+			signed = await eth.signTransaction(
+				derivePath,
+				lTx.serialize().toString("hex")
+			)
+
+			break
+		case 'sign_personal_message':
+			signed = await eth.signPersonalMessage(derivePath, rawTx.data)
+			signed.v = calcV(signed.v)
+			break
+		case 'sign_typed_data':
+			typedData = rawTx.data
+			sanitizedData = sigUtil.TypedDataUtils.sanitizeData(typedData)
+
+			domainSeparator = sigUtil.TypedDataUtils.hashStruct(
+				'EIP712Domain', 
+				sanitizedData.domain,
+				sanitizedData.types,
+				rawTx.version
+			)
+
+      typedDataHash = sigUtil.TypedDataUtils.hashStruct(
+				rawTx.data.primaryType,
+				sanitizedData.message,
+				sanitizedData.types,
+				rawTx.version,
+			)
+
+			signed = await eth.signEIP712HashedMessage(
+				derivePath,
+				domainSeparator.toString('hex'),
+				typedDataHash.toString('hex')
+			)
+
+			signed.v = calcV(signed.v)
+			break
+		default:
+			throw new Error(`Unsupported type ${type}`)
+	}
+			
+	const signature = signed.r + signed.s + signed.v
+	await transport.close()
+	return signature
+}
+
+async function calcV (v) {
+	v -= 27;
+	v = v.toString(16);
+	if (v.length < 2) {
+		v = "0" + v;
+	}   	
+	return v
+}
+
+async function getAirsignSignature (rawTx, type) {
+	var signature
+	log.info(`External signer used`)
+	var signable
+
+	switch (type) {
+		case 'sign_transaction':
+			signable = {
+				from: rawTx.from,
+				type: type,
+				payload: {
+					...rawTx,
+					chainId: config.get(`web3.${network}.chainid`) 
+				}
+			}
+
+			delete signable.payload.from
+			break
+		case 'sign_message':
+		case 'sign_personal_message':
+		case 'sign_typed_data':
+			signable = {
+				from: rawTx.from,
+				type: type,
+				payload: rawTx.data,
+				version: rawTx.version,
+			}
+			break
+		default:
+			throw new Error(`Unknown type ${type}`)
+	}
+
+	log.debug(`signable: ${JSON.stringify(signable)}`)
+
+	const encoded = qrEncoding.encode(JSON.stringify(signable))
+
+	await QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
+		if (err) throw new Error(err)
+		console.log(str) //FIXME: make this optional 
+	})
+
+	console.log(encoded)
+	console.log('')
+
+	// console.log(`  ./ccb eth send '{"from": "${from}", ${Object.keys(signable.payload).map(key => `"${key}": "${signable.payload[key]}"`).join(', ')}}' <signature>`)
+
+	await pressAnyKey('Press any key to continue!')
+
+	const zbarcam = shell.exec("zbarcam")
+
+	if (zbarcam.code) {
+		signature = readlineSync.question("Signature: ")
+	} else {
+		signature = zbarcam.stdout
+	}
+
+	signature = signature.replace(/^.*0x/, '') 
+	return signature
+}
+
 // Function to broadcast transactions
-async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, signature) {
+async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, signature, getHashFast) {
   const txCount = nonce || await web3.eth.getTransactionCount(from)
 
   const network = config.get('web3.network')
@@ -158,70 +326,23 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
 
   log.debug(rawTx)
   const accounts = config.get(`web3.account`)
-  const accountType = accounts[Object.keys(accounts).filter(key => accounts[key].address === from)[0]].type
+	const accountType = accounts[Object.keys(accounts).filter(key => accounts[key].address.toLowerCase() === from.toLowerCase())[0]].type
 
-  if (!signature && accountType === 'airsign') {
-    log.info(`External signer used`)
-
-    const signable = {
-      from: rawTx.from,
-      type: 'sign_transaction',
-      payload: {
-        ...rawTx,
-        chainId: config.get(`web3.${network}.chainid`) 
-      }
-    }
-
-    delete signable.payload.from
-
-    log.debug(`signable: ${JSON.stringify(signable)}`)
-
-    const encoded = qrEncoding.encode(JSON.stringify(signable))
- 
-    await QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
-      if (err) throw new Error(err)
-      console.log(str) //FIXME: make this optional 
-    })
-
-    console.log(encoded)
-    console.log('')
-
-    // console.log(`  ./ccb eth send '{"from": "${from}", ${Object.keys(signable.payload).map(key => `"${key}": "${signable.payload[key]}"`).join(', ')}}' <signature>`)
-
-    await pressAnyKey('Press any key to continue!')
-
-    const zbarcam = shell.exec("zbarcam")
-
-    if (zbarcam.code) {
-      signature = readlineSync.question("Signature: ")
-    } else {
-      signature = zbarcam.stdout
-    }
-
-    signature = signature.replace(/^.*0x/, '') 
-  }
-
-  if (!signature && accountType === 'ledger') {
-    const rawLedger = {...rawTx,
-        chainId: config.get(`web3.${network}.chainid`),
-        v: toHex(config.get(`web3.${network}.chainid`)),
-        r: '0x00',
-        s: '0x00',
-      }
-
-    log.debug({rawLedger})
-    var lTx = new Transaction(rawLedger)
-
-    log.debug({serialized:lTx.serialize().toString("hex"), r: lTx.r.toString("hex"), s:lTx.s.toString("hex"), v:lTx.v.toString("hex")})
-    
-    const derivePath = await getLedgerDerivePath('Ethereum', rawTx.from)
-    log.debug({derivePath})
-    const transport = await TransportNodeHid.create();
-    const eth = new Eth(transport)
-    const signed = await eth.signTransaction(derivePath, lTx.serialize().toString("hex"))
-    signature = signed.r + signed.s + signed.v
-    await transport.close()
-  }
+	if (!signature) {
+		switch (accountType) {
+			case 'airsign':
+				signature = await getAirsignSignature(rawTx, 'sign_transaction')
+				break
+			case 'ledger':
+				signature = await getLedgerSignature(rawTx, 'sign_transaction')
+				break
+			case 'privatekey':
+				signature = await getPrivateKeySignature(rawTx, 'sign_transaction')
+				break
+			default:
+				throw new Error(`Unknown account type ${accountType}`)
+		}
+	}
 
   if (signature) {
     const signedUri = signature.replace(/^0x/, "")
@@ -232,21 +353,17 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
     log.debug(`s: ${s}`)
     log.debug(`v: ${v}`)
     Object.assign(rawTx, {r, s, v})
-  }
+  } else {
+		log.error(`Signature not found`)
+		throw new Error(`Signature not created`)
+	}
 
   log.debug(`value: ${value}`)
   log.debug('Raw tx: ', rawTx)
-  const tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
+  var tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
   log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
   log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
   log.debug('value: ', '0x' + tx.value.toString("hex"))
-
-  if (!signature) {
-    const account = await getAddressName(from)
-
-    const privateKey = Buffer.from(config.get(`web3.account.${account}.privatekey`), 'hex')
-    tx.sign(privateKey)
-  }
   log.debug('from: ', '0x' + tx.from.toString("hex"))
 
   if (!tx.verifySignature()) {
@@ -256,11 +373,24 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
   const serializedTx = tx.serialize()
   log.debug(JSON.stringify({serializedTx: '0x' + serializedTx.toString('hex')}))
   console.log('Tx hash: 0x' + tx.hash(true).toString('hex'))
+	if (getHashFast) {
+		return await Promise.any([sendTransaction(serializedTx), getTransactionHash(tx)])
+	} else {
+		return await sendTransaction(serializedTx)
+	}
+}
+
+async function getTransactionHash (tx) {
+	return {transactionHash: '0x' + tx.hash(true).toString('hex')}
+}
+
+async function sendTransaction (serializedTx) {
   log.info('Sendig transaction...')
   const txReceipt = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')).on('error', console.error)
 
   // Log the tx receipt
-  //log.debug(txReceipt)
+  log.debug(txReceipt)
+
   log.info('Transaction confirmed.')
   return txReceipt
 }
@@ -597,7 +727,7 @@ async function getAbi (abi, address, recurseCount) {
       throw Error(`Could not download abi. Either timeout error, or valid value missing in config/default.yaml->web3->etherscan.`)
     }
   }
-  log.debug({abiJson, address})
+  log.trace({abiJson, address})
   const implAddr = await proxyImplAddress(abiJson, address)
   log.debug({implAddr})
   log.debug({recurseCount})
@@ -645,7 +775,7 @@ async function getAddressAndCheck (to) {
   return toAddr
 }
 
-async function access (block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata) {
+async function access (block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata, gasOverhead, getHashFast) {
 
   if (multipleUse) {
     web3 = getWeb3(network)
@@ -667,7 +797,10 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
     (block ? ` block ${block}` : '') +
     (inputs ? ` inputs ${inputs}` : '') +
     (multipleUse ? ` multipleUse ${multipleUse}` : '') +
-    (calldata ? ` calldata ${calldata}` : '')
+    (calldata ? ` calldata ${calldata}` : '') +
+		(gasOverhead ? ` gasOverhead ${gasOverhead}` : '') +
+		(getHashFast ? ` getHashFast ${getHashFast}` : '')
+
 
   log.info(dispCall)
 
@@ -693,7 +826,7 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
     from = config.get('web3.defaultFrom')
     log.debug(`Value of 'from' changed to: '${from}'`)
   }
-  if (!Array.isArray(args)) {
+  if (args && !Array.isArray(args)) {
     log.debug('Args was not an array, arrayify it.')
     args = [args]
   }
@@ -706,47 +839,12 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
   var contract
   var methodName
   var funcObject
-	var funcNameReg
 	if (!ether) {
-		const abiJson = await getAbi(abi, to)
-		contract = new web3.eth.Contract(abiJson, to)
-		if (!calldata) {
-			funcNameReg = new RegExp('^' + funcName + '$', '')
-		}
-
-		funcObject = contract.options.jsonInterface
-			.filter(abi =>
-				(
-					abi.type === 'function' ||
-					!abi.type
-				) &&
-
-				(calldata ? 
-
-				web3.eth.abi.encodeFunctionSignature(abi.name +
-					'(' +
-					abi.inputs.reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
-					')') === calldata.slice(0, 10)
-				: (
-					funcNameReg.test(abi.name) &&
-
-					(!inputs || (abi.inputs.filter((input, index) => input.type === inputs[index]).length === inputs.length &&
-						inputs.length === abi.inputs.length)) &&
-
-					args.length === abi.inputs.length
-
-				)))[0]
-
-		try {
-			funcName = funcObject['name']
-		} catch (e) {
-			throw new Error(`Function "${funcName}" not found at contract ${to}.`)
-		}
-
-		methodName = funcName +
-			'(' +
-			funcObject['inputs'].reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
-			')'
+		let {contract: cn, funcObject: fo, funcName:fn, methodName:mn} = await getFunctionParams(abi, to, calldata, funcName, inputs, args)	
+		funcObject = fo
+		funcName = fn
+		methodName = mn
+		contract = cn
 
 		log.debug(`Method is: ${methodName}`)
 		const inputTypes = funcObject['inputs'].map(input => input.type)
@@ -761,7 +859,7 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
 		// substitute address name with address from config, remove all dots from uint values
 		log.debug({args: JSON.stringify(args)})
 
-		if(!calldata) {
+		if (!calldata) {
 			args = await Promise.all(inputTypes.map(async (type, index) =>
 				type === 'address' ? await getAddress(args[index]) : 
 				type.match(/address\[\d*\]/) ? await Promise.all(args[index].map(async (address) => await getAddress(address))) :
@@ -799,14 +897,22 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
 
   var ret
   if (isCall) {
+		log.debug(`${methodName} is a call`)
     if (!ether) {
+			log.debug(`Not accessing Ether`)
       log.debug(`Call method is used to access ${methodName} function.`)
       try {
+				log.debug(`Calling contract.methods ${methodName}`)
+				log.debug(`Func name: ${funcName}`)
+				log.debug(`Args are: ${args}`)
         ret = await contract.methods[methodName](...args).call()
       } catch (e) {
+				log.debug(`Call to contract.methods ${methodName} failed`)
 				if (calldata) {
+					log.debug(`We are using calldata`)
 					ret = await web3.eth.call({to, calldata, from})
 				} else {
+					log.debug(`We are not using calldata, but function name of ${funcName} given`)
 					var parameters = web3.eth.abi.encodeParameters(funcObject.inputs, args) 
 					var signature = web3.eth.abi.encodeFunctionSignature(methodName)
 					var data = signature + parameters.slice(2)
@@ -831,10 +937,16 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
       if (!ether) {
         try {
 					if (calldata) {
-						gasLimit = await web3.eth.estimateGas({
+						
+						let txEst = {
+							from,
 							to,
+							value,
 							data: calldata
-})
+						}
+
+						txEst = nonce ? {...txEst, nonce} : txEst
+						gasLimit = await web3.eth.estimateGas(txEst)
 					} else {
 						gasLimit = await contract.methods[methodName](...args).estimateGas({
 							from,
@@ -842,7 +954,7 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
 						})
 					}
          console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
-          gasLimit += config.get(`web3.gasOverhead`)
+          gasLimit += gasOverhead || config.get(`web3.gasOverhead`) 
           console.log(`netw est. gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
         } catch (e) {
           log.warn(`Gaslimit estimation unsuccessful.`)
@@ -866,8 +978,9 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
 
     if (!ether) {
       try {
-        return await broadcastTx(from, to, txData, value, gasLimit, gasPrice, nonce, null)
+        return await broadcastTx(from, to, txData, value, gasLimit, gasPrice, nonce, null, getHashFast)
       } catch (e) {
+				log.error(`broadcastTx threw Error: ${e.stack}`)
         return await contract.methods[methodName](...args).send({from, value, gasLimit, gasPrice, nonce})
       }
     } else {
@@ -881,9 +994,54 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
         value = BN(args[2].replace(/\./g, "")).integerValue().toFixed()
         txData = '0x'
       }
-      return await broadcastTx(from, to, txData, value, gasLimit, gasPrice, nonce, null)
+      return await broadcastTx(from, to, txData, value, gasLimit, gasPrice, nonce, null, getHashFast)
     }
   }
+}
+
+async function getFunctionParams (abi, to, calldata, funcName = null, inputs, args) {
+		const abiJson = await getAbi(abi, to)
+		let contract = new web3.eth.Contract(abiJson, to)
+		var funcNameReg
+		if (!calldata) {
+			funcNameReg = new RegExp('^' + funcName + '$', '')
+		}
+
+		let funcObject = contract.options.jsonInterface
+			.filter(abi =>
+				(
+					abi.type === 'function' ||
+					!abi.type
+				) &&
+
+				(calldata ? 
+
+				web3.eth.abi.encodeFunctionSignature(abi.name +
+					'(' +
+					abi.inputs.reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
+					')') === calldata.slice(0, 10)
+				: (
+					funcNameReg.test(abi.name) &&
+
+					(!inputs || (abi.inputs.filter((input, index) => input.type === inputs[index]).length === inputs.length &&
+						inputs.length === abi.inputs.length)) &&
+
+					args.length === abi.inputs.length
+
+				)))[0]
+
+		try {
+			funcName = funcObject['name']
+		} catch (e) {
+			throw new Error(`Function "${funcName}" not found at contract ${to}.`)
+		}
+
+		let methodName = funcName +
+			'(' +
+			funcObject['inputs'].reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
+			')'
+
+	return {contract, funcObject, funcName, methodName}
 }
 
 async function getPath (sellToken, buyToken, pathString) {
@@ -979,9 +1137,19 @@ async function importAddress (args) {
   }
 
   // access element in change using args.location eg: 'web3.mainnet.token'
+	try {
   var change = args.location.split('.').reduce((acc, key) => acc && acc[key], conf)
+	} catch (e) {
+		change = undefined
+	}
+	if (change) {
+		// location exists
+		change = {...change, [args.contractName]: {address: args.contractAddress}}
+	} else {
+		// location does not exist
+		change = {[args.contractName]: {address: args.contractAddress}}
+	}
 
-  change = {...change, [args.contractName]: {address: args.contractAddress}}
   set(conf, args.location, change);
 
   fs.writeFileSync(
@@ -1252,16 +1420,20 @@ module.exports = {
   getAddressName,
   getAddressNames,
   getAddressType,
+	getAirsignSignature,
   getGasPrice,
   getLedgerDerivePath,
   getLedgerEthereumDerivePath,
+	getLedgerSignature,
   getNonce,
   getPath,
+	getPrivateKeySignature,
   getSourceCode,
   getWeb3Function,
   importAddress,
   kyberGetRates,
   kyberTrade,
+	sigUtil,
   toHex,
   web3,
 }

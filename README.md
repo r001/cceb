@@ -3,18 +3,19 @@
 [![NPM version](https://img.shields.io/npm/v/cceb.svg?style=flat)](https://www.npmjs.org/package/cceb)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fcceb08733804)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Ftwitter.com%2Fcceb08733804)
 
-> Bash cli for trading, and to interact with RadixDLT and Ethereum.
+> Bash wallet for Ethereum and RadixDLT
 
 ## What's new 
-#### Changes from 1.3.x to 1.4.x
+#### Changes from 1.4.x to 1.5.x
 
-##### [RadixDLT](https://www.radixdlt.com) support
-[RadixDLT](https://www.radixdlt.com) interaction is enabled along with auto completion support for Bash. All the current methods are implemented.
- ##### Proxy support
-`cceb` supports the following proxy designs:
- - [EIP-897](https://eips.ethereum.org/EIPS/eip-897)  Delegate Proxy
- - [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967) Standard Proxy Storage Slots
- - [EIP-1822](https://eips.ethereum.org/EIPS/eip-1822) Universal Upgradeable Proxy Standard
+##### [WalletConnect](https://www.walletconnect.com) support
+
+It is possible to connect to web3 pages through walletconnect. 
+1. If you chose to use Walletconnect at a web3 site. It will provide a QR code.
+2. Copy the QR code clicking the `Copy to clipboard` button.
+3. Paste your code like this:
+	- `cceb eth walletconnect connect "<walletconnect qrcode content>"`
+4. Done, you are connected. Use your Ledger, Private Key, or Airsign to sign transactions.
 
 ## Features
 

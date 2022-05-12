@@ -1,6 +1,6 @@
 loglevel: 'warn'
 web3:
-  txSpeed: 'safeLow'
+  txSpeed: 'fast'
   txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
   network: 'mainnet'
   defaultFrom: 'ETH-1'
@@ -524,6 +524,8 @@ web3:
     1inch:
       1INCH_AGGREGATION_ROUTER_V3:
         address: '0x11111112542D85B3EF69AE05771c2dCCff4fAa26'
+      1INCH_ROUTER_V4:
+        address: '0x1111111254fb6c44bac0bed2854e76f90643097d'
     aave:
       AAVE_LENDING_POOL_ADDRESSES_PROVIDER:
         address: '0x24a42fD28C976A61Df5D00D0599C34c4f90748c8'
