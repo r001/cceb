@@ -1,5 +1,6 @@
 const https = require('https');
 const baseDir = __dirname + '/../'
+const yaml = require('js-yaml')
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   ?
@@ -34,6 +35,20 @@ if (require.main === module) {
 
   (async () => {
   })()
+}
+
+async function dispRadixCommand (args) {
+	//console.log(args)
+
+	const parameters = Object.keys(args)
+		.filter(param => param.match(/^[a-z0-9]/))
+		.reduce((params, param) => {
+			params[param] = args[param] 
+			return params
+		}, {})
+
+	const result = await queryRpc(args._[1], parameters )
+	console.log(yaml.dump(result))
 }
 
 async function queryRpc (method, params) {
@@ -85,4 +100,5 @@ async function queryRpc (method, params) {
 
 module.exports = {
   queryRpc,
+	dispRadixCommand,
 }

@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 const config = require('config')
 const ccxt = require('ccxt')
-const BN = require('bignumber.js')
 var log4js = require('log4js')
+
 log4js.configure(
 	{
 		appenders: {
-			out: { type: 'stdout', layout: {
+			out: {type: 'stdout', layout: {
 				type: 'pattern',
 				pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
 			},
 			},
 		},
-		categories: { default: { appenders: ['out'], level: 'info', enableCallStack: true } },
+		categories: {default: {appenders: ['out'], level: 'info', enableCallStack: true}},
 	}
 )
+
 const log = log4js.getLogger()
 log.level = config.get('loglevel')
+
 function getExchange (exchangeId) {
 	const ExchangeClass = ccxt[exchangeId]
 	return new ExchangeClass(config.get('keys.' + exchangeId))
@@ -26,10 +28,13 @@ function evalExpr (variableName, variableValue, expression, bigNumber = false) {
   const keywords = new RegExp('plus|minus|times|multipliedBy|dividedBy|div|exponentiatedBy|pow|modulo|mod|squareRoot|sqrt|absoluteValue|abs|precision|sd|decimalPlaces|dp', 'g')
 	// security check expression
 	const variablePattern = new RegExp(variableName, 'g')
+
 		const check = expression.replace(variablePattern, '~')
 			.replace(keywords, '~')
 			.replace(/[^0-9~E*/.+()-, ]/g, '')
+
 		log.debug(`max expression  check: ${check}`)
+
 		log.debug(`expression expression: ${expression.replace(keywords, '~').replace(variablePattern, '~')}`)
 		if (check !== expression.replace(keywords, '~').replace(variablePattern, '~')) throw new Error('Illegal characters in max expression.')
 
@@ -42,6 +47,7 @@ function evalExpr (variableName, variableValue, expression, bigNumber = false) {
  '^' '+' '-' '+' but any of ('plus' 'minus' 'times' 'multipliedBy' \
  'dividedBy' 'div' 'exponentiatedBy' 'pow' 'modulo' 'mod' 'squareRoot' \
  'sqrt' 'absoluteValue' 'abs' 'precision' 'sd' 'decimalPlaces' 'dp'). See: http://mikemcl.github.io/bignumber.js`)
+
 			process.exit(1)
 		}
 
@@ -56,6 +62,7 @@ function minBN (bn1, bn2) {
   if (bn1.lt(bn2)) return bn1.times(1)
   return bn2.times(1)
 }
+
 module.exports = {
   evalExpr,
   getExchange,

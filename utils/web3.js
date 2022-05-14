@@ -2,11 +2,11 @@ const baseDir = __dirname + '/../'
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   ?
-    process.env.NODE_CONFIG_DIR + require('path').delimiter
+  process.env.NODE_CONFIG_DIR + require('path').delimiter
   :
-    "")
+  "")
   + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/" +
-   require('path').delimiter + "config/radix/" 
+  require('path').delimiter + "config/radix/" 
 
 var config = require('config')
 const qrEncoding = require('eth-airsign-util')
@@ -27,22 +27,21 @@ const sigUtil = require('@metamask/eth-sig-util')
 // console.log(network)
 
 log4js.configure(
-	{
-		appenders: {
-			out: {type: 'stdout', layout: {
-				type: 'pattern',
-				pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
-			},
-			},
-		},
-		categories: {default: {appenders: ['out'], level: 'info', enableCallStack: true}},
-	}
+  {
+    appenders: {
+      out: {type: 'stdout', layout: {
+        type: 'pattern',
+        pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
+      },
+      },
+    },
+    categories: {default: {appenders: ['out'], level: 'info', enableCallStack: true}},
+  }
 )
 
 const log = log4js.getLogger()
 log.level = config.get('loglevel')
 const MAX_DEST_AMOUNT = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
-var web3 = getWeb3(network)
 
 
 var readlineSync = require('readline-sync')
@@ -52,13 +51,33 @@ if (require.main === module) {
   })()
 }
 
-function toHex (value) {
- const raw = web3.utils.toHex(value)
- return '0x' + (raw.length % 2 === 1 ? '0' : '') + raw.slice(2)
+function toHex (web3, value) {
+  const raw = Web3.utils.toHex(value)
+  return '0x' + (raw.length % 2 === 1 ? '0' : '') + raw.slice(2)
 }
 
-function getWeb3 (network) {
+async function getWeb3 (network) {
   var web3 = null
+  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
+    try {
+      web3 = new Web3(
+        Web3.givenProvider ||
+        new Web3.providers.HttpProvider(
+          config.get(`web3.${network}.provider.http.url`) +
+          (
+            config.has(`web3.${network}.provider.http.api-key`) ?
+            config.get(`web3.${network}.provider.http.api-key`)
+            : 
+            ""
+          )
+        )
+      )
+
+      await web3.eth.getBlockNumber()
+      log.debug(`http rpc provider used.`)
+    } catch (e) {web3 = null}
+
+  } 
   if (web3 === null && config.has(`web3.${network}.provider.alchemy.url`)) {
     try {
 
@@ -75,28 +94,11 @@ function getWeb3 (network) {
         )
       )
 
+      await web3.eth.getBlockNumber()
+
       log.debug(`alchemy rpc provider used.`)
     } catch (e) {web3 = null}
   }
-  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
-    try {
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.HttpProvider(
-          config.get(`web3.${network}.provider.http.url`) +
-          (
-            config.has(`web3.${network}.provider.http.api-key`) ?
-            config.get(`web3.${network}.provider.http.api-key`)
-            : 
-            ""
-          )
-        )
-      )
-
-      log.debug(`http rpc provider used.`)
-    } catch (e) {web3 = null}
-
-  } 
   if (web3 === null && config.has(`web3.${network}.provider.infura.url`)) {
     try {
 
@@ -113,6 +115,7 @@ function getWeb3 (network) {
         )
       )
 
+      await web3.eth.getBlockNumber()
       log.debug(`infura rpc provider used.`)
     } catch (e) {web3 = null}
   }
@@ -131,6 +134,7 @@ function getWeb3 (network) {
         )
       )
 
+      await web3.eth.getBlockNumber()
       log.debug(`ws rpc provider used.`)
     } catch (e) {web3 = null}
 
@@ -142,173 +146,174 @@ function getWeb3 (network) {
 }
 
 async function getPrivateKeySignature (rawTx, type) {
-	var tx
-	const	account = await getAddressName(rawTx.from)
+  var tx
+  const	account = await getAddressName(rawTx.from)
   const privateKey = Buffer.from(config.get(`web3.account.${account}.privatekey`), 'hex')
-	switch (type) {
-		case 'sign_transaction':
-			tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
-			log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
-			log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
-			log.debug('value: ', '0x' + tx.value.toString("hex"))
+  switch (type) {
+    case 'sign_transaction':
+      tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
+      log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
+      log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
+      log.debug('value: ', '0x' + tx.value.toString("hex"))
 
-			tx.sign(privateKey)
-			return tx.r.toString("hex") + tx.s.toString("hex") + tx.v.toString("hex")
-		case 'sign_message':
-		case 'sign_personal_message':
-			return sigUtil.personalSign({privateKey, data: rawTx.data})
-		case 'sign_typed_data':
-			return sigUtil.signTypedData({privateKey, data: rawTx.data, version:rawTx.version})
-		default:
-			throw new Error(`Unsupported signature type: ${type}`)
-	}
+      tx.sign(privateKey)
+      return tx.r.toString("hex") + tx.s.toString("hex") + tx.v.toString("hex")
+    case 'sign_message':
+    case 'sign_personal_message':
+      return sigUtil.personalSign({privateKey, data: rawTx.data})
+    case 'sign_typed_data':
+      return sigUtil.signTypedData({privateKey, data: rawTx.data, version:rawTx.version})
+    default:
+      throw new Error(`Unsupported signature type: ${type}`)
+  }
 }
-	
+
 async function getLedgerSignature (rawTx, type) {
 
-	const derivePath = await getLedgerDerivePath('Ethereum', rawTx.from)
-	log.debug({derivePath})
-	const transport = await TransportNodeHid.create();
-	const eth = new Eth(transport)
+  const derivePath = await getLedgerDerivePath('Ethereum', rawTx.from)
+  log.debug({derivePath})
+  const transport = await TransportNodeHid.create();
+  const eth = new Eth(transport)
 
-	var signed, rawLedger, typedData, sanitizedData, domainSeparator,
-		typedDataHash
+  var signed, rawLedger, typedData, sanitizedData, domainSeparator,
+    typedDataHash
 
-	switch (type) {
-		case 'sign_transaction':
-			rawLedger = {...rawTx,
-				chainId: config.get(`web3.${network}.chainid`),
-				v: toHex(config.get(`web3.${network}.chainid`)),
-				r: '0x00',
-				s: '0x00',
-			}
+  switch (type) {
+    case 'sign_transaction':
+      rawLedger = {...rawTx,
+        chainId: config.get(`web3.${network}.chainid`),
+        v: toHex(config.get(`web3.${network}.chainid`)),
+        r: '0x00',
+        s: '0x00',
+      }
 
-			log.debug({rawLedger})
-			var lTx = new Transaction(rawLedger)
+      log.debug({rawLedger})
+      var lTx = new Transaction(rawLedger)
 
-			log.debug({
-				serialized:lTx.serialize().toString("hex"),
-				r: lTx.r.toString("hex"),
-				s:lTx.s.toString("hex"),
-				v:lTx.v.toString("hex")
-			})
+      log.debug({
+        serialized:lTx.serialize().toString("hex"),
+        r: lTx.r.toString("hex"),
+        s:lTx.s.toString("hex"),
+        v:lTx.v.toString("hex")
+      })
 
-			signed = await eth.signTransaction(
-				derivePath,
-				lTx.serialize().toString("hex")
-			)
+      signed = await eth.signTransaction(
+        derivePath,
+        lTx.serialize().toString("hex")
+      )
 
-			break
-		case 'sign_personal_message':
-			signed = await eth.signPersonalMessage(derivePath, rawTx.data)
-			signed.v = calcV(signed.v)
-			break
-		case 'sign_typed_data':
-			typedData = rawTx.data
-			sanitizedData = sigUtil.TypedDataUtils.sanitizeData(typedData)
+      break
+    case 'sign_personal_message':
+      signed = await eth.signPersonalMessage(derivePath, rawTx.data)
+      signed.v = calcV(signed.v)
+      break
+    case 'sign_typed_data':
+      typedData = rawTx.data
+      sanitizedData = sigUtil.TypedDataUtils.sanitizeData(typedData)
 
-			domainSeparator = sigUtil.TypedDataUtils.hashStruct(
-				'EIP712Domain', 
-				sanitizedData.domain,
-				sanitizedData.types,
-				rawTx.version
-			)
+      domainSeparator = sigUtil.TypedDataUtils.hashStruct(
+        'EIP712Domain', 
+        sanitizedData.domain,
+        sanitizedData.types,
+        rawTx.version
+      )
 
       typedDataHash = sigUtil.TypedDataUtils.hashStruct(
-				rawTx.data.primaryType,
-				sanitizedData.message,
-				sanitizedData.types,
-				rawTx.version,
-			)
+        rawTx.data.primaryType,
+        sanitizedData.message,
+        sanitizedData.types,
+        rawTx.version,
+      )
 
-			signed = await eth.signEIP712HashedMessage(
-				derivePath,
-				domainSeparator.toString('hex'),
-				typedDataHash.toString('hex')
-			)
+      signed = await eth.signEIP712HashedMessage(
+        derivePath,
+        domainSeparator.toString('hex'),
+        typedDataHash.toString('hex')
+      )
 
-			signed.v = calcV(signed.v)
-			break
-		default:
-			throw new Error(`Unsupported type ${type}`)
-	}
-			
-	const signature = signed.r + signed.s + signed.v
-	await transport.close()
-	return signature
+      signed.v = calcV(signed.v)
+      break
+    default:
+      throw new Error(`Unsupported type ${type}`)
+  }
+
+  const signature = signed.r + signed.s + signed.v
+  await transport.close()
+  return signature
 }
 
 async function calcV (v) {
-	v -= 27;
-	v = v.toString(16);
-	if (v.length < 2) {
-		v = "0" + v;
-	}   	
-	return v
+  v -= 27;
+  v = v.toString(16);
+  if (v.length < 2) {
+    v = "0" + v;
+  }   	
+  return v
 }
 
 async function getAirsignSignature (rawTx, type) {
-	var signature
-	log.info(`External signer used`)
-	var signable
+  var signature
+  log.info(`External signer used`)
+  var signable
 
-	switch (type) {
-		case 'sign_transaction':
-			signable = {
-				from: rawTx.from,
-				type: type,
-				payload: {
-					...rawTx,
-					chainId: config.get(`web3.${network}.chainid`) 
-				}
-			}
+  switch (type) {
+    case 'sign_transaction':
+      signable = {
+        from: rawTx.from,
+        type: type,
+        payload: {
+          ...rawTx,
+          chainId: config.get(`web3.${network}.chainid`) 
+        }
+      }
 
-			delete signable.payload.from
-			break
-		case 'sign_message':
-		case 'sign_personal_message':
-		case 'sign_typed_data':
-			signable = {
-				from: rawTx.from,
-				type: type,
-				payload: rawTx.data,
-				version: rawTx.version,
-			}
-			break
-		default:
-			throw new Error(`Unknown type ${type}`)
-	}
+      delete signable.payload.from
+      break
+    case 'sign_message':
+    case 'sign_personal_message':
+    case 'sign_typed_data':
+      signable = {
+        from: rawTx.from,
+        type: type,
+        payload: rawTx.data,
+        version: rawTx.version,
+      }
 
-	log.debug(`signable: ${JSON.stringify(signable)}`)
+      break
+    default:
+      throw new Error(`Unknown type ${type}`)
+  }
 
-	const encoded = qrEncoding.encode(JSON.stringify(signable))
+  log.debug(`signable: ${JSON.stringify(signable)}`)
 
-	await QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
-		if (err) throw new Error(err)
-		console.log(str) //FIXME: make this optional 
-	})
+  const encoded = qrEncoding.encode(JSON.stringify(signable))
 
-	console.log(encoded)
-	console.log('')
+  await QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
+    if (err) throw new Error(err)
+    console.log(str) //FIXME: make this optional 
+  })
 
-	// console.log(`  ./ccb eth send '{"from": "${from}", ${Object.keys(signable.payload).map(key => `"${key}": "${signable.payload[key]}"`).join(', ')}}' <signature>`)
+  console.log(encoded)
+  console.log('')
 
-	await pressAnyKey('Press any key to continue!')
+  // console.log(`  ./ccb eth send '{"from": "${from}", ${Object.keys(signable.payload).map(key => `"${key}": "${signable.payload[key]}"`).join(', ')}}' <signature>`)
 
-	const zbarcam = shell.exec("zbarcam")
+  await pressAnyKey('Press any key to continue!')
 
-	if (zbarcam.code) {
-		signature = readlineSync.question("Signature: ")
-	} else {
-		signature = zbarcam.stdout
-	}
+  const zbarcam = shell.exec("zbarcam")
 
-	signature = signature.replace(/^.*0x/, '') 
-	return signature
+  if (zbarcam.code) {
+    signature = readlineSync.question("Signature: ")
+  } else {
+    signature = zbarcam.stdout
+  }
+
+  signature = signature.replace(/^.*0x/, '') 
+  return signature
 }
 
 // Function to broadcast transactions
-async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, signature, getHashFast) {
+async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, nonce, signature, getHashFast) {
   const txCount = nonce || await web3.eth.getTransactionCount(from)
 
   const network = config.get('web3.network')
@@ -326,23 +331,23 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
 
   log.debug(rawTx)
   const accounts = config.get(`web3.account`)
-	const accountType = accounts[Object.keys(accounts).filter(key => accounts[key].address.toLowerCase() === from.toLowerCase())[0]].type
+  const accountType = accounts[Object.keys(accounts).filter(key => accounts[key].address.toLowerCase() === from.toLowerCase())[0]].type
 
-	if (!signature) {
-		switch (accountType) {
-			case 'airsign':
-				signature = await getAirsignSignature(rawTx, 'sign_transaction')
-				break
-			case 'ledger':
-				signature = await getLedgerSignature(rawTx, 'sign_transaction')
-				break
-			case 'privatekey':
-				signature = await getPrivateKeySignature(rawTx, 'sign_transaction')
-				break
-			default:
-				throw new Error(`Unknown account type ${accountType}`)
-		}
-	}
+  if (!signature) {
+    switch (accountType) {
+      case 'airsign':
+        signature = await getAirsignSignature(rawTx, 'sign_transaction')
+        break
+      case 'ledger':
+        signature = await getLedgerSignature(rawTx, 'sign_transaction')
+        break
+      case 'privatekey':
+        signature = await getPrivateKeySignature(rawTx, 'sign_transaction')
+        break
+      default:
+        throw new Error(`Unknown account type ${accountType}`)
+    }
+  }
 
   if (signature) {
     const signedUri = signature.replace(/^0x/, "")
@@ -354,9 +359,9 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
     log.debug(`v: ${v}`)
     Object.assign(rawTx, {r, s, v})
   } else {
-		log.error(`Signature not found`)
-		throw new Error(`Signature not created`)
-	}
+    log.error(`Signature not found`)
+    throw new Error(`Signature not created`)
+  }
 
   log.debug(`value: ${value}`)
   log.debug('Raw tx: ', rawTx)
@@ -373,18 +378,18 @@ async function broadcastTx (from, to, txData, value, gasLimit, gasPrice, nonce, 
   const serializedTx = tx.serialize()
   log.debug(JSON.stringify({serializedTx: '0x' + serializedTx.toString('hex')}))
   console.log('Tx hash: 0x' + tx.hash(true).toString('hex'))
-	if (getHashFast) {
-		return await Promise.any([sendTransaction(serializedTx), getTransactionHash(tx)])
-	} else {
-		return await sendTransaction(serializedTx)
-	}
+  if (getHashFast) {
+    return await Promise.any([sendTransaction(web3, serializedTx), getTransactionHash(tx)])
+  } else {
+    return await sendTransaction(web3, serializedTx)
+  }
 }
 
 async function getTransactionHash (tx) {
-	return {transactionHash: '0x' + tx.hash(true).toString('hex')}
+  return {transactionHash: '0x' + tx.hash(true).toString('hex')}
 }
 
-async function sendTransaction (serializedTx) {
+async function sendTransaction (web3, serializedTx) {
   log.info('Sendig transaction...')
   const txReceipt = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')).on('error', console.error)
 
@@ -434,7 +439,7 @@ async function getLedgerEthereumDerivePath (from, transport) {
   await transport.close()
 }
 
-async function getGasPrice () {
+async function getGasPrice (web3) {
   let gasPrice
   var ethGasstationWorked = true 
   var gasPrices = {}
@@ -443,7 +448,7 @@ async function getGasPrice () {
   } catch (e) {
     ethGasstationWorked = false
     log.debug('Ethgasstation did not work.')
-    gasPrice = await web3.eth.getGasPrice()
+    gasPrice = await web3.eth.getGasPrice(web3)
     log.info('Web3 gasprice: ' + new BN(gasPrice).div(10 ** 9).toString() + ' GWei')
   }
 
@@ -466,12 +471,13 @@ async function getGasPrice () {
 }
 
 // Function to obtain conversion rate between src token and dst token
-async function kyberGetRates (SRC_TOKEN_ADDRESS, DST_TOKEN_ADDRESS, SRC_QTY_WEI) {
-  return await access(null, 'KyberNetworkProxy', 'getExpectedRate', [SRC_TOKEN_ADDRESS, DST_TOKEN_ADDRESS, SRC_QTY_WEI])
+async function kyberGetRates (web3, SRC_TOKEN_ADDRESS, DST_TOKEN_ADDRESS, SRC_QTY_WEI) {
+  return await access(web3, null, 'KyberNetworkProxy', 'getExpectedRate', [SRC_TOKEN_ADDRESS, DST_TOKEN_ADDRESS, SRC_QTY_WEI])
 }
 
 // Function to convert src token to dst token
 async function kyberTrade (
+  web3,
   from,
   srcTokenAddress,
   srcQtyWei,
@@ -491,16 +497,17 @@ async function kyberTrade (
   const MAX_DEST_AMOUNT = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
   if (srcTokenAddress !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
     // const allowance = await SRC_TOKEN_CONTRACT.methods.allowance(USER_ADDRESS, KYBER_NETWORK_PROXY_ADDRESS).call()
-    const allowance = await access(null, srcTokenAddress, 'allowance', [from, 'KyberNetworkProxy'], 'ERC20')
+    const allowance = await access(web3, null, srcTokenAddress, 'allowance', [from, 'KyberNetworkProxy'], 'ERC20')
     if (new BN(allowance).lt(new BN(srcQtyWei))) {
 
-      const decimals = await decimals(null, srcTokenAddress)
+      const decimals = await decimals(web3, null, srcTokenAddress)
 
       const allowanceStr = new BN(allowance).div(10 ** Number(decimals)).toString()
       log.warn(`Allowance (${allowanceStr}) is not enough, approving max...`)
 
       // const approveTxData = await SRC_TOKEN_CONTRACT.methods.approve(KYBER_NETWORK_PROXY_ADDRESS, MAX_DEST_AMOUNT).encodeABI()
       var receipt = await access(
+        web3, 
         null, 
         srcTokenAddress,
         'approve',
@@ -529,17 +536,17 @@ async function kyberTrade (
       throw Error(`Current Ether balance is: ${strBalance} Ether, Ether to spend is larger: ${strQty} Ether`)
     }
   }
-  var gasPrice = new BN(await getGasPrice())
+  var gasPrice = new BN(await getGasPrice(web3))
   log.info(`Gasprice: ${gasPrice.div(10 ** 9).toString()} GWei`)
 
-  const maxGasPrice = new BN(await getKyberMaxGasPrice())
+  const maxGasPrice = new BN(await getKyberMaxGasPrice(web3))
   log.info(`Kyber max gasprice: ${maxGasPrice.div(10 ** 9).toString()} GWei`)
 
   if (gasPrice.gte(maxGasPrice)) gasPrice = maxGasPrice
   log.info('Final gas price: ' + gasPrice.div(10 ** 9).toString() + ' GWei')
 
   log.info(`Broadcasting tx...`)
-  return await access(null, 
+  return await access(web3, null, 
     'KyberNetworkProxy', // contract
     'trade', // function
     [
@@ -560,18 +567,18 @@ async function kyberTrade (
   )
 }
 
-async function getKyberMaxGasPrice () {
-  return await access(null, 'KyberNetworkProxy', 'maxGasPrice')
+async function getKyberMaxGasPrice (web3) {
+  return await access(web3, null, 'KyberNetworkProxy', 'maxGasPrice')
 }
 
-async function getAbiFunctions (abi, regexp) {
-  return await extractAbi(abi, regexp, ['function'])
+async function getAbiFunctions (web3, abi, regexp) {
+  return await extractAbi(web3, abi, regexp, ['function'])
 }
 
-async function extractAbi (abi, regexp, type) {
+async function extractAbi (web3, abi, regexp, type) {
   log.debug(`abi: ${abi}`)
   log.debug(`regexp: ${regexp}`)
-  const abiJson = await getAbi(abi, await getAddress(abi))
+  const abiJson = await getAbi(web3, abi, await getAddress(abi))
   const contract = new web3.eth.Contract(abiJson) 
   return contract.options.jsonInterface
     .filter(abi =>
@@ -585,9 +592,9 @@ async function extractAbi (abi, regexp, type) {
       abi.name 
       + '(' + abi.inputs.map(input => `${input.type} ${input.name || '_input' }`).join(', ') + ')' +
       ((Array.isArray(abi.outputs)) 
-      ? 
+        ? 
         '(' + abi.outputs.map(output => `${output.type} ${output.name || '_output' }`).join(', ') + ')' 
-      : 
+        : 
         '') +
       (abi.payable === 'true' || (abi.stateMutability && /^payable$/.test(abi.stateMutability)) ? ' payable' : '') +
       ((abi.stateMutability && !/nonPayable|payable/.test(abi.stateMutability)) || abi.constant ? ` ${abi.stateMutability || 'view'}` : '')
@@ -622,20 +629,20 @@ async function getNonce (address) {
   return nonce
 }
 
-async function getWeb3Function (functionString) {
+async function getWeb3Function (web3, functionString) {
   return functionString.split(".").slice(1).reduce((acc, fnString) =>
-  {
-    try {
-      return acc[fnString]
-    } catch (e) {
-      throw new Error(`Object "${fnString}" does not exist.`)
+    {
+      try {
+        return acc[fnString]
+      } catch (e) {
+        throw new Error(`Object "${fnString}" does not exist.`)
+      }
+
     }
-    
-  }
-  , web3)
+    , web3)
 }
 
-async function getSourceCode (addressName) {
+async function getSourceCode (web3, addressName) {
   const address = await getAddress(addressName)
   try {
     var source = await axios.get(
@@ -670,20 +677,20 @@ async function getSourceCode (addressName) {
     log.debug(e) 
   }
 
-  var implAddr = await proxyImplAddress(await getAbi(addressName, address), address)
+  var implAddr = await proxyImplAddress(web3, await getAbi(web3, addressName, address), address)
   if (implAddr && !implAddr.match(/0x0{40}/)) {
 
     code = `${remark} ------ BEGIN PROXY CONTRACT SOURCE ------\n` +
       code +
       `\n${remark} ------ END PROXY CONTRACT SOURCE ------\n\n` +
       `${remark} ------ BEGIN IMPLEMENTATION SOURCE ------\n\n` +
-      await getSourceCode(addressName + "_IMPLEMENTATION") +
+      await getSourceCode(web3, addressName + "_IMPLEMENTATION") +
       `\n${remark} ------ END IMPLEMENTATION SOURCE ------`
   }
   return code
 }
 
-async function getAbi (abi, address, recurseCount) {
+async function getAbi (web3, abi, address, recurseCount) {
   try {
     var abiJson = JSON.parse(fs.readFileSync(`${baseDir}abi/${abi}`, 'utf8'))
   } catch (e) {
@@ -728,7 +735,7 @@ async function getAbi (abi, address, recurseCount) {
     }
   }
   log.trace({abiJson, address})
-  const implAddr = await proxyImplAddress(abiJson, address)
+  const implAddr = await proxyImplAddress(web3, abiJson, address)
   log.debug({implAddr})
   log.debug({recurseCount})
   if (implAddr && (!recurseCount || recurseCount < 1)) {
@@ -736,8 +743,9 @@ async function getAbi (abi, address, recurseCount) {
     log.debug('here getAbi')
 
     log.debug({implAddr})
-    
+
     const abiImpl = await getAbi(
+			web3,
       `${abi}_IMPLEMENTATION`,
       implAddr,
       1
@@ -748,7 +756,7 @@ async function getAbi (abi, address, recurseCount) {
   return abiJson
 }
 
-async function getAddressAndCheck (to) {
+async function getAddressAndCheck (web3, to) {
   const {address:toAddr, type} = await getAddressType(to)
   var toName
   if (to.match(/^0x[0-9a-fA-F]{40}$/)) {
@@ -761,9 +769,9 @@ async function getAddressAndCheck (to) {
   try {
     toImplAddrStored = await getAddress(toName + '_IMPLEMENTATION')
     // abi contains a Truffle implementation() scheme  
-    const contract = new web3.eth.Contract(await getAbi(toName), toAddr)
+    const contract = new web3.eth.Contract(await getAbi(web3, toName), toAddr)
     toImpAddr = await contract.methods['implementation']().call()
-  log.debug({toImplAddrStored, toImpAddr})
+    log.debug({toImplAddrStored, toImpAddr})
   } catch (e) {
     return toAddr
   }
@@ -775,14 +783,14 @@ async function getAddressAndCheck (to) {
   return toAddr
 }
 
-async function access (block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata, gasOverhead, getHashFast) {
+async function access (web3, block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata, gasOverhead, getHashFast) {
 
   if (multipleUse) {
-    web3 = getWeb3(network)
+    web3 = await getWeb3(network)
   }
 
   web3.eth.handleRevert = true
-  
+
   if (Number.isInteger(block)) {
     web3.eth.defaultBlock = toHex(block)
   }
@@ -798,8 +806,8 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
     (inputs ? ` inputs ${inputs}` : '') +
     (multipleUse ? ` multipleUse ${multipleUse}` : '') +
     (calldata ? ` calldata ${calldata}` : '') +
-		(gasOverhead ? ` gasOverhead ${gasOverhead}` : '') +
-		(getHashFast ? ` getHashFast ${getHashFast}` : '')
+    (gasOverhead ? ` gasOverhead ${gasOverhead}` : '') +
+    (getHashFast ? ` getHashFast ${getHashFast}` : '')
 
 
   log.info(dispCall)
@@ -830,7 +838,7 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
     log.debug('Args was not an array, arrayify it.')
     args = [args]
   }
-  to = await getAddressAndCheck(to) 
+  to = await getAddressAndCheck(web3, to) 
   const ether = to.match(/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/i) 
   log.debug(`Value of 'to' changed to: '${to}'`)
   from = await getAddress(from)
@@ -839,55 +847,55 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
   var contract
   var methodName
   var funcObject
-	if (!ether) {
-		let {contract: cn, funcObject: fo, funcName:fn, methodName:mn} = await getFunctionParams(abi, to, calldata, funcName, inputs, args)	
-		funcObject = fo
-		funcName = fn
-		methodName = mn
-		contract = cn
+  if (!ether) {
+    let {contract: cn, funcObject: fo, funcName:fn, methodName:mn} = await getFunctionParams(web3, abi, to, calldata, funcName, inputs, args)	
+    funcObject = fo
+    funcName = fn
+    methodName = mn
+    contract = cn
 
-		log.debug(`Method is: ${methodName}`)
-		const inputTypes = funcObject['inputs'].map(input => input.type)
-		//log.debug(`inputTypes: ${inputTypes}`)
+    log.debug(`Method is: ${methodName}`)
+    const inputTypes = funcObject['inputs'].map(input => input.type)
+    //log.debug(`inputTypes: ${inputTypes}`)
 
-		log.debug(`Args originally are: ${args}`)
+    log.debug(`Args originally are: ${args}`)
 
-		if (!calldata && args.length !== inputTypes.length) {
-			throw Error(`Wrong number of args. Should be ${inputTypes.length} and it is ${args.length}.`)
-		}
+    if (!calldata && args.length !== inputTypes.length) {
+      throw Error(`Wrong number of args. Should be ${inputTypes.length} and it is ${args.length}.`)
+    }
 
-		// substitute address name with address from config, remove all dots from uint values
-		log.debug({args: JSON.stringify(args)})
+    // substitute address name with address from config, remove all dots from uint values
+    log.debug({args: JSON.stringify(args)})
 
-		if (!calldata) {
-			args = await Promise.all(inputTypes.map(async (type, index) =>
-				type === 'address' ? await getAddress(args[index]) : 
-				type.match(/address\[\d*\]/) ? await Promise.all(args[index].map(async (address) => await getAddress(address))) :
+    if (!calldata) {
+      args = await Promise.all(inputTypes.map(async (type, index) =>
+        type === 'address' ? await getAddress(args[index]) : 
+        type.match(/address\[\d*\]/) ? await Promise.all(args[index].map(async (address) => await getAddress(address))) :
 
-				type.match(/uint\d*$/) ? args[index].replace(/\./g, "") :
-				type.match(/uint\d*\[\d*\]/) ? args[index].map((uint) => String(uint).replace(/\./g, "")) :
-				args[index]
-			))
-		}
+        type.match(/uint\d*$/) ? args[index].replace(/\./g, "") :
+        type.match(/uint\d*\[\d*\]/) ? args[index].map((uint) => String(uint).replace(/\./g, "")) :
+        args[index]
+      ))
+    }
 
-		log.debug(`Args expanded are: ${JSON.stringify(args)}`)
+    log.debug(`Args expanded are: ${JSON.stringify(args)}`)
 
-		var isCall =
-			(
-				funcObject['stateMutability'] &&
-				(
-					funcObject['stateMutability'] === 'pure' ||
-					funcObject['stateMutability'] === 'view'
-				)
-			) ||
-			(
-				funcObject['constant'] &&
-				(
-					funcObject['constant'] === true ||
-					funcObject['constant'] === 'true'
-				)
-			)
-	} else {
+    var isCall =
+      (
+        funcObject['stateMutability'] &&
+        (
+          funcObject['stateMutability'] === 'pure' ||
+          funcObject['stateMutability'] === 'view'
+        )
+      ) ||
+      (
+        funcObject['constant'] &&
+        (
+          funcObject['constant'] === true ||
+          funcObject['constant'] === 'true'
+        )
+      )
+  } else {
     if (['transfer', 'transferFrom'].includes(funcName)) {
       isCall = false
     } else {
@@ -897,27 +905,27 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
 
   var ret
   if (isCall) {
-		log.debug(`${methodName} is a call`)
+    log.debug(`${methodName} is a call`)
     if (!ether) {
-			log.debug(`Not accessing Ether`)
+      log.debug(`Not accessing Ether`)
       log.debug(`Call method is used to access ${methodName} function.`)
       try {
-				log.debug(`Calling contract.methods ${methodName}`)
-				log.debug(`Func name: ${funcName}`)
-				log.debug(`Args are: ${args}`)
+        log.debug(`Calling contract.methods ${methodName}`)
+        log.debug(`Func name: ${funcName}`)
+        log.debug(`Args are: ${args}`)
         ret = await contract.methods[methodName](...args).call()
       } catch (e) {
-				log.debug(`Call to contract.methods ${methodName} failed`)
-				if (calldata) {
-					log.debug(`We are using calldata`)
-					ret = await web3.eth.call({to, calldata, from})
-				} else {
-					log.debug(`We are not using calldata, but function name of ${funcName} given`)
-					var parameters = web3.eth.abi.encodeParameters(funcObject.inputs, args) 
-					var signature = web3.eth.abi.encodeFunctionSignature(methodName)
-					var data = signature + parameters.slice(2)
-					ret = await web3.eth.call({to, data, from})
-				}
+        log.debug(`Call to contract.methods ${methodName} failed`)
+        if (calldata) {
+          log.debug(`We are using calldata`)
+          ret = await web3.eth.call({to, calldata, from})
+        } else {
+          log.debug(`We are not using calldata, but function name of ${funcName} given`)
+          var parameters = web3.eth.abi.encodeParameters(funcObject.inputs, args) 
+          var signature = web3.eth.abi.encodeFunctionSignature(methodName)
+          var data = signature + parameters.slice(2)
+          ret = await web3.eth.call({to, data, from})
+        }
       }
       log.debug(`Result: ${JSON.stringify(ret)}`)
     } else {
@@ -930,30 +938,30 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
   } else {
     log.debug(`Send method is used to access ${methodName} function.`)
 
-		var txData = calldata ? calldata : ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
-    if (!gasPrice) gasPrice = await getGasPrice()
+    var txData = calldata ? calldata : ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
+    if (!gasPrice) gasPrice = await getGasPrice(web3)
 
     if (!gasLimit) {
       if (!ether) {
         try {
-					if (calldata) {
-						
-						let txEst = {
-							from,
-							to,
-							value,
-							data: calldata
-						}
+          if (calldata) {
 
-						txEst = nonce ? {...txEst, nonce} : txEst
-						gasLimit = await web3.eth.estimateGas(txEst)
-					} else {
-						gasLimit = await contract.methods[methodName](...args).estimateGas({
-							from,
-							value,
-						})
-					}
-         console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
+            let txEst = {
+              from,
+              to,
+              value,
+              data: calldata
+            }
+
+            txEst = nonce ? {...txEst, nonce} : txEst
+            gasLimit = await web3.eth.estimateGas(txEst)
+          } else {
+            gasLimit = await contract.methods[methodName](...args).estimateGas({
+              from,
+              value,
+            })
+          }
+          console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
           gasLimit += gasOverhead || config.get(`web3.gasOverhead`) 
           console.log(`netw est. gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
         } catch (e) {
@@ -978,9 +986,9 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
 
     if (!ether) {
       try {
-        return await broadcastTx(from, to, txData, value, gasLimit, gasPrice, nonce, null, getHashFast)
+        return await broadcastTx(web3, from, to, txData, value, gasLimit, gasPrice, nonce, null, getHashFast)
       } catch (e) {
-				log.error(`broadcastTx threw Error: ${e.stack}`)
+        log.error(`broadcastTx threw Error: ${e.stack}`)
         return await contract.methods[methodName](...args).send({from, value, gasLimit, gasPrice, nonce})
       }
     } else {
@@ -994,120 +1002,120 @@ async function access (block, to, funcName, args = [], abi, from, value, gasLimi
         value = BN(args[2].replace(/\./g, "")).integerValue().toFixed()
         txData = '0x'
       }
-      return await broadcastTx(from, to, txData, value, gasLimit, gasPrice, nonce, null, getHashFast)
+      return await broadcastTx(web3, from, to, txData, value, gasLimit, gasPrice, nonce, null, getHashFast)
     }
   }
 }
 
-async function getFunctionParams (abi, to, calldata, funcName = null, inputs, args) {
-		const abiJson = await getAbi(abi, to)
-		let contract = new web3.eth.Contract(abiJson, to)
-		var funcNameReg
-		if (!calldata) {
-			funcNameReg = new RegExp('^' + funcName + '$', '')
-		}
+async function getFunctionParams (web3, abi, to, calldata, funcName = null, inputs, args) {
+  const abiJson = await getAbi(web3, abi, to)
+  let contract = new web3.eth.Contract(abiJson, to)
+  var funcNameReg
+  if (!calldata) {
+    funcNameReg = new RegExp('^' + funcName + '$', '')
+  }
 
-		let funcObject = contract.options.jsonInterface
-			.filter(abi =>
-				(
-					abi.type === 'function' ||
-					!abi.type
-				) &&
+  let funcObject = contract.options.jsonInterface
+    .filter(abi =>
+      (
+        abi.type === 'function' ||
+        !abi.type
+      ) &&
 
-				(calldata ? 
+      (calldata ? 
 
-				web3.eth.abi.encodeFunctionSignature(abi.name +
-					'(' +
-					abi.inputs.reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
-					')') === calldata.slice(0, 10)
-				: (
-					funcNameReg.test(abi.name) &&
+        web3.eth.abi.encodeFunctionSignature(abi.name +
+          '(' +
+          abi.inputs.reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
+          ')') === calldata.slice(0, 10)
+        : (
+          funcNameReg.test(abi.name) &&
 
-					(!inputs || (abi.inputs.filter((input, index) => input.type === inputs[index]).length === inputs.length &&
-						inputs.length === abi.inputs.length)) &&
+          (!inputs || (abi.inputs.filter((input, index) => input.type === inputs[index]).length === inputs.length &&
+            inputs.length === abi.inputs.length)) &&
 
-					args.length === abi.inputs.length
+          args.length === abi.inputs.length
 
-				)))[0]
+        )))[0]
 
-		try {
-			funcName = funcObject['name']
-		} catch (e) {
-			throw new Error(`Function "${funcName}" not found at contract ${to}.`)
-		}
+  try {
+    funcName = funcObject['name']
+  } catch (e) {
+    throw new Error(`Function "${funcName}" not found at contract ${to}.`)
+  }
 
-		let methodName = funcName +
-			'(' +
-			funcObject['inputs'].reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
-			')'
+  let methodName = funcName +
+    '(' +
+    funcObject['inputs'].reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
+    ')'
 
-	return {contract, funcObject, funcName, methodName}
+  return {contract, funcObject, funcName, methodName}
 }
 
 async function getPath (sellToken, buyToken, pathString) {
-      const yaml = require('js-yaml');
-      const set = require('set-value');
-      const network = config.get('web3.network')
-      sellToken = sellToken === 'ETH' ? 'WETH' : sellToken.toUpperCase()
-      buyToken = buyToken === 'ETH' ? 'WETH' : buyToken.toUpperCase()
+  const yaml = require('js-yaml');
+  const set = require('set-value');
+  const network = config.get('web3.network')
+  sellToken = sellToken === 'ETH' ? 'WETH' : sellToken.toUpperCase()
+  buyToken = buyToken === 'ETH' ? 'WETH' : buyToken.toUpperCase()
 
-      if (!pathString || pathString === '') {
-        var pathKey = [sellToken, buyToken].sort().join('-')
-        if (!config.has(`web3.${network}.uniswap.paths.${pathKey}`)) {
-          if (sellToken !== 'WETH' && buyToken !== 'WETH') {
-            return JSON.stringify([sellToken, 'WETH', buyToken])
-          } else {
-            return JSON.stringify([sellToken, buyToken])
-          }
-        }
-        path = config.get(`web3.${network}.uniswap.paths.${pathKey}`)
-        if (sellToken !== path[0]) {
-          return JSON.stringify(path.reverse())
-        } else {
-          return JSON.stringify(path)
-        }
+  if (!pathString || pathString === '') {
+    var pathKey = [sellToken, buyToken].sort().join('-')
+    if (!config.has(`web3.${network}.uniswap.paths.${pathKey}`)) {
+      if (sellToken !== 'WETH' && buyToken !== 'WETH') {
+        return JSON.stringify([sellToken, 'WETH', buyToken])
       } else {
-        pathString = pathString.toUpperCase()
-        var path = Array.from(JSON.parse(pathString)) 
-        
-        // replace all entries of ETH to WETH
-        path = path.map(token => token === 'ETH' ? 'WETH' : token)
-
-        if ( path.length < 2) {
-          throw new Error('Path must contain at least two elements.')
-        }
-        log.debug(`${JSON.stringify({path, buyToken, sellToken, pathSlice: path.slice(-1)[0]})}`)
-        if (
-          (path[0] !== sellToken && path[0] !== buyToken) || 
-          (path.slice(-1)[0] !== sellToken && path.slice(-1)[0] !== buyToken)||
-          (path[0] === path.slice(-1)[0])
-          ) {
-          throw new Error('Path must include sell token and buy token, and first and last element must differ.')
-        }
-
-        pathKey = [sellToken, buyToken].sort().join('-')
-        const pathLoc = `web3.${network}.uniswap.paths`
-        var paths = config.get(pathLoc)
-        paths = {...paths, [pathKey]: path}
-        const conf = yaml.load(fs.readFileSync(`${baseDir}config/default.yaml`, 'utf-8'))
-        set(conf, pathLoc, paths)
-
-        fs.writeFileSync(
-          `${baseDir}config/default.yaml`,
-          yaml.dump(conf, {forceQuotes: true}),
-          () => {
-            throw Error(`File config could not be written.`)
-          }
-        )
-
-        log.info(`Contract inserted into ${pathLoc}`)
-        
-        if (sellToken !== path[0]) {
-          return JSON.stringify(path.reverse())
-        } else {
-          return JSON.stringify(path)
-        }
+        return JSON.stringify([sellToken, buyToken])
       }
+    }
+    path = config.get(`web3.${network}.uniswap.paths.${pathKey}`)
+    if (sellToken !== path[0]) {
+      return JSON.stringify(path.reverse())
+    } else {
+      return JSON.stringify(path)
+    }
+  } else {
+    pathString = pathString.toUpperCase()
+    var path = Array.from(JSON.parse(pathString)) 
+
+    // replace all entries of ETH to WETH
+    path = path.map(token => token === 'ETH' ? 'WETH' : token)
+
+    if ( path.length < 2) {
+      throw new Error('Path must contain at least two elements.')
+    }
+    log.debug(`${JSON.stringify({path, buyToken, sellToken, pathSlice: path.slice(-1)[0]})}`)
+    if (
+      (path[0] !== sellToken && path[0] !== buyToken) || 
+      (path.slice(-1)[0] !== sellToken && path.slice(-1)[0] !== buyToken)||
+      (path[0] === path.slice(-1)[0])
+    ) {
+      throw new Error('Path must include sell token and buy token, and first and last element must differ.')
+    }
+
+    pathKey = [sellToken, buyToken].sort().join('-')
+    const pathLoc = `web3.${network}.uniswap.paths`
+    var paths = config.get(pathLoc)
+    paths = {...paths, [pathKey]: path}
+    const conf = yaml.load(fs.readFileSync(`${baseDir}config/default.yaml`, 'utf-8'))
+    set(conf, pathLoc, paths)
+
+    fs.writeFileSync(
+      `${baseDir}config/default.yaml`,
+      yaml.dump(conf, {forceQuotes: true}),
+      () => {
+        throw Error(`File config could not be written.`)
+      }
+    )
+
+    log.info(`Contract inserted into ${pathLoc}`)
+
+    if (sellToken !== path[0]) {
+      return JSON.stringify(path.reverse())
+    } else {
+      return JSON.stringify(path)
+    }
+  }
 }
 
 async function importAddress (args) {
@@ -1137,18 +1145,18 @@ async function importAddress (args) {
   }
 
   // access element in change using args.location eg: 'web3.mainnet.token'
-	try {
-  var change = args.location.split('.').reduce((acc, key) => acc && acc[key], conf)
-	} catch (e) {
-		change = undefined
-	}
-	if (change) {
-		// location exists
-		change = {...change, [args.contractName]: {address: args.contractAddress}}
-	} else {
-		// location does not exist
-		change = {[args.contractName]: {address: args.contractAddress}}
-	}
+  try {
+    var change = args.location.split('.').reduce((acc, key) => acc && acc[key], conf)
+  } catch (e) {
+    change = undefined
+  }
+  if (change) {
+    // location exists
+    change = {...change, [args.contractName]: {address: args.contractAddress}}
+  } else {
+    // location does not exist
+    change = {[args.contractName]: {address: args.contractAddress}}
+  }
 
   set(conf, args.location, change);
 
@@ -1164,10 +1172,10 @@ async function importAddress (args) {
   // reload config and dependent w3
   config = require('config')
 
-  const abiJson = await getAbi(args.contractName, args.contractAddress)
+  const abiJson = await getAbi(web3, args.contractName, args.contractAddress)
   var implAddr
   try {
-   implAddr = await proxyImplAddress(abiJson, args.contractAddress)
+    implAddr = await proxyImplAddress(web3, abiJson, args.contractAddress)
   } catch (e) {
     throw Error('Wrong proxy')
   }
@@ -1187,7 +1195,7 @@ async function importAddress (args) {
   return ''
 }
 
-async function proxyImplAddress (abiJson, address) {
+async function proxyImplAddress (web3, abiJson, address) {
 
   var res_EIP_897 
   var res_EIP_1967
@@ -1287,9 +1295,9 @@ async function getAddressNames (regex, contractNamesOnly = false) {
   var accountNames = [] 
   if (!contractNamesOnly) {
     accountNames = 
-    Object.keys(config
-    .get('web3.account'))
-    .filter(accountName => accountName.match(new RegExp(regex)))
+      Object.keys(config
+        .get('web3.account'))
+      .filter(accountName => accountName.match(new RegExp(regex)))
   }
 
   var contractNames = Object.keys(config.get(`web3.${network}`)).reduce(
@@ -1305,17 +1313,16 @@ async function getAddressNames (regex, contractNamesOnly = false) {
 }
 
 async function getAddressType (address) {
-  const network = config.get('web3.network')
   if (!address || (typeof address === 'number' && address === 0)) return {address: '0x0000000000000000000000000000000000000000', type: null}
   if (address.match(/^0x[A-Fa-f0-9]{40}$/i)) {
     var addrNames = Object.keys(config.get(`web3.account`))
     for (idx = 0; idx < addrNames.length; idx++) {
-        conf = `web3.${network}.${addrNames[idx]}.address`
-        if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
-          log.debug(`Address ${address} is ${addrNames[idx]}.`)
-          log.debug(`Address ${addrNames[idx]} is a web3 account.`)
-          return {address: config.get(conf), type: 'account'}
-        }
+      conf = `web3.${network}.${addrNames[idx]}.address`
+      if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
+        log.debug(`Address ${address} is ${addrNames[idx]}.`)
+        log.debug(`Address ${addrNames[idx]} is a web3 account.`)
+        return {address: config.get(conf), type: 'account'}
+      }
     }
     const addresses = Object.keys(config.get(`web3.${network}`))
     var idx
@@ -1327,23 +1334,23 @@ async function getAddressType (address) {
         if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
           address = config.get(conf)
-          return {address: web3.utils.toChecksumAddress(address), type: addresses[idx]}
+          return {address: Web3.utils.toChecksumAddress(address), type: addresses[idx]}
         }
       }
     }
-    return {address: web3.utils.toChecksumAddress(address), type: 'none'}
+    return {address: Web3.utils.toChecksumAddress(address), type: 'none'}
   } else {
     var conf = `web3.account.${address}.address`
     if (config.has(conf)) {
       log.debug(`Address ${address} is a web3 account.`)
-      return {address:web3.utils.toChecksumAddress(config.get(conf)), type: 'account'}
+      return {address:Web3.utils.toChecksumAddress(config.get(conf)), type: 'account'}
     } else {
       const addresses = Object.keys(config.get(`web3.${network}`))
       for (idx = 0; idx < addresses.length; idx++) {
         conf = `web3.${network}.${addresses[idx]}.${address}.address`
         if (config.has(conf)) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
-          return {address: web3.utils.toChecksumAddress(config.get(conf)), type: addresses[idx]}
+          return {address: Web3.utils.toChecksumAddress(config.get(conf)), type: addresses[idx]}
         }
       }
     }
@@ -1361,12 +1368,12 @@ async function getAddressNameType (address) {
   if (address.match(/^0x[A-Fa-f0-9]{40}$/i)) {
     var addrNames = Object.keys(config.get(`web3.account`))
     for (idx = 0; idx < addrNames.length; idx++) {
-        conf = `web3.account.${addrNames[idx]}.address`
-        if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
-          log.debug(`Address ${address} is ${addrNames[idx]}.`)
-          log.debug(`Address ${addrNames[idx]} is a web3 account.`)
-          return {name: addrNames[idx], type: 'account'}
-        }
+      conf = `web3.account.${addrNames[idx]}.address`
+      if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
+        log.debug(`Address ${address} is ${addrNames[idx]}.`)
+        log.debug(`Address ${addrNames[idx]} is a web3 account.`)
+        return {name: addrNames[idx], type: 'account'}
+      }
     }
     const addresses = Object.keys(config.get(`web3.${network}`))
     var idx
@@ -1398,12 +1405,12 @@ async function getAddressNameType (address) {
     }
   }
   log.info(`Did not find anything to match ${address} in config.`)
-  return {name: (address.match(/^0x[A-Fa-f0-9]{40}$/) ? web3.utils.toChecksumAddress(address) : address), type: 'none'} 
+  return {name: (address.match(/^0x[A-Fa-f0-9]{40}$/) ? Web3.utils.toChecksumAddress(address) : address), type: 'none'} 
 }
 
-async function decimals (block, token) {
+async function decimals (web3, block, token) {
   if (await getAddress(token) !== await getAddress('ETH')) {
-    return await access(block, token, 'decimals', [], 'ERC20')
+    return await access(web3, block, token, 'decimals', [], 'ERC20')
   } else {
     return '18'
   }
@@ -1420,20 +1427,20 @@ module.exports = {
   getAddressName,
   getAddressNames,
   getAddressType,
-	getAirsignSignature,
+  getAirsignSignature,
   getGasPrice,
   getLedgerDerivePath,
   getLedgerEthereumDerivePath,
-	getLedgerSignature,
+  getLedgerSignature,
   getNonce,
   getPath,
-	getPrivateKeySignature,
+  getPrivateKeySignature,
   getSourceCode,
+  getWeb3,
   getWeb3Function,
   importAddress,
   kyberGetRates,
   kyberTrade,
-	sigUtil,
+  sigUtil,
   toHex,
-  web3,
 }
