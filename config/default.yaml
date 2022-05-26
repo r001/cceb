@@ -1,4 +1,4 @@
-loglevel: 'debug'
+loglevel: 'warn'
 web3:
   txSpeed: 'fast'
   txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
@@ -20,11 +20,16 @@ web3:
     provider:
       http:
         url: 'http://192.168.0.2:8545'
-      ws: null
+        type: 'HttpProvider'
+      ws: 
+        url: null
+        type: 'WebsocketProvider'
       infura:
         url: 'wss://mainnet.infura.io/ws/v3/'
+        type: 'WebsocketProvider'
       alchemy:
         url: 'wss://eth-mainnet.alchemyapi.io/v2/'
+        type: 'WebsocketProvider'
     chainid: 1
     sushi:
       SUSHI_MASTER_CHEF:

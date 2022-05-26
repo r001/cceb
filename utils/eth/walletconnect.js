@@ -20,8 +20,10 @@ log4js.configure(
 
 const log = log4js.getLogger()
 log.level = config.get('loglevel')
+const network = config.get('web3.network')
 
 async function displayConnect (args) {
+	const web3 = await w3.getWeb3(network)
   const {uri} = args
 
   log.info(`Connecting to ${uri}`)

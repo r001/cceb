@@ -9,7 +9,7 @@ process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   require('path').delimiter + "config/radix/" 
 
 var config = require('config')
-const qrEncoding = require('eth-airsign-util')
+const qrEncoding = require('qr-encoding')
 const QRCode = require('qrcode')
 const Web3 = require('web3')
 const BN = require('bignumber.js')
@@ -23,7 +23,6 @@ const shell = require('shelljs')
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
 const Eth = require("@ledgerhq/hw-app-eth").default;
 const sigUtil = require('@metamask/eth-sig-util')
-
 // console.log(network)
 
 log4js.configure(
@@ -51,101 +50,45 @@ if (require.main === module) {
   })()
 }
 
-function toHex (web3, value) {
+function toHex (value) {
   const raw = Web3.utils.toHex(value)
   return '0x' + (raw.length % 2 === 1 ? '0' : '') + raw.slice(2)
 }
 
 async function getWeb3 (network) {
   var web3 = null
-  if (web3 === null && config.has(`web3.${network}.provider.http.url`)) {
-    try {
+  var providers = Object.keys(config.get(`web3.${network}.provider`))
+	var type = {}
+  try {
+    web3 = await Promise.any(providers.map(async provider => {
+      const providerType = config.get(`web3.${network}.provider.${provider}.type`)
+
       web3 = new Web3(
         Web3.givenProvider ||
-        new Web3.providers.HttpProvider(
-          config.get(`web3.${network}.provider.http.url`) +
+        new Web3.providers[providerType](
+          config.get(`web3.${network}.provider.${provider}.url`) +
           (
-            config.has(`web3.${network}.provider.http.api-key`) ?
-            config.get(`web3.${network}.provider.http.api-key`)
+            config.has(`web3.${network}.provider.${provider}.api-key`) ?
+            config.get(`web3.${network}.provider.${provider}.api-key`)
             : 
             ""
           )
         )
       )
 
+			type[web3.currentProvider.host || web3.currentProvider.url] = provider
+			log.debug({url: web3.currentProvider.host || web3.currentProvider.url, provider})
       await web3.eth.getBlockNumber()
-      log.debug(`http rpc provider used.`)
-    } catch (e) {web3 = null}
-
-  } 
-  if (web3 === null && config.has(`web3.${network}.provider.alchemy.url`)) {
-    try {
-
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.WebsocketProvider(
-          config.get(`web3.${network}.provider.alchemy.url`) +
-          (
-            config.has(`web3.${network}.provider.alchemy.api-key`) ?
-            config.get(`web3.${network}.provider.alchemy.api-key`) 
-            :
-            ""
-          )
-        )
-      )
-
-      await web3.eth.getBlockNumber()
-
-      log.debug(`alchemy rpc provider used.`)
-    } catch (e) {web3 = null}
-  }
-  if (web3 === null && config.has(`web3.${network}.provider.infura.url`)) {
-    try {
-
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.WebsocketProvider(
-          config.get(`web3.${network}.provider.infura.url`) +
-          (
-            config.has(`web3.${network}.provider.infura.api-key`) ?
-            config.get(`web3.${network}.provider.infura.api-key`) 
-            :
-            ""
-          )
-        )
-      )
-
-      await web3.eth.getBlockNumber()
-      log.debug(`infura rpc provider used.`)
-    } catch (e) {web3 = null}
-  }
-  if (web3 === null && config.has(`web3.${network}.provider.ws.url`)) {
-    try {
-      web3 = new Web3(
-        Web3.givenProvider ||
-        new Web3.providers.WebsocketProvider(
-          config.get(`web3.${network}.provider.ws.url`) +
-          (
-            config.has(`web3.${network}.provider.ws.api-key`) ?
-            config.get(`web3.${network}.provider.ws.api-key`)
-            :
-            ""
-          )
-        )
-      )
-
-      await web3.eth.getBlockNumber()
-      log.debug(`ws rpc provider used.`)
-    } catch (e) {web3 = null}
-
-  } 
-  if (web3 === null) {
+      return web3	
+    }))
+  } catch (e) {
     throw new Error(`No rpc connection.`)
   }
+	log.debug(`${type[web3.currentProvider.host || web3.currentProvider.url]} rpc provider used.`)
   return web3
 }
 
-async function getPrivateKeySignature (rawTx, type) {
+async function getPrivateKeySignature (web3, rawTx, type) {
   var tx
   const	account = await getAddressName(rawTx.from)
   const privateKey = Buffer.from(config.get(`web3.account.${account}.privatekey`), 'hex')
@@ -168,9 +111,9 @@ async function getPrivateKeySignature (rawTx, type) {
   }
 }
 
-async function getLedgerSignature (rawTx, type) {
+async function getLedgerSignature (web3, rawTx, type) {
 
-  const derivePath = await getLedgerDerivePath('Ethereum', rawTx.from)
+  const derivePath = await getLedgerDerivePath(web3, 'Ethereum', rawTx.from)
   log.debug({derivePath})
   const transport = await TransportNodeHid.create();
   const eth = new Eth(transport)
@@ -339,10 +282,10 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
         signature = await getAirsignSignature(rawTx, 'sign_transaction')
         break
       case 'ledger':
-        signature = await getLedgerSignature(rawTx, 'sign_transaction')
+        signature = await getLedgerSignature(web3, rawTx, 'sign_transaction')
         break
       case 'privatekey':
-        signature = await getPrivateKeySignature(rawTx, 'sign_transaction')
+        signature = await getPrivateKeySignature(web3, rawTx, 'sign_transaction')
         break
       default:
         throw new Error(`Unknown account type ${accountType}`)
@@ -400,16 +343,16 @@ async function sendTransaction (web3, serializedTx) {
   return txReceipt
 }
 
-async function getLedgerDerivePath (wallet, from, transport) {
+async function getLedgerDerivePath (web3, wallet, from, transport) {
   switch (wallet) {
     case 'Ethereum':
-      return await getLedgerEthereumDerivePath(from, transport)
+      return await getLedgerEthereumDerivePath(web3, from, transport)
     default:
       throw new Error(`Ledger wallet '${wallet}' not supported yet.`)
   }
 }
 
-async function getLedgerEthereumDerivePath (from, transport) {
+async function getLedgerEthereumDerivePath (web3, from, transport) {
   const fromName = await getAddressName(from) 
   from = await getAddress(from)
   const derivePathLoc = `web3.account.${fromName}.derivePath`
@@ -745,7 +688,7 @@ async function getAbi (web3, abi, address, recurseCount) {
     log.debug({implAddr})
 
     const abiImpl = await getAbi(
-			web3,
+      web3,
       `${abi}_IMPLEMENTATION`,
       implAddr,
       1
@@ -1118,7 +1061,7 @@ async function getPath (sellToken, buyToken, pathString) {
   }
 }
 
-async function importAddress (args) {
+async function importAddress (web3, args) {
   if (!args.contractAddress.match(/^0x[0-9a-fA-F]{40}$/)) {
     throw new Error('Wrong contract address given.')
   }
@@ -1343,6 +1286,7 @@ async function getAddressType (address) {
     var conf = `web3.account.${address}.address`
     if (config.has(conf)) {
       log.debug(`Address ${address} is a web3 account.`)
+			log.debug({conf})
       return {address:Web3.utils.toChecksumAddress(config.get(conf)), type: 'account'}
     } else {
       const addresses = Object.keys(config.get(`web3.${network}`))

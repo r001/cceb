@@ -20,9 +20,10 @@ log4js.configure(
 
 const log = log4js.getLogger()
 log.level = config.get('loglevel')
+  const network = config.get('web3.network')
 
-	async function dispCurveInfo (args) {
-		const {claims, crv_day, sum, crv_usd, lp_usd, gauge_percent, deposit_token} = await curveInfo(args)
+	async function dispCurveInfo (args, baseDir) {
+		const {claims, crv_day, sum, crv_usd, lp_usd, gauge_percent, deposit_token} = await curveInfo(args, baseDir)
 
 		var render = claims
 			.map(gauge => {return {
@@ -97,6 +98,7 @@ log.level = config.get('loglevel')
 	}
 
 	async function curveInfo (args, baseDir) {
+		var web3 = await w3.getWeb3(network)
 		var fileNames = await fs.promises.readdir(baseDir + 'abi')
 		fileNames = fileNames.filter(fileName => /^CRV_GAUGE_/.test(fileName) && fileName !== 'CRV_GAUGE_CONTROLLER')
 

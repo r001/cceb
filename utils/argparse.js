@@ -15,6 +15,23 @@ const config = require('config')
 const w3 = require('../utils/web3.js')
 const fs = require('fs')
 const openRpc = JSON.parse(fs.readFileSync(`${baseDir}../config/radix/open-rpc.spec.json`, `utf8`))
+var log4js = require('log4js')
+
+log4js.configure(
+  {
+    appenders: {
+      out: {type: 'stdout', layout: {
+        type: 'pattern',
+        pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
+      },
+      },
+    },
+    categories: {default: {appenders: ['out'], level: 'info', enableCallStack: true}},
+  }
+)
+
+const log = log4js.getLogger()
+log.level = config.get('loglevel')
 
 function argParse () {
 
@@ -1710,7 +1727,7 @@ async function handleEthWeb3 (current, argv, done, completionFilter) {
       comp.push("web3.eth")
       comp.push("web3.utils")
     } else {
-      let funcsOffered = await web3MatchingCommands(current) 
+      let funcsOffered = await web3MatchingCmd(current) 
 
       // if after multiple occurances removed from array it remains same length => 
       // func has unique name  
@@ -1737,25 +1754,30 @@ function ibanFuncs () {
 
 }
 
-async function web3MatchingCommands (command, fullPath = false, exact = false) {
+async function web3MatchingCmd (command, fullPath = false, exact = false) {
   const network = config.get('web3.network')
   var web3 = await w3.getWeb3(network)
+	return await web3MatchingCommands(web3, command, fullPath, exact)
+}
+
+async function web3MatchingCommands (web3, command, fullPath = false, exact = false) {
+	log.debug(`web3.eth keys: ${Object.keys(web3.eth)}`)
   return Object.keys(web3.eth)
-    .filter(key => ('web3.eth.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+    .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.eth.' + key)))
     .map(key => fullPath ? 'web3.eth.' + key :key)
     .concat(
       Object.keys(web3.utils)
-      .filter(key => ('web3.utils.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+      .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.utils.' + key)))
       .map(key => fullPath ? 'web3.utils.' + key :key)
     )
     .concat(
       ibanFuncs()
-      .filter(key => ('web3.eth.Iban.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+      .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.eth.Iban.' + key)))
       .map(key => fullPath ? 'web3.eth.Iban' + key :key)
     )
     .concat(
       Object.keys(web3.eth.abi)
-      .filter(key => ('web3.eth.abi.' + key).match(new RegExp((exact ? command + '$' : command), 'i')))
+      .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.eth.abi.' + key)))
       .map(key => fullPath ? 'web3.eth.abi.' + key :key)
     )
 }
