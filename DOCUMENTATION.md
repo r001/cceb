@@ -22,6 +22,7 @@
 	- [commands](#radixdlt-commands)	
 	- [authentication](#radixdlt-authentication)
 - [Ethereum blockchain interactions](#ethereum-blockchain-interactions) 
+	- [web3 provider ](#web3-provider)
 	- [number format](#number-format)
 	- [default from address](#default-from-address)
 	- [Ethereum account types](#ethereum-account-types)
@@ -553,6 +554,31 @@ Note: `-u` and `-p` can be used for username and password respectively as a shor
 
 
 ### [Ethereum](https://ethereum.org/en/) blockchain interactions
+
+#### Web3 provider
+
+When `cceb` is called all the given web3 providers are queried, and the one that responds the fastest will be connected to. Those providers that are marked as `preferred` (see below)
+are queried first, if none of them replies, then the ones not marked as preferred are queried.
+
+In the configuration file `$(npm root -g)/cceb/config/default.yaml -> web3.mainnet.provider` contains the list of your Ethereum providers.
+
+There are the following providers supported:
+- `infura` - [infura](https://infura.io) provider. 
+- `alchemy` - [alchemy](https://www.alchemy.com) provider.
+- `http` - http provider.
+- `ws` - websocket provider.
+
+The providers above have the following attributes:
+- `url:` - *mandatory* The url of the provider.  
+- `type:`- *mandatory*
+	-	`HttpProvider` - the type of provider is http. `url` should start with `http`
+	-	`WebsocketProvider` - the provider is a websocket provider. `url` should start with `wss`.
+- `preferred` - *optional* (default: `preferred: false`)
+	- `true` - this provider is preferred over others. First the preferred providers are searched, and if none of them are availabla, then not preferred ones are queried.
+	- `false`- this provider is not preferred. Any preferred provider gets precedence over this one.
+The private data for providers should be stored in `$(npm root -g)/cceb/config/secrets/default.yaml -> web3.mainnet.provider`
+- `<provider name>` - the name of provider
+	- `api-key` - the api key needed for provider.
 
 #### Number format
 When interacting with Ethereum contracts, `cceb` returns fixed digits (decimals fitted for each token) numbers when `balanceOf`, or `totalSupply` is requested. When numbers are entered to `cceb eth tx` then dot is disregarded, and number is taken as an integer. So make sure you DO NOT delete any digits from fractional numbers.

@@ -17,6 +17,10 @@ It is possible to connect to web3 pages through walletconnect.
 	- `cceb eth walletconnect connect "<walletconnect qrcode content>"`
 4. Done, you are connected. Use your Ledger, Private Key, or Airsign to sign transactions.
 
+##### Multiple provider support
+`cceb` can be configured to connect to multiple providers. If there is more than one is defined `cceb` will query all of them, and
+the one responding the fastest will be chosen. Providers marked as `preferred` have priority over others.
+
 ## Features
 
 * Support to operate with 150+ exchanges that are supported by [CCXT](https://github.com/ccxt/ccxt) library
