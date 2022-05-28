@@ -576,6 +576,7 @@ The providers above have the following attributes:
 - `preferred` - *optional* (default: `preferred: false`)
 	- `true` - this provider is preferred over others. First the preferred providers are searched, and if none of them are availabla, then not preferred ones are queried.
 	- `false`- this provider is not preferred. Any preferred provider gets precedence over this one.
+
 The private data for providers should be stored in `$(npm root -g)/cceb/config/secrets/default.yaml -> web3.mainnet.provider`
 - `<provider name>` - the name of provider
 	- `api-key` - the api key needed for provider.
