@@ -176,10 +176,10 @@ const network = config.get('web3.network')
 			web3.eth.defaultBlock = w3.toHex(args.block)
 		}
 		log.debug({function: args.function})
-		args.function = web3MatchingCommands(web3, args.function, true, true)[0]
-		log.debug({function: args.function})
-		var fn = await w3.getWeb3Function(web3, args.function)
-		var parent = await w3.getWeb3Function(args.function.replace(/\.\w*\s*$/, ""))
+		let func = (await web3MatchingCommands(web3, args.function, true, true))[0]
+		log.debug({function: func})
+		var fn = await w3.getWeb3Function(web3, func)
+		var parent = await w3.getWeb3Function(web3, func.replace(/\.\w*\s*$/, ""))
 
 		var params = await Promise.all(args.parameters.map(async param => {
 

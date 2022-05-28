@@ -1762,7 +1762,8 @@ async function web3MatchingCmd (command, fullPath = false, exact = false) {
 
 async function web3MatchingCommands (web3, command, fullPath = false, exact = false) {
 	log.debug(`web3.eth keys: ${Object.keys(web3.eth)}`)
-  return Object.keys(web3.eth)
+
+  let func = Object.keys(web3.eth)
     .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.eth.' + key)))
     .map(key => fullPath ? 'web3.eth.' + key :key)
     .concat(
@@ -1773,13 +1774,17 @@ async function web3MatchingCommands (web3, command, fullPath = false, exact = fa
     .concat(
       ibanFuncs()
       .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.eth.Iban.' + key)))
-      .map(key => fullPath ? 'web3.eth.Iban' + key :key)
+      .map(key => fullPath ? 'web3.eth.Iban.' + key :key)
     )
     .concat(
       Object.keys(web3.eth.abi)
       .filter(key => (new RegExp((exact ? command + '$' : command), 'i')).test(('web3.eth.abi.' + key)))
       .map(key => fullPath ? 'web3.eth.abi.' + key :key)
     )
+
+	log.debug(`func: ${func}`)
+
+	return func
 }
 
 function tab (commands, argv, commandLengthCanBeGreaterArgsLength = false) {

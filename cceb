@@ -15,7 +15,7 @@ process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   :
     "")
   + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/" +
-   require('path').delimiter + "config/radix/" 
+   require('path').delimiter + "config/radix/"
 
 const config = require('config')
 const ut = require('./utils/util')
@@ -55,7 +55,7 @@ if (process && (process.version < 'v15.0.0' || process.version.match(/^v\d\./)))
 
 if (require.main === module) {
 var args = argParse()
-// if (!args.getYargsCompletions) console.log(args)
+if (!args.getYargsCompletions) log.debug(args)
 //fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({args}));
 
 let exchange
@@ -184,7 +184,7 @@ async function processArgs (exchange, args) {
 									break
 								case 'flog':
 									await maker.dispFlog(args)
-							} 
+							}
 							break
 						case 'aave':
 							switch (args._[2]) {
@@ -217,7 +217,7 @@ async function processArgs (exchange, args) {
 									break
 								case 'estimate':
 									await aave.dispAaveEstimate(args)
-							}							
+							}
 							break
 						case 'curve':
 							switch (args._[2]) {
