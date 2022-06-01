@@ -993,10 +993,7 @@ async function getFunctionParams (web3, abi, to, calldata, funcName = null, inpu
 
       (calldata ?
 
-        web3.eth.abi.encodeFunctionSignature(abi.name +
-          '(' +
-          abi.inputs.reduce((total, input) => total + (total === '' ? '' : ',') + input.type, '') +
-          ')') === calldata.slice(0, 10)
+        web3.eth.abi.encodeFunctionSignature(abi) === calldata.slice(0, 10)
         : (
           funcNameReg.test(abi.name) &&
 
