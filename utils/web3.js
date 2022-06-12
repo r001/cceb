@@ -106,8 +106,11 @@ async function getProviders (network, filter) {
 
 			type[web3.currentProvider.host || web3.currentProvider.url] = provider
 			log.debug({url: web3.currentProvider.host || web3.currentProvider.url, provider})
-			let l = await web3.eth.net.isListening()
-			log.debug({listening: l})
+			let syncing = await web3.eth.isSyncing()
+			if (syncing) {
+				throw new Error(`${web3.currentProvider.host || web3.currentProvider.url} is syncing.`)
+			}
+			log.debug({isSyncing: syncing})
 			return web3
 		}))
 
