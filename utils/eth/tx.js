@@ -81,7 +81,7 @@ const network = config.get('web3.network')
 		}
 
 		if (args._[1] === 'import') {
-			return await w3.importAddress(args)
+			return await w3.importAddress(web3, args)
 		}
 
 		if (args._[1] === 'address') {

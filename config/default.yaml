@@ -21,13 +21,13 @@ web3:
       http:
         url: 'http://192.168.0.2:8545'
         type: 'HttpProvider'
-        preferred: true
-      ws: 
+      ws:
         url: null
         type: 'WebsocketProvider'
       infura:
         url: 'wss://mainnet.infura.io/ws/v3/'
         type: 'WebsocketProvider'
+        preferred: true
       alchemy:
         url: 'wss://eth-mainnet.alchemyapi.io/v2/'
         type: 'WebsocketProvider'
@@ -1026,6 +1026,8 @@ web3:
         address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
       RARI_LP_F_DAI_IMPLEMENTATION_IMPLEMENTATION:
         address: '0x0000000000000000000000000000000000000000'
+      XRD:
+        address: '0x6468e79A80C0eaB0F9A2B574c8d5bC374Af59414'
     other:
       VOTIUM_VOTER_PROXY:
         address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'

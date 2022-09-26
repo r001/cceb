@@ -57,7 +57,7 @@
     "pm2": "^5.2.0",
     "press-any-key": "^0.1.1",
     "promisify": "0.0.3",
-    "qr-encoding": "^1.4.0",
+    "qr-encoding": "^1.4.2",
     "qrcode": "^1.4.4",
     "readline-sync": "^1.4.10",
     "scrypt-js": "^3.0.0",
