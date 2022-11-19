@@ -13,16 +13,20 @@ const qrEncoding = require('qr-encoding')
 const QRCode = require('qrcode')
 const Web3 = require('web3')
 const BN = require('bignumber.js')
-const Transaction = require('ethereumjs-tx')
+const {Common, Chain, Hardfork} = require('@ethereumjs/common')
+const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
 const axios = require('axios')
 var log4js = require('log4js')
 var fs = require('fs')
 const network = config.get('web3.network')
+const common = new Common({chain: config.get(`web3.${network}.chainid`)})
 const pressAnyKey = require('press-any-key')
 const shell = require('shelljs')
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
-const Eth = require("@ledgerhq/hw-app-eth").default;
+const Eth = require("@ledgerhq/hw-app-eth").default
 const sigUtil = require('@metamask/eth-sig-util')
+const {bufArrToArr, fromRpcSig, stripHexPrefix} = require('@ethereumjs/util')
+const {RLP} = require('@ethereumjs/rlp')
 // console.log(network)
 
 log4js.configure(
@@ -123,7 +127,7 @@ async function getPrivateKeySignature (web3, rawTx, type) {
   const privateKey = Buffer.from(config.get(`web3.account.${account}.privatekey`), 'hex')
   switch (type) {
     case 'sign_transaction':
-      tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
+      tx = Transaction.fromTxData(rawTx, {common})
       log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
       log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
       log.debug('value: ', '0x' + tx.value.toString("hex"))
@@ -152,15 +156,8 @@ async function getLedgerSignature (web3, rawTx, type) {
 
   switch (type) {
     case 'sign_transaction':
-      rawLedger = {...rawTx,
-        chainId: config.get(`web3.${network}.chainid`),
-        v: toHex(config.get(`web3.${network}.chainid`)),
-        r: '0x00',
-        s: '0x00',
-      }
-
-      log.debug({rawLedger})
-      var lTx = new Transaction(rawLedger)
+			log.debug({rawLedger})
+      var lTx = Transaction.fromTxData(rawTx, {common})
 
       log.debug({
         serialized:lTx.serialize().toString("hex"),
@@ -171,7 +168,7 @@ async function getLedgerSignature (web3, rawTx, type) {
 
       signed = await eth.signTransaction(
         derivePath,
-        lTx.serialize().toString("hex")
+        Buffer.from(RLP.encode(bufArrToArr(lTx))).toString('hex')
       )
 
       break
@@ -260,7 +257,7 @@ async function getAirsignSignature (rawTx, type) {
 
   const encoded = qrEncoding.encode(JSON.stringify(signable))
 
-  await QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
+  QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
     if (err) throw new Error(err)
     console.log(str) //FIXME: make this optional
   })
@@ -288,9 +285,7 @@ async function getAirsignSignature (rawTx, type) {
 async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, nonce, signature, getHashFast) {
   const txCount = nonce || await web3.eth.getTransactionCount(from)
 
-  const network = config.get('web3.network')
-
-  const rawTx = {
+  var rawTx = {
     from: from,
     to: to,
     data: txData,
@@ -298,7 +293,6 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
     gasLimit: toHex(gasLimit),
     gasPrice: toHex(gasPrice),
     nonce: toHex(txCount),
-    chainId: Number(config.get(`web3.${network}.chainid`))
   }
 
   log.debug(rawTx)
@@ -322,14 +316,11 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
   }
 
   if (signature) {
-    const signedUri = signature.replace(/^0x/, "")
-    const r = '0x' + signedUri.substr(0, 64)
-    const s = '0x' + signedUri.substr(64, 64)
-    const v = '0x' + signedUri.substr(128, 2)
-    log.debug(`r: ${r}`)
-    log.debug(`s: ${s}`)
-    log.debug(`v: ${v}`)
-    Object.assign(rawTx, {r, s, v})
+		let {v, r, s} = fromRpcSig('0x' + stripHexPrefix(signature).replace(/[^0-9a-fx]/gm, ""))
+    log.debug(`r: ${r.toString()}`)
+    log.debug(`s: ${s.toString()}`)
+    log.debug(`v: ${v.toString()}`)
+		rawTx = {...rawTx, r, s, v}
   } else {
     log.error(`Signature not found`)
     throw new Error(`Signature not created`)
@@ -337,11 +328,12 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
 
   log.debug(`value: ${value}`)
   log.debug('Raw tx: ', rawTx)
-  var tx = new Transaction(rawTx, {chain: config.get(`web3.${network}.chainid`)})
-  log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
-  log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
-  log.debug('value: ', '0x' + tx.value.toString("hex"))
-  log.debug('from: ', '0x' + tx.from.toString("hex"))
+  var tx = Transaction.fromTxData(rawTx, {common})
+	log.debug('Tx to json: ', JSON.stringify(tx.toJSON()))
+  log.debug('gasPrice: ', '0x' + tx.gasPrice.toString(16))
+  log.debug('gasLimit: ', '0x' + tx.gasLimit.toString(16))
+  log.debug('value: ', '0x' + tx.value.toString(16))
+  log.debug('from: ', '0x' + tx.getSenderAddress().toString())
 
   if (!tx.verifySignature()) {
     throw new Error('Signature invalid.')
