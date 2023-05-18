@@ -26,7 +26,7 @@ async function dispAaveDeposit (block, token, amount, from, gaslimit, gasprice, 
 
 async function getReferralCode () {
   const network = config.get('web3.network')
-    return config.get(`web3.${network}.aave.referralCode`)
+    return config.get(`web3.networks.${network}.aave.referralCode`)
 }
 
 async function aaveDeposit (block, token, amount, from, gaslimit, gasprice, nonce) {

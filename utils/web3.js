@@ -19,7 +19,7 @@ const axios = require('axios')
 var log4js = require('log4js')
 var fs = require('fs')
 const network = config.get('web3.network')
-const common = new Common({chain: config.get(`web3.${network}.chainid`)})
+const common = new Common({chain: config.get(`web3.networks.${network}.chainid`)})
 const pressAnyKey = require('press-any-key')
 const shell = require('shelljs')
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
@@ -80,7 +80,7 @@ async function getWeb3 (network) {
 }
 
 async function getProviders (network, filter) {
-  var providers = Object.keys(config.get(`web3.${network}.provider`))
+  var providers = Object.keys(config.get(`web3.networks.${network}.provider`))
 	var type = {}
 
 	var web3 = await Promise.any(
@@ -88,20 +88,20 @@ async function getProviders (network, filter) {
 		.filter(provider =>
 			!filter ||
 			(
-				config.has(`web3.${network}.provider.${provider}.preferred`) &&
-				config.get(`web3.${network}.provider.${provider}.preferred`)
+				config.has(`web3.networks.${network}.provider.${provider}.preferred`) &&
+				config.get(`web3.networks.${network}.provider.${provider}.preferred`)
 			)
 		)
 		.map(async provider => {
-			const providerType = config.get(`web3.${network}.provider.${provider}.type`)
+			const providerType = config.get(`web3.networks.${network}.provider.${provider}.type`)
 
 			web3 = new Web3(
 				Web3.givenProvider ||
 				new Web3.providers[providerType](
-					config.get(`web3.${network}.provider.${provider}.url`) +
+					config.get(`web3.networks.${network}.provider.${provider}.url`) +
 					(
-						config.has(`web3.${network}.provider.${provider}.api-key`) ?
-						config.get(`web3.${network}.provider.${provider}.api-key`)
+						config.has(`web3.networks.${network}.provider.${provider}.api-key`) ?
+						config.get(`web3.networks.${network}.provider.${provider}.api-key`)
 						:
 						""
 					)
@@ -232,7 +232,7 @@ async function getAirsignSignature (rawTx, type) {
         type: type,
         payload: {
           ...rawTx,
-          chainId: config.get(`web3.${network}.chainid`)
+          chainId: config.get(`web3.networks.${network}.chainid`)
         }
       }
 
@@ -740,7 +740,7 @@ async function getAddressAndCheck (web3, to) {
     return toAddr
   }
   if (toImplAddrStored !== toImpAddr) {
-    const path = `web3.${network}.${type}`
+    const path = `web3.networks.${network}.${type}`
     throw new Error(`Implementation address changed. If you trust contract owner, then run 'cceb eth import ${toName} ${toAddr} -l ${path}'`)
   }
 
@@ -941,7 +941,7 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
     console.log(dispCall)
 
     process.on('uncaughtException', function (err) {
-      var value = err.message.match(/0xx([a-zA-Z0-9]*)/)[1]
+      var value = err.message.match(/0x([a-zA-Z0-9]*)/)[1]
       value = new Buffer(value, 'hex')
       //log.error(err.message)
       log.error(value.toString().replace(/[^-A-Za-z0-9/. ]/g, ''));
@@ -1022,14 +1022,14 @@ async function getPath (sellToken, buyToken, pathString) {
 
   if (!pathString || pathString === '') {
     var pathKey = [sellToken, buyToken].sort().join('-')
-    if (!config.has(`web3.${network}.uniswap.paths.${pathKey}`)) {
+    if (!config.has(`web3.networks.${network}.uniswap.paths.${pathKey}`)) {
       if (sellToken !== 'WETH' && buyToken !== 'WETH') {
         return JSON.stringify([sellToken, 'WETH', buyToken])
       } else {
         return JSON.stringify([sellToken, buyToken])
       }
     }
-    path = config.get(`web3.${network}.uniswap.paths.${pathKey}`)
+    path = config.get(`web3.networks.${network}.uniswap.paths.${pathKey}`)
     if (sellToken !== path[0]) {
       return JSON.stringify(path.reverse())
     } else {
@@ -1055,7 +1055,7 @@ async function getPath (sellToken, buyToken, pathString) {
     }
 
     pathKey = [sellToken, buyToken].sort().join('-')
-    const pathLoc = `web3.${network}.uniswap.paths`
+    const pathLoc = `web3.networks.${network}.uniswap.paths`
     var paths = config.get(pathLoc)
     paths = {...paths, [pathKey]: path}
     const conf = yaml.load(fs.readFileSync(`${baseDir}config/default.yaml`, 'utf-8'))
@@ -1089,23 +1089,23 @@ async function importAddress (web3, args) {
   const network = config.get('web3.network')
   if (args.location === '' || !args.location) {
     // find insert location based on contractName
-    const addresses = Object.keys(config.get(`web3.${network}`))
+    const addresses = Object.keys(config.get(`web3.networks.${network}`))
     log.info('Searching for insert location based on name...')
     for (var idx = 0; idx < addresses.length; idx++) {
-      var names = Object.keys(config.get(`web3.${network}.${addresses[idx]}`))
+      var names = Object.keys(config.get(`web3.networks.${network}.${addresses[idx]}`))
       var nameMatch = new RegExp(`^${args.contractName.split('_')[0]}`)
       var matching = names.filter(name => nameMatch.test(name))
       if (matching.length > 0) {
-        args.location = `web3.${network}.${addresses[idx]}`
+        args.location = `web3.networks.${network}.${addresses[idx]}`
         break
       }
     }
     if (args.location === '' || !args.location) {
-      args.location = `web3.${config.get('web3.network')}.other`
+      args.location = `web3.networks.${config.get('web3.network')}.other`
     }
   }
 
-  // access element in change using args.location eg: 'web3.mainnet.token'
+  // access element in change using args.location eg: 'web3.networks.mainnet.token'
   try {
     var change = args.location.split('.').reduce((acc, key) => acc && acc[key], conf)
   } catch (e) {
@@ -1145,6 +1145,7 @@ async function importAddress (web3, args) {
     log.debug('here importAddress')
 
     await importAddress(
+			web3,
       {
         ...args,
         contractName: `${args.contractName}_IMPLEMENTATION`,
@@ -1261,10 +1262,10 @@ async function getAddressNames (regex, contractNamesOnly = false) {
       .filter(accountName => accountName.match(new RegExp(regex)))
   }
 
-  var contractNames = Object.keys(config.get(`web3.${network}`)).reduce(
+  var contractNames = Object.keys(config.get(`web3.networks.${network}`)).reduce(
     (acc, type) => acc.concat(
       Object.keys(
-        config.get(`web3.${network}.${type}`)
+        config.get(`web3.networks.${network}.${type}`)
       )
       .filter(contractName => contractName.match(new RegExp(regex)))
     )
@@ -1278,20 +1279,20 @@ async function getAddressType (address) {
   if (address.match(/^0x[A-Fa-f0-9]{40}$/i)) {
     var addrNames = Object.keys(config.get(`web3.account`))
     for (idx = 0; idx < addrNames.length; idx++) {
-      conf = `web3.${network}.${addrNames[idx]}.address`
+      conf = `web3.networks.${network}.${addrNames[idx]}.address`
       if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
         log.debug(`Address ${address} is ${addrNames[idx]}.`)
         log.debug(`Address ${addrNames[idx]} is a web3 account.`)
         return {address: config.get(conf), type: 'account'}
       }
     }
-    const addresses = Object.keys(config.get(`web3.${network}`))
+    const addresses = Object.keys(config.get(`web3.networks.${network}`))
     var idx
     var id1
     for (idx = 0; idx < addresses.length; idx++) {
-      addrNames = Object.keys(config.get(`web3.${network}.${addresses[idx]}`))
+      addrNames = Object.keys(config.get(`web3.networks.${network}.${addresses[idx]}`))
       for (id1 = 0; id1 < addrNames.length; id1++) {
-        conf = `web3.${network}.${addresses[idx]}.${addrNames[id1]}.address`
+        conf = `web3.networks.${network}.${addresses[idx]}.${addrNames[id1]}.address`
         if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
           address = config.get(conf)
@@ -1307,9 +1308,9 @@ async function getAddressType (address) {
 			log.debug({conf})
       return {address:Web3.utils.toChecksumAddress(config.get(conf)), type: 'account'}
     } else {
-      const addresses = Object.keys(config.get(`web3.${network}`))
+      const addresses = Object.keys(config.get(`web3.networks.${network}`))
       for (idx = 0; idx < addresses.length; idx++) {
-        conf = `web3.${network}.${addresses[idx]}.${address}.address`
+        conf = `web3.networks.${network}.${addresses[idx]}.${address}.address`
         if (config.has(conf)) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
           return {address: Web3.utils.toChecksumAddress(config.get(conf)), type: addresses[idx]}
@@ -1337,13 +1338,13 @@ async function getAddressNameType (address) {
         return {name: addrNames[idx], type: 'account'}
       }
     }
-    const addresses = Object.keys(config.get(`web3.${network}`))
+    const addresses = Object.keys(config.get(`web3.networks.${network}`))
     var idx
     var id1
     for (idx = 0; idx < addresses.length; idx++) {
-      addrNames = Object.keys(config.get(`web3.${network}.${addresses[idx]}`))
+      addrNames = Object.keys(config.get(`web3.networks.${network}.${addresses[idx]}`))
       for (id1 = 0; id1 < addrNames.length; id1++) {
-        conf = `web3.${network}.${addresses[idx]}.${addrNames[id1]}.address`
+        conf = `web3.networks.${network}.${addresses[idx]}.${addrNames[id1]}.address`
         if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
           return {name: addrNames[id1], type: addresses[idx]}
@@ -1356,9 +1357,9 @@ async function getAddressNameType (address) {
       log.debug(`Address ${address} is a web3 account.`)
       return {name: address, type: 'account'}
     } else {
-      const addresses = Object.keys(config.get(`web3.${network}`))
+      const addresses = Object.keys(config.get(`web3.networks.${network}`))
       for (idx = 0; idx < addresses.length; idx++) {
-        conf = `web3.${network}.${addresses[idx]}.${address}.address`
+        conf = `web3.networks.${network}.${addresses[idx]}.${address}.address`
         if (config.has(conf)) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
           return {name: address, type: addresses[idx]}

@@ -1,4 +1,4 @@
-loglevel: 'warn'
+loglevel: 'debug'
 web3:
   txSpeed: 'fast'
   txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
@@ -16,1396 +16,1401 @@ web3:
     timeout: 5000
   aave:
     paybackExtra: 0.00001
-  mainnet:
-    provider:
-      http:
-        url: 'http://192.168.0.2:8545'
-        type: 'HttpProvider'
-      ws:
-        url: null
-        type: 'WebsocketProvider'
-      infura:
-        url: 'wss://mainnet.infura.io/ws/v3/'
-        type: 'WebsocketProvider'
-        preferred: true
-      alchemy:
-        url: 'wss://eth-mainnet.alchemyapi.io/v2/'
-        type: 'WebsocketProvider'
-    chainid: 1
-    sushi:
-      SUSHI_MASTER_CHEF:
-        address: '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd'
-      SUSHI_TIMELOCK:
-        address: '0x9a8541Ddf3a932a9A922B607e9CF7301f1d47bD1'
-      SUSHI_MASTER_CHEF_V2:
-        address: '0xef0881ec094552b2e128cf945ef17a6752b4ec5d'
-      SUSHI_ROUTER_V2:
-        address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
-    kimchi:
-      KIMCHI_MASTER_CHEF:
-        address: '0x9Dd5b5c71842a4fD51533532E5470298BFA398fd'
-    farm:
-      FARM_AUTOSTAKE:
-        address: '0x25550Cccbd68533Fa04bFD3e3AC4D09f9e00Fc50'
-      FARM_CONTROLLER:
-        address: '0x222412af183BCeAdEFd72e4Cb1b71f1889953b1C'
-      FARM_EXCLUSIVE_REWARD_POOL:
-        address: '0x8f5adC58b32D4e5Ca02EAC0E293D35855999436C'
-      FARM_GOVERNANCE:
-        remark: 'FARM governance account'
-        address: '0xf00dD244228F51547f0563e60bCa65a30FBF5f7f'
-      FARM_STRATEGY_CRV_STABLE_MAINNET:
-        address: '0xD55aDA00494D96CE1029C201425249F9dFD216cc'
-      FARM_VAULT:
-        remark: 'FARM VAULT IMPLEMENTATION - same for all vaults'
-        address: '0x9B3bE0cc5dD26fd0254088d03D8206792715588B'
-      FARM_VAULT_CRVRENBTC:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x9aA8F427A17d6B0d91B6262989EdC7D45d6aEdf8'
-      FARM_VAULT_USDC:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE'
-      FARM_VAULT_USDT:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x053c80eA73Dc6941F518a68E2FC52Ac45BDE7c9C'
-      FARM_VAULT_TUSD:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x7674622c63Bee7F46E86a4A5A18976693D54441b'
-      FARM_VAULT_WBTC:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x5d9d25c7C457dD82fc8668FFC6B9746b674d4EcB'
-      FARM_VAULT_RENBTC:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0xC391d1b08c1403313B0c28D47202DFDA015633C4'
-      FARM_VAULT_WETH:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0xFE09e53A81Fe2808bc493ea64319109B5bAa573e'
-      FARM_VAULT_WETH_DAI_LP:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x307E2752e8b8a9C29005001Be66B1c012CA9CDB7'
-      FARM_VAULT_WETH_USDC_LP:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0xA79a083FDD87F73c2f983c5551EC974685D6bb36'
-      FARM_VAULT_WETH_USDT_LP:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x7DDc3ffF0612E75Ea5ddC0d6Bd4e268f70362Cff'
-      FARM_VAULT_WETH_WBTC_LP:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0x01112a60f427205dcA6E229425306923c3Cc2073'
-      FARM_VAULT_WETH_TBTC_LP:
-        remark: 'Use with --abi FARM_VAULT '
-        address: '0xF553E1f826f42716cDFe02bde5ee76b2a52fc7EB'
-      FARM_WETH_POOL:
-        address: '0x3DA9D911301f8144bdF5c3c67886e5373DCdff8e'
-      FARM_DAI_POOL:
-        address: '0x15d3A64B2d5ab9E152F16593Cdebc4bB165B5B4A'
-      FARM_USDC_POOL:
-        address: '0x4F7c28cCb0F1Dbd1388209C67eEc234273C878Bd'
-      FARM_USDT_POOL:
-        address: '0x6ac4a7ab91e6fd098e13b7d347c6d4d1494994a2'
-      FARM_TUSD_POOL:
-        address: '0xeC56a21CF0D7FeB93C25587C12bFfe094aa0eCdA'
-      FARM_WBTC_POOL:
-        address: '0x917d6480Ec60cBddd6CbD0C8EA317Bcc709EA77B'
-      FARM_RENBTC_POOL:
-        address: '0x7b8Ff8884590f44e10Ea8105730fe637Ce0cb4F6'
-      FARM_CRVRENWBTC_POOL:
-        address: '0xA3Cf8D1CEe996253FAD1F8e3d68BDCba7B3A3Db5'
-      FARM_WBTC_TBTC_VAULT:
-        address: '0x9523FdC055F503F73FF40D7F66850F409D80EF34'
-      FARM_WETH_DAI_LP_VAULT:
-        address: '0x7aeb36e22e60397098C2a5C51f0A5fB06e7b859c'
-      FARM_WETH_USDC_LP_VAULT:
-        address: '0x156733b89Ac5C704F3217FEe2949A9D4A73764b5'
-      FARM_WETH_USDT_LP_VAULT:
-        address: '0x75071F2653fBC902EBaff908d4c68712a5d1C960'
-      FARM_WETH_WBTC_LP_VAULT:
-        address: '0xF1181A71CC331958AE2cA2aAD0784Acfc436CB93'
-      FARM_FARM_USDC_UNISWAP:
-        address: '0x514906fc121c7878424a5c928cad1852cc545892'
-      FARM_VAULT_DAI:
-        address: '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C'
-      FARM_VAULT_DAI_IMPLEMENTATION:
-        address: '0x9b3be0cc5dd26fd0254088d03d8206792715588b'
-    unit:
-      UNIT_VAULT:
-        address: '0xb1cFF81b9305166ff1EFc49A129ad2AfCd7BCf19'
-      UNIT_VAULT_MANAGER_STANDARD:
-        address: '0x56DD677842214CbB97Ad88dBAA58DD55e1b179Ea'
-      UNIT_VAULT_MANAGER_KEEPER_MAIN_ASSET_FOR_UNISWAP:
-        address: '0x211A6d4D4F49c0C5814451589d6378FdA614Adb9'
-      UNIT_VAULT_MANAGER_KEEPER_POOL_TOKEN_FOR_UNISWAP:
-        address: '0x3052764f1af2f8B7a887dEAfA42153530676079B'
-      UNIT_VAULT_MANAGER_KEEPER_MAIN_ASSET_FOR_SUSHISWAP:
-        address: '0x54ba276a62E7E3E76D362f672f00eD31a983067B'
-      UNIT_VAULT_MANAGER_KEEPER_POOL_TOKEN_FOR_SUSHISWAP:
-        address: '0xD90332DB0FE0e5eA1A195A5Ba6fc8949EaB8AB4E'
-      UNIT_LIQIDATION_TRIGGER_KEEPER_MAIN_ASSET_FOR_UNISWAP:
-        address: '0x989AC9c8353C3F01412705d7E50B4Ab9E804c227'
-      UNIT_LIQIDATION_TRIGGER_KEEPER_POOL_TOKEN_FOR_UNISWAP:
-        address: '0x0ca1A59a987922375234df94919A456F61e93E1e'
-      UNIT_LIQIDATION_TRIGGER_KEEPER_MAIN_ASSET_FOR_SUSHISWAP:
-        address: '0x20C854CdD322D3A501Da91374027b4b257DE57dd'
-      UNIT_LIQIDATION_TRIGGER_KEEPER_POOL_TOKEN_FOR_SUSHISWAP:
-        address: '0x78D09b58402c29016425497289E12FDd12f06027'
-      UNIT_CHAINLINKED_KEEPER_ORACLE_MAIN_ASSET_FOR_UNISWAP:
-        address: '0x90052A5A46137636d6366b4F0CB184C6f411bD53'
-      UNIT_CHAINLINKED_KEEPER_ORACLE_POOL_TOKEN_FOR_UNISWAP:
-        address: '0x3b5f4d33845d546c76DFb624ef002cb3a58391e9'
-      UNIT_CHAINLINKED_KEEPER_ORACLE_MAIN_ASSET_FOR_SUSHISWAP:
-        address: '0x0Ca3de93dE71E4A28EB5d04B72970d69458a3D21'
-      UNIT_CHAINLINKED_KEEPER_ORACLE_POOL_TOKEN_FOR_SUSHISWAP:
-        address: '0xEa2e09CEC87C7cD8f6Ae09d1906a7526f159e538'
-      UNIT_LIQUIDATION_AUCTION_01:
-        address: '0xa41a3625c02c60Ae932515E7F921ada1811aF6a5'
-      UNIT_VAULT_MANAGER_PARAMETERS:
-        address: '0x203153522B9EAef4aE17c6e99851EE7b2F7D312E'
-      UNIT_LOCK_DROP_CONTRACT:
-        address: '0x46DAc43Ca95e316Ef2124B1a4Dd7806e93106C42'
-      UNIT_FEE_DISTRIBUTION:
-        address: '0x3f93dE882dA8150Dc98a3a1F4626E80E3282df46'
-      UNIT_STAKING_V2:
-        address: '0x48ddd27a4d54cd3e8c34f34f7e66e998442dbce3'
-      UNIT_CONTROLLER:
-        address: '0xae37E8f9a3f960eE090706Fa4db41Ca2f2C56Cb8'
-      UNIT_FEE_DISTRIBUTION_V2:
-        address: '0x9f2138ccb930f0654B2C40E7e29FF8291452Eed8'
-      UNIT_VAULT_PARAMETERS:
-        address: '0xB46F8CF42e504Efe8BEf895f848741daA55e9f1D'
-      UNIT_VAULT_MANAGER_01:
-        address: '0x0e13ab042eC5AB9Fc6F43979406088B9028F66fA'
-      UNIT_VAULT_MANAGER_02:
-        address: '0xee84F58Ee39C6122C76C1Fa54f0B6f33da1642Ec'
-    crv:
-      CRV_ADAPTER_REN:
-        address: '0x73aB2Bd10aD10F7174a1AD5AFAe3ce3D991C5047'
-      CRV_ADAPTER_SBTC:
-        address: '0xAEade605D01FE9a8e9C4B3AA0130A90d62167029'
-      CRV_DEPOSIT_BUSD:
-        address: '0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB'
-      CRV_DEPOSIT_C2:
-        address: '0xeB21209ae4C2c9FF2a86ACA31E123764A3B6Bc06'
-      CRV_DEPOSIT_GUSD:
-        address: '0x0aE274c98c0415C0651AF8cF52b010136E4a0082'
-      CRV_DEPOSIT_PAX:
-        address: '0xA50cCc70b6a011CffDdf45057E39679379187287'
-      CRV_DEPOSIT_SBTC:
-        address: '0xAEade605D01FE9a8e9C4B3AA0130A90d62167029'
-      CRV_DEPOSIT_SUSD:
-        address: '0xFCBa3E75865d2d561BE8D220616520c171F12851'
-      CRV_DEPOSIT_USDT:
-        address: '0xac795D2c97e60DF6a99ff1c814727302fD747a80'
-      CRV_DEPOSIT_USDN:
-        address: '0x094d12e5b541784701FD8d65F11fc0598FBC6332'
-      CRV_DEPOSIT_Y:
-        address: '0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3'
-      CRV_FEE_DISTRIBUTION:
-        address: '0xA464e6DCda8AC41e03616F95f4BC98a13b8922Dc'
-      CRV_GAUGE_3POOL:
-        address: '0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A'
-      CRV_GAUGE_BUSD:
-        address: '0x69Fb7c45726cfE2baDeE8317005d3F94bE838840'
-      CRV_GAUGE_C2:
-        address: '0x7ca5b0a2910B33e9759DC7dDB0413949071D7575'
-      CRV_GAUGE_GUSD:
-        address: '0xC5cfaDA84E902aD92DD40194f0883ad49639b023'
-      CRV_GAUGE_HBTC:
-        address: '0x4c18E409Dc8619bFb6a1cB56D114C3f592E0aE79'
-      CRV_GAUGE_USDT:
-        address: '0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53'
-      CRV_GAUGE_USDN:
-        address: '0xF98450B5602fa59CC66e1379DFfB6FDDc724CfC4'
-      CRV_GAUGE_CONTROLLER:
-        remark: 'gauge controller'
-        address: '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB'
-      CRV_GAUGE_PAX:
-        address: '0x64E3C23bfc40722d3B649844055F1D51c1ac041d'
-      CRV_GAUGE_REN:
-        address: '0xB1F2cdeC61db658F091671F5f199635aEF202CAC'
-      CRV_GAUGE_SBTC:
-        address: '0x705350c4BcD35c9441419DdD5d2f097d7a55410F'
-      CRV_GAUGE_SUSD:
-        address: '0xA90996896660DEcC6E997655E065b23788857849'
-      CRV_GAUGE_Y:
-        address: '0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1'
-      CRV_REGISTRY:
-        address: '0x7002B727Ef8F5571Cb5F9D70D13DBEEb4dFAe9d1'
-      CRV_STAKING_REWARDS_SUSD:
-        address: '0xDCB6A51eA3CA5d3Fd898Fd6564757c7aAeC3ca92'
-      CRV_SWAP_3POOL:
-        address: '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'
-      CRV_SWAP_BUSD:
-        address: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27'
-      CRV_SWAP_C2:
-        address: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56'
-      CRV_SWAP_GUSD:
-        address: '0x4f062658EaAF2C1ccf8C8e36D6824CDf41167956'
-      CRV_SWAP_HBTC:
-        address: '0x4CA9b3063Ec5866A4B82E437059D2C43d1be596F'
-      CRV_SWAP_USDT:
-        remark: 'not used by curve.fi currently'
-        address: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C'
-      CRV_SWAP_PAX:
-        address: '0x06364f10B501e868329afBc005b3492902d6C763'
-      CRV_SWAP_REN:
-        address: '0x93054188d876f558f4a66B2EF1d97d16eDf0895B'
-      CRV_SWAP_SBTC:
-        address: '0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714'
-      CRV_SWAP_SUSD:
-        address: '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'
-      CRV_SWAP_USDN:
-        address: '0x0f9cb53Ebe405d49A0bbdBD291A65Ff571bC83e1'
-      CRV_SWAP_Y:
-        address: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51'
-      CRV_TOKEN_ESCROW:
-        address: '0x575CCD8e2D300e2377B43478339E364000318E2c'
-      CRV_TOKEN_MINTER:
-        address: '0xd061D61a4d941c39E5453435B6345Dc261C2fcE0'
-      CRV_VECRV:
-        address: '0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2'
-      CRV_VESTING_ESCROW:
-        address: '0xd2D43555134dC575BF7279F4bA18809645dB0F1D'
-      CRV_SWAP_MUSD:
-        address: '0x8474DdbE98F5aA3179B3B3F5942D724aFcdec9f6'
-      CRV_DEPOSIT_MUSD:
-        address: '0x78CF256256C8089d68Cde634Cf7cDEFb39286470'
-      CRV_SWAP_TBTC:
-        address: '0xC25099792E9349C7DD09759744ea681C7de2cb66'
-      CRV_DEPOSIT_TBTC:
-        address: '0x74Bd76482DC067FB5206499Efe19c16CCa62E9D3'
-      CRV_STAKE_SBTC:
-        address: '0x13C1542A468319688B89E323fe9A3Be3A90EBb27'
-      CRV_SWAP_HUSD:
-        address: '0x3eF6A01A0f81D6046290f3e2A8c5b843e738E604'
-      CRV_DEPOSIT_HUSD:
-        address: '0x0a53FaDa2d943057C47A301D25a4D9b3B8e01e8E'
-      CRV_SWAP_USDK:
-        address: '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb'
-      CRV_DEPOSIT_USDK:
-        address: '0x6600e98b71dabfD4A8Cac03b302B0189Adb86Afb'
-      CRV_SWAP_LINKUSD:
-        address: '0xE7a24EF0C5e95Ffb0f6684b813A78F2a3AD7D171'
-      CRV_DEPOSIT_LINKUSD:
-        address: '0x1de7f0866e2c4adAC7b457c58Cc25c8688CDa1f2'
-      CRV_DEPOSIT_PBTC:
-        address: '0x11F419AdAbbFF8d595E7d5b223eee3863Bb3902C'
-      CRV_SWAP_DUSD:
-        address: '0x8038C01A0390a8c547446a0b2c18fc9aEFEcc10c'
-      CRV_DEPOSIT_DUSD:
-        address: '0x61E10659fe3aa93d036d099405224E4Ac24996d0'
-      CRV_SWAP_OBTC:
-        address: '0xd81dA8D904b52208541Bade1bD6595D8a251F8dd'
-      CRV_DEPOSIT_OBTC:
-        address: '0xd5BCf53e2C81e1991570f33Fa881c49EEa570C8D'
-      CRV_SWAP_UST:
-        address: '0x890f4e345B1dAED0367A877a1612f86A1f86985f'
-      CRV_DEPOSIT_UST:
-        address: '0xB0a0716841F2Fc03fbA72A891B8Bb13584F52F2d'
-      CRV_SWAP_EURS:
-        address: '0x0Ce6a5fF5217e38315f87032CF90686C96627CAA'
-      CRV_SWAP_AAVE:
-        address: '0xDeBF20617708857ebe4F679508E7b7863a8A8EeE'
-      CRV_SWAP_STETH:
-        address: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'
-      CRV_GAUGE_HUSD:
-        address: '0x2db0E83599a91b508Ac268a6197b8B14F5e72840'
-      CRV_GAUGE_USDK:
-        address: '0xC2b1DF84112619D190193E48148000e3990Bf627'
-      CRV_GAUGE_MUSD:
-        address: '0x5f626c30EC1215f4EdCc9982265E8b1F411D1352'
-      CRV_GAUGE_TBTC:
-        address: '0x6828bcF74279eE32f2723eC536c22c51Eed383C6'
-      CRV_GAUGE_RSV:
-        address: '0x4dC4A289a8E33600D8bD4cf5F6313E43a37adec7'
-      CRV_GAUGE_DUSD:
-        address: '0xAEA6c312f4b3E04D752946d329693F7293bC2e6D'
-      CRV_DEPOSIT_SNOW:
-        address: '0x2021a9990640c8ff8FcCb553648571D525B53a6e'
-      CRV_GAUGE_SNOW:
-        address: '0x18478F737d40ed7DEFe5a9d6F1560d84E283B74e'
-      CRV_SWAP_BBTC:
-        address: '0x071c661B4DeefB59E2a3DdB20Db036821eeE8F4b'
-      CRV_DEPOSIT_BBTC:
-        address: '0xC45b2EEe6e09cA176Ca3bB5f7eEe7C47bF93c756'
-      CRV_GAUGE_BBTC:
-        address: '0xdFc7AdFa664b08767b735dE28f9E84cd30492aeE'
-      CRV_GAUGE_OBTC:
-        address: '0x11137B10C210b579405c21A07489e28F3c040AB1'
-      CRV_GAUGE_PBTC:
-        address: '0xd7d147c6Bb90A718c3De8C0568F9B560C79fa416'
-      CRV_GAUGE_UST:
-        address: '0x3B7020743Bc2A4ca9EaF9D0722d42E20d6935855'
-      CRV_GAUGE_EURS:
-        address: '0x90Bb609649E0451E5aD952683D64BD2d1f245840'
-      CRV_GAUGE_SETH:
-        address: '0x3C0FFFF15EA30C35d7A85B85c0782D6c94e1d238'
-      CRV_GAUGE_STETH:
-        address: '0x182B723a58739a9c974cFDB385ceaDb237453c28'
-      CRV_SWAP_SNOW:
-        address: '0xF0f745C81E4533c697cF0104c5EFdCbf84359542'
-      CRV_GAUGE_AAVE:
-        address: '0xd662908ADA2Ea1916B3318327A97eB18aD588b5d'
-      CRV_SWAP_RSV:
-        address: '0xC18cC39da8b11dA8c3541C598eE022258F9744da'
-      CRV_SWAP_PBTC:
-        address: '0x7F55DDe206dbAD629C080068923b36fe9D6bDBeF'
-      CRV_SWAP_SAAVE:
-        address: '0xEB16Ae0052ed37f479f7fe63849198Df1765a733'
-      CRV_GAUGE_SAAVE:
-        address: '0x462253b8F74B72304c145DB0e4Eebd326B22ca39'
-      CRV_SWAP_ANKRETH:
-        address: '0xA96A65c051bF88B4095Ee1f2451C2A9d43F53Ae2'
-      CRV_GAUGE_ANKRETH:
-        address: '0x6d10ed2cf043e6fcf51a0e7b4c2af3fa06695707'
-      CRV_SWAP_USDP:
-        address: '0x42d7025938bEc20B69cBae5A77421082407f053A'
-      CRV_GAUGE_USDP:
-        address: '0x055be5DDB7A925BfEF3417FC157f53CA77cA7222'
-      CRV_SWAP_IRONBANKUSD:
-        address: '0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF'
-      CRV_GAUGE_IRONBANKUSD:
-        address: '0xF5194c3325202F456c95c1Cf0cA36f8475C1949F'
-      CRV_SWAP_LINK:
-        address: '0xF178C0b5Bb7e7aBF4e12A4838C7b7c5bA2C623c0'
-      CRV_GAUGE_LINK:
-        address: '0xfd4d8a17df4c27c1dd245d153ccf4499e806c87d'
-      CRV_DEPOSIT_TUSD:
-        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
-      CRV_SWAP_TUSD:
-        address: '0xecd5e75afb02efa118af914515d6521aabd189f1'
-      CRV_GAUGE_TUSD:
-        address: '0x359FD5d6417aE3D8D6497d9B2e7A890798262BA4'
-      CRV_DEPOSIT_FRAX_USD:
-        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
-      CRV_GAUGE_FRAX_USD:
-        address: '0x72e158d38dbd50a483501c24f792bdaaa3e7d55c'
-      CRV_SWAP_FRAX_USD:
-        address: '0xd632f22692fac7611d2aa1c0d552930d43caed3b'
-      CRV_SWAP_LUSD:
-        address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA'
-      CRV_DEPOSIT_LUSD:
-        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
-      CRV_GAUGE_LUSD:
-        address: '0x9b8519a9a00100720ccdc8a120fbed319ca47a14'
-      CRV_SWAP_BUSDV2:
-        address: '0x4807862AA8b2bF68830e4C8dc86D0e9A998e085a'
-      CRV_DEPOSIT_BUSDV2:
-        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
-      CRV_GAUGE_BUSDV2:
-        address: '0xd4b22fedca85e684919955061fdf353b9d38389b'
-      CRV_SWAP_RETH:
-        address: '0xF9440930043eb3997fc70e1339dBb11F341de7A8'
-      CRV_GAUGE_RETH:
-        address: '0x824F13f1a2F29cFEEa81154b46C0fc820677A637'
-      CRV_GAUGE_TRICRYPTO:
-        address: '0x9582C4ADACB3BCE56Fea3e590F05c3ca2fb9C477'
-      CRV_DEPOSIT_TRICRYPTO:
-        address: '0x331aF2E331bd619DefAa5DAc6c038f53FCF9F785'
-      CRV_SWAP_ALUSD:
-        address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
-      CRV_DEPOSIT_ALUSD:
-        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
-      CRV_GAUGE_ALUSD:
-        address: '0x9582C4ADACB3BCE56Fea3e590F05c3ca2fb9C477'
-      CRV_SWAP_MIM_USD:
-        address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
-      CRV_DEPOSIT_MIM_USD:
-        address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
-      CRV_GAUGE_MIM_USD:
-        address: '0xd8b712d29381748dB89c36BCa0138d7c75866ddF'
-      CRV_SWAP_TRICRYPTO2:
-        address: '0xD51a44d3FaE010294C616388b506AcdA1bfAAE46'
-      CRV_DEPOSIT_TRICRYPTO2:
-        address: '0x3993d34e7e99Abf6B6f367309975d1360222D446'
-      CRV_GAUGE_TRICRYPTO2:
-        address: '0xDeFd8FdD20e0f34115C7018CCfb655796F6B2168'
-      CRV_SWAP_EURT:
-        address: '0xfd5db7463a3ab53fd211b4af195c5bccc1a03890'
-      CRV_GAUGE_EURT:
-        address: '0xe8060Ad8971450E624d5289A10017dD30F5dA85F'
-    rari:
-      RARI_FUND_CONTROLLER:
-        address: '0x66f4856f1bbd1eb09e1c8d9d646f5a3a193da569'
-      RARI_FUND_PRICE_CONSUMER:
-        address: '0xFE98A52bCAcC86432E7aa76376751DcFAB202244'
-      RARI_FUND_PRICE_PROXY:
-        address: '0x4a785fa6fcd2e0845a24847beb7bddd26f996d4d'
-      RARI_COMPTROLLER:
-        address: '0xc54172e34046c1653d1920d40333Dd358c7a1aF4'
-      RARI_FUSE_POOL_DIRECTORY:
-        address: '0x835482FE0532f169024d5E9410199369aAD5C77E'
-      RARI_FUSE_8_TRIBE_REWARDS:
-        address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'
-      RARI_LP_F_TRIBE_IMPLEMENTATION:
-        address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
-      RARI_FUND_MANAGER:
-        address: '0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a'
-      RARI_FUND_MANAGER_IMPLEMENTATION:
-        address: '0x6c85e8101e52ea7b569230f93bc452f291edcbec'
-    snow:
-      SNOW_POOL_YSNOW:
-        address: '0x4571753311e37ddb44faa8fb78a6df9a6e3c6c0b'
-      SNOW_POOL_YCRVSNOW:
-        address: '0xbf7ccd6c446acfcc5df023043f2167b62e81899b'
-      SNOW_POOL_ETH2SNOW:
-        address: '0x6208D3fdfC396eB065c8FFc291e6BC1902b8b1bf'
-      SNOW_POOL_ETH_SNOW_LP:
-        address: '0x4f1aD17E22f919fFf12bC936C1CaA9c5d49BF504'
-      SNOW_POOL_BTC_SNOW:
-        address: '0x7370c1eff84942D475F1e7D3AcdA3f89BE41aBdE'
-      SNOW_STAKE_YCRVSNOW:
-        address: '0x063D7646697369FA2d3521678c091e2eeFD8e1f5'
-      SNOW_STAKE_YSNOW:
-        address: '0x86D0e7AD012bF743b660235A531Dfc45608F4dc5'
-      SNOW_STAKE_ETH_SNOW:
-        address: '0x6639c50Ac9e6A04Cc6c9FE1a76451699d1B0B76c'
-      SNOW_STAKE_SNOW:
-        address: '0x7d2c8B58032844F222e2c80219975805DcE1921c'
-      SNOW_STAKE_ETH2SNOW:
-        address: '0x6208D3fdfC396eB065c8FFc291e6BC1902b8b1bf'
-      SNOW_STAKE_LP_ETH_SNOW:
-        address: '0x4f1aD17E22f919fFf12bC936C1CaA9c5d49BF504'
-      SNOW_STAKE_BTC_SNOW:
-        address: '0x7370c1eff84942D475F1e7D3AcdA3f89BE41aBdE'
-    uniswap:
-      paths:
-        FARM-USDT:
-          - 'USDT'
-          - 'WETH'
-          - 'USDC'
-          - 'FARM'
-        DUCK-MKR:
-          - 'MKR'
-          - 'WETH'
-          - 'DUCK'
-        DUCK-USDT:
-          - 'USDT'
-          - 'WETH'
-          - 'DUCK'
-        TRIBE-USDT:
-          - 'USDT'
-          - 'WETH'
-          - 'FEI'
-          - 'TRIBE'
-        FEI-TRIBE:
-          - 'FEI'
-          - 'TRIBE'
-        USDP-WETH:
-          - 'WETH'
-          - 'DUCK'
-          - 'USDP'
-        TRIBE-WETH:
-          - 'TRIBE'
-          - 'FEI'
-          - 'WETH'
-        TRIBE-ETH:
-          - 'TRIBE'
-          - 'FEI'
-          - 'ETH'
-      UNISWAP_FACTORY_V2:
-        address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
-      UNISWAP_ROUTER_V2:
-        address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
-      UNISWAP_SUSHI_WETH_V2:
-        address: '0xCE84867c3c02B05dc570d0135103d3fB9CC19433'
-      UNISWAP_PAIR_WETH_SNOW_V2:
-        address: '0xE4f8F3CB9b33247789e4984A457bb69A1a621Df3'
-      UNISWAP_PAIR_YSNOW_USDC_V2:
-        address: '0x9371801bb71ff2756c9ffac371b9c311f77bf986'
-      UNISWAP_PAIR_YCRVSNOW_USDC_V2:
-        address: '0x45ea0521d9e428ab078af2586c3bee97a5e5156c'
-      UNISWAP_FACTORY_V3:
-        address: '0x1F98431c8aD98523631AE4a59f267346ea31F984'
-      UNISWAP_ROUTER_V3:
-        address: '0xE592427A0AEce92De3Edee1F18E0157C05861564'
-      UNISWAP_QUOTER_V3:
-        address: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
-    votium:
-      VOTIUM_VOTER_PROXY:
-        address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'
-      VOTIUM_BRIBE:
-        address: '0x19bbc3463dd8d07f55438014b021fb457ebd4595'
-      VOTIUM_MULTI_MERKLE_STASH:
-        address: '0x378ba9b73309be80bf4c2c027aad799766a7ed5a'
-    1inch:
-      1INCH_AGGREGATION_ROUTER_V3:
-        address: '0x11111112542D85B3EF69AE05771c2dCCff4fAa26'
-      1INCH_ROUTER_V4:
-        address: '0x1111111254fb6c44bac0bed2854e76f90643097d'
-    aave:
-      AAVE_LENDING_POOL_ADDRESSES_PROVIDER:
-        address: '0x24a42fD28C976A61Df5D00D0599C34c4f90748c8'
-      AAVE_LENDING_POOL:
-        address: '0x398eC7346DcD622eDc5ae82352F02bE94C62d119'
-      AAVE_LENDING_POOL_CORE:
-        address: '0x3dfd23A6c5E8BbcFc9581d2E864a68feb6a076d3'
-    maker:
-      DEPLOYER:
-        address: '0xdDb108893104dE4E1C6d0E47c42237dB4E617ACc'
-      MULTICALL:
-        address: '0x5e227AD1969Ea493B43F840cfF78d08a6fc17796'
-      ZERO_ADDRESS:
-        address: '0x0000000000000000000000000000000000000000'
-      MCD_DEPLOY:
-        address: '0xbaa65281c2FA2baAcb2cb550BA051525A480D3F4'
-      MCD_GOV:
-        address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2'
-      GOV_GUARD:
-        address: '0x6eEB68B2C7A918f36B78E2DB80dcF279236DDFb8'
-      MCD_ADM:
-        address: '0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5'
-      MCD_VAT:
-        address: '0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B'
-      MCD_JUG:
-        address: '0x19c0976f590D67707E62397C87829d896Dc0f1F1'
-      MCD_CAT:
-        address: '0x78F2c2AF65126834c51822F56Be0d7469D7A523E'
-      MCD_VOW:
-        address: '0xA950524441892A31ebddF91d3cEEFa04Bf454466'
-      MCD_JOIN_DAI:
-        address: '0x9759A6Ac90977b93B58547b4A71c78317f391A28'
-      MCD_FLAP:
-        address: '0xdfE0fb1bE2a52CDBf8FB962D5701d7fd0902db9f'
-      MCD_FLOP:
-        address: '0x4D95A049d5B0b7d32058cd3F2163015747522e99'
-        fromBlock: 9697042
-        beg: '1030000000000000000'
-        pad: '1200000000000000000'
-        ttl: '21600'
-        tau: '259200'
-        bid: '50000000000000000000000000000000000000000000000000'
-      MCD_PAUSE:
-        address: '0xbE286431454714F511008713973d3B053A2d38f3'
-      MCD_PAUSE_PROXY:
-        address: '0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB'
-      MCD_GOV_ACTIONS:
-        address: '0x4F5f0933158569c026d617337614d00Ee6589B6E'
-      MCD_SPOT:
-        address: '0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3'
-      MCD_POT:
-        address: '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7'
-      MCD_END:
-        address: '0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5'
-      MCD_ESM:
-        address: '0x0581A0AbE32AAe9B5f0f68deFab77C6759100085'
-      PROXY_ACTIONS:
-        address: '0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038'
-      PROXY_ACTIONS_END:
-        address: '0x069B2fb501b6F16D1F5fE245B16F6993808f1008'
-      PROXY_ACTIONS_DSR:
-        address: '0x07ee93aEEa0a36FfF2A9B95dd22Bd6049EE54f26'
-      MCD_CDP_MANAGER:
-        address: '0x5ef30b9986345249bc32d8928B7ee64DE9435E39'
-      GET_CDPS:
-        address: '0x36a724Bd100c39f0Ea4D3A20F7097eE01A8Ff573'
-      OSM_MOM:
-        address: '0x76416A4d5190d071bfed309861527431304aA14f'
-      PROXY_FACTORY:
-        address: '0xA26e15C895EFc0616177B7c1e7270A4C7D51C997'
-      MCD_PROXY_REGISTRY:
-        address: '0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4'
-      PIP_ETH:
-        address: '0x81FE72B5A8d1A857d176C3E7d5Bd2679A9B85763'
-      MCD_JOIN_ETH_A:
-        address: '0x2F0b23f53734252Bda2277357e97e1517d6B042A'
-      MCD_FLIP_ETH_A:
-        address: '0xd8a04F5412223F513DC55F839574430f5EC15531'
-      BAT:
-        address: '0x0D8775F648430679A709E98d2b0Cb6250d2887EF'
-      PIP_BAT:
-        address: '0xB4eb54AF9Cc7882DF0121d26c5b97E802915ABe6'
-      MCD_JOIN_BAT_A:
-        address: '0x3D0B1912B66114d4096F48A8CEe3A56C231772cA'
-      MCD_FLIP_BAT_A:
-        address: '0xaA745404d55f88C108A28c86abE7b5A1E7817c07'
-      MCD_JOIN_SAI:
-        address: '0xad37fd42185Ba63009177058208dd1be4b136e6b'
-      MCD_FLIP_SAI:
-        address: '0x5432b2f3c0DFf95AA191C45E5cbd539E2820aE72'
-      PIP_USDC:
-        address: '0x77b68899b99b686F415d074278a9a16b336085A0'
-      MCD_JOIN_USDC_A:
-        address: '0xA191e578a6736167326d05c119CE0c90849E84B7'
-      MCD_FLIP_USDC_A:
-        address: '0x545521e0105C5698f75D6b3C3050CfCC62FB0C12'
-      MCD_JOIN_USDC_B:
-        address: '0x2600004fd1585f7270756DDc88aD9cfA10dD0428'
-      MCD_FLIP_USDC_B:
-        address: '0x6002d3B769D64A9909b0B26fC00361091786fe48'
-      PIP_WBTC:
-        address: '0xf185d0682d50819263941e5f4EacC763CC5C6C42'
-      MCD_JOIN_WBTC_A:
-        address: '0xBF72Da2Bd84c5170618Fbe5914B0ECA9638d5eb5'
-      MCD_FLIP_WBTC_A:
-        address: '0xF70590Fa4AaBe12d3613f5069D02B8702e058569'
-      PIP_TUSD:
-        address: '0xeE13831ca96d191B688A670D47173694ba98f1e5'
-      MCD_JOIN_TUSD_A:
-        address: '0x4454aF7C8bb9463203b66C816220D41ED7837f44'
-      MCD_FLIP_TUSD_A:
-        address: '0x04C42fAC3e29Fd27118609a5c36fD0b3Cb8090b3'
-      PIP_ZRX:
-        address: '0x7382c066801E7Acb2299aC8562847B9883f5CD3c'
-      MCD_FLIP_ZRX_A:
-        address: '0x92645a34d07696395b6e5b8330b000D0436A9aAD'
-      MCD_JOIN_ZRX_A:
-        address: '0xc7e8Cd72BDEe38865b4F5615956eF47ce1a7e5D0'
-      PIP_KNC:
-        address: '0xf36B79BD4C0904A5F350F1e4f776B81208c13069'
-      MCD_FLIP_KNC_A:
-        address: '0xAD4a0B5F3c6Deb13ADE106Ba6E80Ca6566538eE6'
-      MCD_JOIN_KNC_A:
-        address: '0x475F1a89C1ED844A08E8f6C50A00228b5E59E4A9'
-      PIP_MANA:
-        address: '0x8067259EA630601f319FccE477977E55C6078C13'
-      MCD_FLIP_MANA_A:
-        address: '0x4bf9D2EBC4c57B9B783C12D30076507660B58b3a'
-      MCD_JOIN_MANA_A:
-        address: '0xA6EA3b9C04b8a38Ff5e224E7c3D6937ca44C0ef9'
-      PROXY_PAUSE_ACTIONS:
-        address: '0x6bda13D43B7EDd6CAfE1f70fB98b5d40f61A1370'
-      PROXY_DEPLOYER:
-        address: '0x1b93556AB8dcCEF01Cd7823C617a6d340f53Fb58'
-      SAI_TUB:
-        address: '0x448a5065aeBB8E423F0896E6c5D525C040f59af3'
-      MIGRATION:
-        address: '0xc73e0383F3Aff3215E6f04B0331D58CeCf0Ab849'
-      MIGRATION_PROXY_ACTIONS:
-        address: '0x2E1F6062d9fB227069741E40f89186DF222FB426'
-      MKR_REDEEM:
-        address: '0x642AE78FAfBB8032Da552D619aD43F1D81E4DD7C'
-    kyber:
-      KyberNetworkProxy:
-        address: '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
-        abifile: 'abi/KyberNetworkProxy'
-      KyberNetwork:
-        address: '0x9ae49C0d7F8F9EF4B864e004FE86Ac8294E20950'
-        abifile: 'abi/KyberNetwork'
-      PermissionlessOrderbookReserveLister:
-        address: '0x84afa106fbf9b45e369724024cae14e8c7529c26'
-        abifile: 'abi/PermissionlessOrderbookReserveLister'
-      KyberReserve:
-        address: '0x63825c174ab367968EC60f061753D3bbD36A0D8F'
-        abifile: 'abi/KyberReserve'
-      OrderbookReserve:
-        address: '0x9D27a2D71Ac44E075f764d5612581E9Afc1964fd'
-        abifile: 'abi/OrderbookReserve'
-      ConversionRates:
-        address: '0x97D7126b6FF7C4D95601912f4Cdf790a3Cd1edaB'
-        abifile: 'abi/ConversionRates'
-      ExpectedRate:
-        address: '0x96B610046D63638d970E6243151311d8827D69a5'
-        abifile: 'abi/ExpectedRate'
-      FeeBurner:
-        address: '0x52166528FCC12681aF996e409Ee3a421a4e128A3'
-        abifile: 'abi/FeeBurner'
-      SanityRates:
-        address: '0xdfc85C08d5e5924aB49750E006CF8a826ffb7B13'
-        abifile: 'abi/SanityRates'
-      WhiteList:
-        address: '0x6e106a75D369d09A9Ea1DCc16Da844792aA669a3'
-        abifile: 'abi/WhiteList'
-      KyberNetworkENSResolver:
-        address: '0x1982131C7D6959ff7768EE39c023Ad002d8c9759'
-        abifile: 'abi/KyberNetworkENSResolver'
-    fei:
-      FEI_CORE:
-        address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9'
-      FEI_DAO:
-        address: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B'
-      FEI_DAO_TIMELOCK:
-        address: '0x639572471f2f318464dc01066a56867130e45E25'
-      FEI_UNISWAP_INCENTIVE:
-        address: '0xfe5b6c2a87A976dCe20130c423C679f4d6044cD7'
-      FEI_ETH_BONDING_CURVE:
-        address: '0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7'
-      FEI_UNISWAP_PCV_DEPOSIT:
-        address: '0x9b0C6299D08fe823f2C0598d97A1141507e4ad86'
-      FEI_UNISWAP_PCV_CONTROLLER:
-        address: '0x7a165F8518A9Ec7d5DA15f4B77B1d7128B5D9188'
-      FEI_UNISWAP_ORACLE:
-        address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65'
-      FEI_BONDING_CURVE_ORACLE:
-        address: '0x89714d3AC9149426219a3568543200D1964101C4'
-      FEI_REWARDS_DISTRIBUTOR:
-        address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
-      FEI_STAKING_REWARDS:
-        address: '0x18305DaAe09Ea2F4D51fAa33318be5978D251aBd'
-      FEI_GENESIS_GROUP:
-        address: '0xBFfB152b9392e38CdDc275D818a3Db7FE364596b'
-      FEI_ROUTER:
-        address: '0x9271D303b57c204636C38Df0eD339b18Bf98f909'
-    token:
-      AETH:
-        address: '0x3a3A65aAb0dd2A17E3F1947bA16138cd37d08c04'
-      ADAI:
-        address: '0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d'
-      AUSDC:
-        address: '0x9bA00D6856a4eDF4665BcA2C2309936572473B7E'
-      ASUSD:
-        address: '0x625aE63000f46200499120B906716420bd059240'
-      ATUSD:
-        address: '0x4DA9b813057D04BAef4e5800E36083717b4a0341'
-      AUSDT:
-        address: '0x71fc860F7D3A592A4a98740e39dB31d25db65ae8'
-      ABUSD:
-        address: '0x6Ee0f7BB50a54AB5253dA0667B0Dc2ee526C30a8'
-      ABAT:
-        address: '0xE1BA0FB44CCb0D11b80F92f4f8Ed94CA3fF51D00'
-      AENJ:
-        address: '0x712DB54daA836B53Ef1EcBb9c6ba3b9Efb073F40'
-      AKNC:
-        address: '0x9D91BE44C06d373a8a226E1f3b146956083803eB'
-      ALEND:
-        address: '0x7D2D3688Df45Ce7C552E19c27e007673da9204B8'
-      ALINK:
-        address: '0xA64BD6C70Cb9051F6A9ba1F163Fdc07E0DfB5F84'
-      AMANA:
-        address: '0x6FCE4A401B6B80ACe52baAefE4421Bd188e76F6f'
-      AMKR:
-        address: '0x7deB5e830be29F91E298ba5FF1356BB7f8146998'
-      AREN:
-        address: '0x69948cC03f478B95283F7dbf1CE764d0fc7EC54C'
-      AREP:
-        address: '0x71010A9D003445aC60C4e6A7017c1E89A477B438'
-      ASNX:
-        address: '0x328C4c80BC7aCa0834Db37e6600A6c49E12Da4DE'
-      AWBTC:
-        address: '0xFC4B8ED459e00e5400be803A9BB3954234FD50e3'
-      AZRX:
-        address: '0x6Fb0855c404E09c47C3fBCA25f08d4E41f9F062f'
-      APY_POOL_TOKEN:
-        address: '0xe18b0365D5D09F394f84eE56ed29DD2d8D6Fba5f'
-      BAL:
-        address: '0xba100000625a3754423978a60c9317c58a424e3d'
-      CDAI:
-        address: '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643'
-      CUSDC:
-        address: '0x39AA39c021dfbaE8faC545936693aC917d5E7563'
-      BUSD:
-        address: '0x4Fabb145d64652a948d72533023f6E7A623C7C53'
-      CRV:
-        address: '0xD533a949740bb3306d119CC777fa900bA034cd52'
-      CRV_LP_3POOL:
-        address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490'
-      CRV_LP_C2:
-        address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2'
-      CRV_LP_Y:
-        address: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8'
-      CRV_LP_BUSD:
-        address: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B'
-      CRV_LP_FRAX_USD:
-        address: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B'
-      CRV_LP_GUSD:
-        address: '0xD2967f45c4f384DEEa880F807Be904762a3DeA07'
-      CRV_LP_HBTC:
-        address: '0xb19059ebb43466C323583928285a49f558E572Fd'
-      CRV_LP_PAX:
-        address: '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
-      CRV_LP_REN:
-        address: '0x49849C98ae39Fff122806C06791Fa73784FB3675'
-      CRV_LP_SBTC:
-        address: '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3'
-      CRV_LP_SUSD:
-        address: '0xC25a3A3b969415c80451098fa907EC722572917F'
-      CRV_LP_TRICRYPTO:
-        address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
-      CRV_LP_TUSD:
-        address: '0xecd5e75afb02efa118af914515d6521aabd189f1'
-      CRV_LP_USDT:
-        address: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23'
-      CRV_LP_USDN:
-        address: '0x4f3E8F405CF5aFC05D68142F3783bDfE13811522'
-      DAI:
-        address: '0x6B175474E89094C44Da98b954EedeAC495271d0F'
-      DANDY:
-        remark: 'DEGO dandy token'
-        address: '0x9Dfc4B433D359024Eb3E810d77d60fbE8B0d9B82'
-      DEGO:
-        address: '0x88ef27e69108b2633f8e1c184cc37940a075cc02'
-      DGD:
-        address: '0xe0b7927c4af23765cb51314a0e0521a9645f0e2a'
-      DPT:
-        address: '0x10c71515602429c19d53011ea7040b87a4894838'
-      ENG:
-        address: '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4'
-      ENJ:
-        address: '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
-      ETH:
-        address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      FARM:
-        address: '0xa0246c9032bC3A600820415aE600c6388619A14D'
-      FEI:
-        address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA'
-      FUEL:
-        address: '0xea38eaa3c86c8f9b751533ba2e562deb9acded40'
-      FUN:
-        address: '0x419d0d8bdd9af5e606ae2232ed285aff190e711b'
-      GUSD:
-        address: '0xdF574c24545E5FfEcb9a659c229253D4111d87e1'
-      HST:
-        address: '0x554c20b7c486beee439277b4540a434566dc4c02'
-      KNC:
-        address: '0xdd974D5C2e2928deA5F71b9825b8b646686BD200'
-      LEND:
-        address: '0x80fB784B7eD66730e8b1DBd9820aFD29931aab03'
-      LINK:
-        address: '0x514910771AF9Ca656af840dff83E8264EcF986CA'
-      LRC:
-        address: '0xbbbbca6a901c926f240b89eacb641d8aec7aeafd'
-      MANA:
-        address: '0x0F5D2fB29fb7d3CFeE444a200298f468908cC942'
-      MKR:
-        address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2'
-      MKR_OLD:
-        address: '0xC66eA802717bFb9833400264Dd12c2bCeAa34a6d'
-      MOD:
-        address: '0x957c30ab0426e0c93cd8241e2c60392d08c6ac8e'
-      OMG:
-        address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07'
-      ODEX:
-        address: '0xa960d2ba7000d58773e7fa5754dec3bb40a069d5'
-      PAXG:
-        address: '0x45804880De22913dAFE09f4980848ECE6EcbAf78'
-      REN:
-        address: '0x408e41876cccdc0f92210600ef50372656052a38'
-      REP:
-        address: '0x1985365e9f78359a9B6AD760e32412f4a445E862'
-      SAI:
-        address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
-      SNX:
-        address: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F'
-      STAKE:
-        address: '0x0Ae055097C6d159879521C384F1D2123D1f195e6'
-      SUSD:
-        address: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51'
-      SUSHI:
-        address: '0x6B3595068778DD592e39A122f4f5a5cF09C90fE2'
-      KIMCHI:
-        address: '0x1E18821E69B9FAA8e6e75DFFe54E7E25754beDa0'
-      TUSD:
-        address: '0x0000000000085d4780B73119b644AE5ecd22b376'
-      UMA:
-        address: '0x04fa0d235c4abf4bcf4787af4cf447de572ef828'
-      UNI:
-        address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
-      USDC:
-        address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-      USDN:
-        address: '0x674C6Ad92Fd080e4004b2312b45f796a192D27a0'
-      USDT:
-        address: '0xdac17f958d2ee523a2206206994597c13d831ec7'
-      WBTC:
-        address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'
-      WETH:
-        address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-      XAUT:
-        address: '0x4922a015c4407F87432B179bb209e125432E4a2A'
-      XFI:
-        address: '0x5befbb272290dd5b8521d4a938f6c4757742c430'
-      YFI:
-        address: '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e'
-      YUNO:
-        address: '0x4B4F5286e0f93E965292B922B9Cd1677512F1222'
-      ZRX:
-        address: '0xE41d2489571d322189246DaFA5ebDe1F4699F498'
-      CRV_LP_MUSD:
-        address: '0x1AEf73d49Dedc4b1778d0706583995958Dc862e6'
-      CRV_LP_TBTC:
-        address: '0x64eda51d3Ad40D56b9dFc5554E06F94e1Dd786Fd'
-      CRV_LP_HUSD:
-        address: '0x5B5CFE992AdAC0C9D48E05854B2d91C73a003858'
-      CRV_LP_USDK:
-        address: '0x97E2768e8E73511cA874545DC5Ff8067eB19B787'
-      CRV_LP_LINKUSD:
-        address: '0x6D65b498cb23deAba52db31c93Da9BFFb340FB8F'
-      CRV_LP_PBTC:
-        address: '0xDE5331AC4B3630f94853Ff322B66407e0D6331E8'
-      CRV_LP_DUSD:
-        address: '0x3a664Ab939FD8482048609f652f9a0B0677337B9'
-      CRV_LP_UST:
-        address: '0x94e131324b6054c0D789b190b2dAC504e4361b53'
-      CRV_LP_EURS:
-        address: '0x194eBd173F6cDacE046C53eACcE9B953F28411d1'
-      CRV_LP_AAVE:
-        address: '0xFd2a8fA60Abd58Efe3EeE34dd494cD491dC14900'
-      CRV_LP_STETH:
-        address: '0x06325440D014e39736583c165C2963BA99fAf14E'
-      CRV_LP_SNOW:
-        address: '0x3921574E4146fC09701a1B24CFb0f9906e8FEe92'
-      CRV_LP_BBTC:
-        address: '0x410e3E86ef427e30B9235497143881f717d93c2A'
-      BBTC:
-        address: '0x9BE89D2a4cd102D8Fecc6BF9dA793be995C22541'
-      CRV_SWAP_SETH:
-        address: '0xc5424B857f758E906013F3555Dad202e4bdB4567'
-      CRV_LP_SETH:
-        address: '0xA3D87FffcE63B53E0d54fAa1cc983B7eB0b74A9c'
-      CRV_LP_RSV:
-        address: '0xC2Ee6b0334C261ED60C72f6054450b61B8f18E35'
-      CRV_LP_OBTC:
-        address: '0x2fE94ea3d5d4a175184081439753DE15AeF9d614'
-      SNOW:
-        address: '0xfe9A29aB92522D14Fc65880d817214261D8479AE'
-      SNOW_LP_YSNOW:
-        address: '0x173f8ee61c0fe712cae2a2fc8d5c0ccdda57e6da'
-      SNOW_LP_YCRVSNOW:
-        address: '0x078b728243b975d1a284666c30b30530a8c087fe'
-      STARK_FAKE:
-        address: '0x40D1BF170f17C8648cd5acCD1D801027C8B73019'
-      CRV_LP_SAAVE:
-        address: '0x02d341CcB60fAaf662bC0554d13778015d1b285C'
-      CRV_LP_ANKRETH:
-        address: '0xaA17A236F2bAdc98DDc0Cf999AbB47D47Fc0A6Cf'
-      CRV_LP_USDP:
-        address: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6'
-      CRV_LP_IRONBANKUSD:
-        address: '0x5282a4eF67D9C33135340fB3289cc1711c13638C'
-      CRV_LP_LINK:
-        address: '0xcee60cfa923170e4f8204ae08b4fa6a3f5656f3a'
-      DUCK:
-        address: '0x92e187a03b6cd19cb6af293ba17f2745fd2357d5'
-      USDP:
-        address: '0x1456688345527bE1f37E9e627DA0837D6f08C925'
-      COL:
-        remark: 'http://unit.xyz currancy. 1 DUCK equals 100 COL.'
-        address: '0xC76FB75950536d98FA62ea968E1D6B45ffea2A55'
-      KP3R:
-        address: '0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44'
-      DODO:
-        address: '0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd'
-      SEUR:
-        address: '0xd71ecff9342a5ced620049e616c5035f1db98620'
-      TRIBE:
-        address: '0xc7283b66eb1eb5fb86327f08e1b5816b0720212b'
-      KICK:
-        address: '0xc12d1c73ee7dc3615ba4e37e4abfdbddfa38907e'
-      TRU:
-        address: '0x4C19596f5aAfF459fA38B0f7eD92F11AE6543784'
-      TRU_IMPLEMENTATION:
-        address: '0x095527F5bEa113E9575B662c5ba01D990A280f2F'
-      MNE:
-        address: '0x426ca1ea2406c07d75db9585f22781c096e3d0e0'
-      MIM:
-        address: '0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3'
-      SPELL:
-        address: '0x090185f2135308BaD17527004364eBcC2D37e5F6'
-      CRV_LP_LUSD:
-        address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA'
-      CRV_LP_BUSDV2:
-        address: '0x4807862AA8b2bF68830e4C8dc86D0e9A998e085a'
-      CRV_LP_RETH:
-        address: '0x53a901d48795C58f485cBB38df08FA96a24669D5'
-      CRV_LP_ALUSD:
-        address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
-      CRV_LP_MIM_USD:
-        address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
-      CRV_LP_TRICRYPTO2:
-        address: '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff'
-      CRV_LP_EURT:
-        address: '0xfd5db7463a3ab53fd211b4af195c5bccc1a03890'
-      QDUCK:
-        address: '0xE85d5FE256F5f5c9E446502aE994fDA12fd6700a'
-      RARI_FUND_TOKEN:
-        address: '0x016bf078ABcaCB987f0589a6d3BEAdD4316922B0'
-      CVXCRV:
-        address: '0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7'
-      RARI_LP_F_TRIBE:
-        address: '0xFd3300A9a74b3250F1b2AbC12B47611171910b07'
-      RARI_LP_F_FEI:
-        address: '0xd8553552f8868c1ef160eedf031cf0bcf9686945'
-      RARI_LP_F_FEI_IMPLEMENTATION:
-        address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
-      RARI_LP_F_FEI_IMPLEMENTATION_IMPLEMENTATION:
-        address: '0x0000000000000000000000000000000000000000'
-      EXRD:
-        address: '0x6468e79a80c0eab0f9a2b574c8d5bc374af59414'
-      RARI_LP_F_DAI:
-        address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43'
-      RARI_LP_F_DAI_IMPLEMENTATION:
-        address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
-      RARI_LP_F_DAI_IMPLEMENTATION_IMPLEMENTATION:
-        address: '0x0000000000000000000000000000000000000000'
-      XRD:
-        address: '0x6468e79A80C0eaB0F9A2B574c8d5bC374Af59414'
-    other:
-      VOTIUM_VOTER_PROXY:
-        address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'
-  rinkeby:
-    provider:
-      http:
-        url: 'http://localhost:8545'
-      ws: null
-      infura:
-        url: 'wss://mainnet.infura.io/ws/v3/'
-    chainid: 4
-    uniswap:
-      UNISWAP_FACTORY:
-        address: '0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36'
-      UNISWAP_ROUTER2:
-        address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
-  kovan:
-    provider:
-      http:
-        url: 'http://localhost:8545'
-      ws: null
-      infura:
-        url: 'wss://mainnet.infura.io/ws/v3/'
-    chainid: 42
-    aave:
-      referralCode: 0
-      AAVE_LENDING_POOL_ADDRESSES_PROVIDER:
-        address: '0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5'
-      AAVE_LENDING_POOL:
-        address: '0x580D4Fdc4BF8f9b5ae2fb9225D584fED4AD5375c'
-      AAVE_LENDING_POOL_CORE:
-        address: '0x95D1189Ed88B380E319dF73fF00E479fcc4CFa45'
-      aETH:
-        address: '0xD483B49F2d55D2c53D32bE6efF735cB001880F79'
-      aDAI:
-        address: '0x58AD4cB396411B691A9AAb6F74545b2C5217FE6a'
-      aUSDC:
-        address: '0x02F626c6ccb6D2ebC071c068DC1f02Bf5693416a'
-      aSUSD:
-        address: '0xb9c1434aB6d5811D1D0E92E8266A37Ae8328e901'
-      aTUSD:
-        address: '0xA79383e0d2925527ba5Ec1c1bcaA13c28EE00314'
-      aUSDT:
-        address: '0xA01bA9fB493b851F4Ac5093A324CB081A909C34B'
-      aBUSD:
-        address: '-'
-      aBAT:
-        address: '0x5ad67de6Fb697e92a7dE99d991F7CdB77EdF5F74'
-      aKNC:
-        address: '0xB08EC9EdB6BD7971220FEa04644174f3EbfbDe96'
-      aLEND:
-        address: '0xa2facD0F9Ef0Bb75cFc64Ad692F79378b5C3673a'
-      aLINK:
-        address: '0xEC23855Ff01012E1823807CE19a790CeBc4A64dA'
-      aMANA:
-        address: '0xe68204D69Cbfaf6124190EFa65ad9C591C0D48e4'
-      aMKR:
-        address: '0xfB762B5BAb463f7F35610Ba65e2534993a1c09C6'
-      aREP:
-        address: '0x0578469469Db1129271f4eb3EB9D97426506c44c'
-      aSNX:
-        address: '0xb4D480f963f4F685F1D51d2B6159D126658B1dA8'
-      aWBTC:
-        address: '0xCD5C52C7B30468D16771193C47eAFF43EFc47f5C'
-      aZRX:
-        address: '0x0F456900c6bdFddfA27E1E4E4c84EB823a2eE13c'
-    maker:
-      DEPLOYER:
-        address: '0xdB33dFD3D61308C33C63209845DaD3e6bfb2c674'
-      MULTICALL:
-        address: '0xC6D81A2e375Eee15a20E6464b51c5FC6Bb949fdA'
-      FAUCET:
-        address: '0x57aAeAE905376a4B1899bA81364b4cE2519CBfB3'
-      MCD_DEPLOY:
-        address: '0x13141b8a5E4A82Ebc6b636849dd6A515185d6236'
-      MCD_GOV:
-        address: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD'
-      GOV_GUARD:
-        address: '0xE50303C6B67a2d869684EFb09a62F6aaDD06387B'
-      MCD_ADM:
-        address: '0xbBFFC76e94B34F72D96D054b31f6424249c1337d'
-      MCD_VAT:
-        address: '0xbA987bDB501d131f766fEe8180Da5d81b34b69d9'
-      MCD_JUG:
-        address: '0xcbB7718c9F39d05aEEDE1c472ca8Bf804b2f1EaD'
-      MCD_CAT:
-        address: '0x0511674A67192FE51e86fE55Ed660eB4f995BDd6'
-      MCD_VOW:
-        address: '0x0F4Cbe6CBA918b7488C26E29d9ECd7368F38EA3b'
-      MCD_JOIN_DAI:
-        address: '0x5AA71a3ae1C0bd6ac27A1f28e1415fFFB6F15B8c'
-      MCD_FLAP:
-        address: '0xc6d3C83A080e2Ef16E4d7d4450A869d0891024F5'
-      MCD_FLOP:
-        address: '0x52482a3100F79FC568eb2f38C4a45ba457FBf5fA'
-        fromBlock: 9697042
-        beg: '1030000000000000000'
-        pad: '1200000000000000000'
-        ttl: '21600'
-        tau: '259200'
-        bid: '50000000000000000000000000000000000000000000000000'
-      MCD_PAUSE:
-        address: '0x8754E6ecb4fe68DaA5132c2886aB39297a5c7189'
-      MCD_PAUSE_PROXY:
-        address: '0x0e4725db88Bb038bBa4C4723e91Ba183BE11eDf3'
-      MCD_GOV_ACTIONS:
-        address: '0x0Ca17E81073669741714354f16D800af64e95C75'
-      MCD_DAI:
-        address: '0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa'
-      MCD_SPOT:
-        address: '0x3a042de6413eDB15F2784f2f97cC68C7E9750b2D'
-      MCD_POT:
-        address: '0xEA190DBDC7adF265260ec4dA6e9675Fd4f5A78bb'
-      MCD_END:
-        address: '0x24728AcF2E2C403F5d2db4Df6834B8998e56aA5F'
-      MCD_ESM:
-        address: '0x0C376764F585828ffB52471c1c35f855e312a06c'
-      PROXY_ACTIONS:
-        address: '0xd1D24637b9109B7f61459176EdcfF9Be56283a7B'
-      PROXY_ACTIONS_END:
-        address: '0x7c3f28f174F2b0539C202a5307Ff48efa61De982'
-      PROXY_ACTIONS_DSR:
-        address: '0xc5CC1Dfb64A62B9C7Bb6Cbf53C2A579E2856bf92'
-      MCD_CDP_MANAGER:
-        address: '0x1476483dD8C35F25e568113C5f70249D3976ba21'
-      DSR_MANAGER:
-        address: '0x7f5d60432DE4840a3E7AE7218f7D6b7A2412683a'
-      GET_CDPS:
-        address: '0x592301a23d37c591C5856f28726AF820AF8e7014'
-      ILK_REGISTRY:
-        address: '0x6618BD7bBaBFacC518Fdec43542E4a73629B0819'
-      OSM_MOM:
-        address: '0x5dA9D1C3d4f1197E5c52Ff963916Fe84D2F5d8f3'
-      FLIPPER_MOM:
-        address: '0xf3828caDb05E5F22844f6f9314D99516D68a0C84'
-      PROXY_FACTORY:
-        address: '0xe11E3b391F7E8bC47247866aF32AF67Dd58Dc800'
-      MCD_PROXY_REGISTRY:
-        address: '0x64A436ae831C1672AE81F674CAb8B6775df3475C'
-      PIP_ETH:
-        address: '0x75dD74e8afE8110C8320eD397CcCff3B8134d981'
-      MCD_JOIN_ETH_A:
-        address: '0x775787933e92b709f2a3C70aa87999696e74A9F8'
-      MCD_FLIP_ETH_A:
-        address: '0xc78EdADA7e8bEa29aCc3a31bBA1D516339deD350'
-      BAT:
-        address: '0x9f8cFB61D3B2aF62864408DD703F9C3BEB55dff7'
-      PIP_BAT:
-        address: '0x5C40C9Eb35c76069fA4C3A00EA59fAc6fFA9c113'
-      MCD_JOIN_BAT_A:
-        address: '0x2a4C485B1B8dFb46acCfbeCaF75b6188A59dBd0a'
-      MCD_FLIP_BAT_A:
-        address: '0xc0126c3383777bDc175E659A51020E56307dDe21'
-      USDC:
-        address: '0xBD84be3C303f6821ab297b840a99Bd0d4c4da6b5'
-      PIP_USDC:
-        address: '0x4c51c2584309b7BF328F89609FDd03B3b95fC677'
-      MCD_JOIN_USDC_A:
-        address: '0x4c514656E7dB7B859E994322D2b511d99105C1Eb'
-      MCD_FLIP_USDC_A:
-        address: '0xc29Ad1913C3B415497fdA1eA15c132502B8fa372'
-      MCD_JOIN_USDC_B:
-        address: '0xaca10483e7248453BB6C5afc3e403e8b7EeDF314'
-      MCD_FLIP_USDC_B:
-        address: '0x3c9eF711B68882d9732F60758e7891AcEae2Aa7c'
-      WBTC:
-        address: '0x7419f744bBF35956020C1687fF68911cD777f865'
-      PIP_WBTC:
-        address: '0x2f38a1bD385A9B395D01f2Cbf767b4527663edDB'
-      MCD_JOIN_WBTC_A:
-        address: '0xB879c7d51439F8e7AC6b2f82583746A0d336e63F'
-      MCD_FLIP_WBTC_A:
-        address: '0x28dd4263e1FcE04A9016Bd7BF71a4f0F7aB93810'
-      TUSD:
-        address: '0xD6CE59F06Ff2070Dd5DcAd0866A7D8cd9270041a'
-      PIP_TUSD:
-        address: '0xE4bAECdba7A8Ff791E14c6BF7e8089Dfdf75C7E7'
-      MCD_JOIN_TUSD_A:
-        address: '0xe53f6755A031708c87d80f5B1B43c43892551c17'
-      MCD_FLIP_TUSD_A:
-        address: '0xD4A145d161729A4B43B7Ab7DD683cB9A16E01a1b'
-      ZRX:
-        address: '0xC2C08A566aD44129E69f8FC98684EAA28B01a6e7'
-      PIP_ZRX:
-        address: '0x218037a42947E634191A231fcBAEAE8b16a39b3f'
-      MCD_JOIN_ZRX_A:
-        address: '0x85D38fF6a6FCf98bD034FB5F9D72cF15e38543f2'
-      MCD_FLIP_ZRX_A:
-        address: '0xe07F1219f7d6ccD59431a6b151179A9181e3902c'
-      KNC:
-        address: '0x9800a0a3c7e9682e1AEb7CAA3200854eFD4E9327'
-      PIP_KNC:
-        address: '0x10799280EF9d7e2d037614F5165eFF2cB8522651'
-      MCD_JOIN_KNC_A:
-        address: '0xE42427325A0e4c8e194692FfbcACD92C2C381598'
-      MCD_FLIP_KNC_A:
-        address: '0x644699674D06cF535772D0DC19Ad5EA695000F51'
-      MANA:
-        address: '0x221F4D62636b7B51b99e36444ea47Dc7831c2B2f'
-      PIP_MANA:
-        address: '0xE97D2b077Fe19c80929718d377981d9F754BF36e'
-      MCD_JOIN_MANA_A:
-        address: '0xdC9Fe394B27525e0D9C827EE356303b49F607aaF'
-      MCD_FLIP_MANA_A:
-        address: '0x5CB9D33A9fE5244019e6F5f45e68F18600805264'
-      PROXY_PAUSE_ACTIONS:
-        address: '0x7c52826c1efEAE3199BDBe68e3916CC3eA222E29'
-      PROXY_DEPLOYER:
-        address: '0xA9fCcB07DD3f774d5b9d02e99DE1a27f47F91189'
-    kyber:
-      KyberNetworkProxy:
-        address: '0x692f391bCc85cefCe8C237C01e1f636BbD70EA4D'
-        abifile: 'abi/KyberNetworkProxy'
-      KyberNetwork:
-        address: '0x118A7b23B7a2e6A57963d017A7E76A4E2636F075'
-        abifile: 'abi/KyberNetwork'
-      PermissionlessOrderbookReserveLister:
-        address: '0x7dE123798f649c9937A75a0f6668E4d06bFf5993'
-        abifile: 'abi/PermissionlessOrderbookReserveLister'
-      KyberReserve:
-        address: '0x45460BD0f9a68b98Bf1f5c478B7584E057e32eF5'
-        abifile: 'abi/KyberReserve'
-      ConversionRates:
-        address: '0x6B2e614977F893baddf3AA704698BD71BEf9CeFF'
-        abifile: 'abi/ConversionRates'
-      ExpectedRate:
-        address: '0xFf20EE9bfC059B2805cAB6046EAfea7Bccb8b60B'
-        abifile: 'abi/ExpectedRate'
-      FeeBurner:
-        address: '0x0E49481279407295A2555b89D5e6C699b94621e0'
-        abifile: 'abi/FeeBurner'
-      SanityRates:
-        address: '0x152506cD5Ae485c65eC5551c77591fcE2A4bC482'
-        abifile: 'abi/SanityRates'
-      WhiteList:
-        address: '0x9C36F317849529b6DA5758f538467F326f8f62B7'
-        abifile: 'abi/WhiteList'
-    uniswap:
-      UNISWAP_FACTORY:
-        address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
-      UNISWAP_ROUTER2:
-        address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
-    token:
-      BAT:
-        address: '0x0D8775F648430679A709E98d2b0Cb6250d2887EF'
-      BUSD:
-        address: '0x4Fabb145d64652a948d72533023f6E7A623C7C53'
-      DAI:
-        address: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2'
-      ENJ:
-        address: '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
-      ETH:
-        address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      KNC:
-        address: '0xad67cB4d63C9da94AcA37fDF2761AaDF780ff4a2'
-      LEND:
-        address: '0x80fB784B7eD66730e8b1DBd9820aFD29931aab03'
-      LINK:
-        address: '0x514910771AF9Ca656af840dff83E8264EcF986CA'
-      MANA:
-        address: '0x0F5D2fB29fb7d3CFeE444a200298f468908cC942'
-      MKR:
-        address: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD'
-      OMG:
-        address: '0xdB7ec4E4784118D9733710e46F7C83fE7889596a'
-      POLY:
-        address: '0xd92266fd053161115163a7311067F0A4745070b5'
-      REN:
-        address: '0x408e41876cccdc0f92210600ef50372656052a38'
-      REP:
-        address: '0x1985365e9f78359a9B6AD760e32412f4a445E862'
-      SNX:
-        address: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F'
-      SUSD:
-        address: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51'
-      TUSD:
-        address: '0x0000000000085d4780B73119b644AE5ecd22b376'
-      USDC:
-        address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
-      USDT:
-        address: '0xdAC17F958D2ee523a2206206994597C13D831ec7'
-      WBTC:
-        address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'
-      WETH:
-        address: '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
-      ZIL:
-        address: '0xAb74653cac23301066ABa8eba62b9Abd8a8c51d6'
-      ZRX:
-        address: '0xE41d2489571d322189246DaFA5ebDe1F4699F498'
-  ropsten:
-    provider:
-      http:
-        url: 'http://localhost:8545'
-      ws: null
-      infura:
-        url: 'wss://mainnet.infura.io/ws/v3/'
-    chainid: 3
-    aave:
-      referralCode: 0
-      LendingPoolAddressesProvider:
-        address: '0x1c8756FD2B28e9426CDBDcC7E3c4d64fa9A54728'
-      LendingPool:
-        address: '0x9E5C7835E4b13368fd628196C4f1c6cEc89673Fa'
-      LendingPoolCore:
-        address: '0x4295Ee704716950A4dE7438086d6f0FBC0BA9472'
-      aETH:
-        address: '0x2433A1b6FcF156956599280C3Eb1863247CFE675'
-      aDAI:
-        address: '0xcB1Fe6F440c49E9290c3eb7f158534c2dC374201'
-      aUSDC:
-        address: '0x2dB6a31f973Ec26F5e17895f0741BB5965d5Ae15'
-      aSUSD:
-        address: '0x5D17e0ea2d886F865E40176D71dbc0b59a54d8c1'
-      aTUSD:
-        address: '0x82F01c5694f36690a985F01dC0aD46e1B20E7a1a'
-      aUSDT:
-        address: '0x790744bC4257B4a0519a3C5649Ac1d16DDaFAE0D'
-      aBUSD:
-        address: '0x81E065164bAC7203c3bFEB1a749F48a64383c6eE'
-      aBAT:
-        address: '0x0D0Ff1C81F2Fbc8cbafA8Df4bF668f5ba963Dab4'
-      aKNC:
-        address: '0xCf6efd4528d27Df440fdd585a116D3c1fC5aDdEe'
-      aLEND:
-        address: '0x383261d0e287f0A641322AEB15E3da50147Dd36b'
-      aLINK:
-        address: '0x52fd99c15e6FFf8D4CF1B83b2263a501FDd78973'
-      aMANA:
-        address: '0x8e96a4068da80F66ef1CFc7987f0F834c26106fa'
-      aMKR:
-        address: '0xEd6A5d671f7c55aa029cbAEa2e5E9A18E9d6a1CE'
-      aREP:
-        address: '0xE4B92BcDB2f972e1ccc069D4dB33d5f6363738dE'
-      aSNX:
-        address: null
-      aWBTC:
-        address: '0xA1c4dB01F8344eCb11219714706C82f0c0c64841'
-      aZRX:
-        address: '0x5BDC773c9D3515a5e3Dd415428F92a90E8e63Ae4'
-    kyber:
-      KyberNetworkProxy:
-        address: '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
-        abifile: 'abi/KyberNetworkProxy'
-      KyberNetwork:
-        address: '0x3f9a8e219ab1ad42f96b22c294e564b2b48fe636'
-        abifile: 'abi/KyberNetwork'
-      PermissionlessOrderbookReserveLister:
-        address: '0x405a5fae110c86eb2e5a76809a17fc5bee2d3ccd'
-        abifile: 'abi/PermissionlessOrderbookReserveLister'
-      KyberReserve:
-        address: '0xEB52Ce516a8d054A574905BDc3D4a176D3a2d51a'
-        abifile: 'abi/KyberReserve'
-      ConversionRates:
-        address: '0x6B2e614977F893baddf3AA704698BD71BEf9CeFF'
-        abifile: 'abi/ConversionRates'
-      ExpectedRate:
-        address: '0xDce692e577002298b3c7ce7E002Ac77244546884'
-        abifile: 'abi/ExpectedRate'
-      FeeBurner:
-        address: '0x81ae4dE9A3Aec67a35C05c889052260E39BC42a4'
-        abifile: 'abi/FeeBurner'
-      SanityRates:
-        address: '0xnot_found'
-        abifile: 'abi/SanityRates'
-      WhiteList:
-        address: '0x0f69eA3FA0F1766f91cAca1962e2E85d6a7c20A6'
-        abifile: 'abi/WhiteList'
-    token:
-      ETH:
-        address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      DAI:
-        address: '0xaD6D458402F60fD3Bd25163575031ACDce07538D'
-      ENG:
-        address: '0x95cc8d8f29D0f7fcC425E8708893E759d1599c97'
-      KNC:
-        address: '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6'
-      ZIL:
-        address: '0xaD78AFbbE48bA7B670fbC54c65708cbc17450167'
+  networks:
+    mainnet:
+      provider:
+        http:
+          url: 'http://192.168.0.2:8545'
+          type: 'HttpProvider'
+        ws:
+          url: null
+          type: 'WebsocketProvider'
+        infura:
+          url: 'wss://mainnet.infura.io/ws/v3/'
+          type: 'WebsocketProvider'
+          preferred: true
+        alchemy:
+          url: 'wss://eth-mainnet.alchemyapi.io/v2/'
+          type: 'WebsocketProvider'
+      chainid: 1
+      sushi:
+        SUSHI_MASTER_CHEF:
+          address: '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd'
+        SUSHI_TIMELOCK:
+          address: '0x9a8541Ddf3a932a9A922B607e9CF7301f1d47bD1'
+        SUSHI_MASTER_CHEF_V2:
+          address: '0xef0881ec094552b2e128cf945ef17a6752b4ec5d'
+        SUSHI_ROUTER_V2:
+          address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
+      kimchi:
+        KIMCHI_MASTER_CHEF:
+          address: '0x9Dd5b5c71842a4fD51533532E5470298BFA398fd'
+      farm:
+        FARM_AUTOSTAKE:
+          address: '0x25550Cccbd68533Fa04bFD3e3AC4D09f9e00Fc50'
+        FARM_CONTROLLER:
+          address: '0x222412af183BCeAdEFd72e4Cb1b71f1889953b1C'
+        FARM_EXCLUSIVE_REWARD_POOL:
+          address: '0x8f5adC58b32D4e5Ca02EAC0E293D35855999436C'
+        FARM_GOVERNANCE:
+          remark: 'FARM governance account'
+          address: '0xf00dD244228F51547f0563e60bCa65a30FBF5f7f'
+        FARM_STRATEGY_CRV_STABLE_MAINNET:
+          address: '0xD55aDA00494D96CE1029C201425249F9dFD216cc'
+        FARM_VAULT:
+          remark: 'FARM VAULT IMPLEMENTATION - same for all vaults'
+          address: '0x9B3bE0cc5dD26fd0254088d03D8206792715588B'
+        FARM_VAULT_CRVRENBTC:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x9aA8F427A17d6B0d91B6262989EdC7D45d6aEdf8'
+        FARM_VAULT_USDC:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE'
+        FARM_VAULT_USDT:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x053c80eA73Dc6941F518a68E2FC52Ac45BDE7c9C'
+        FARM_VAULT_TUSD:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x7674622c63Bee7F46E86a4A5A18976693D54441b'
+        FARM_VAULT_WBTC:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x5d9d25c7C457dD82fc8668FFC6B9746b674d4EcB'
+        FARM_VAULT_RENBTC:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0xC391d1b08c1403313B0c28D47202DFDA015633C4'
+        FARM_VAULT_WETH:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0xFE09e53A81Fe2808bc493ea64319109B5bAa573e'
+        FARM_VAULT_WETH_DAI_LP:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x307E2752e8b8a9C29005001Be66B1c012CA9CDB7'
+        FARM_VAULT_WETH_USDC_LP:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0xA79a083FDD87F73c2f983c5551EC974685D6bb36'
+        FARM_VAULT_WETH_USDT_LP:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x7DDc3ffF0612E75Ea5ddC0d6Bd4e268f70362Cff'
+        FARM_VAULT_WETH_WBTC_LP:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0x01112a60f427205dcA6E229425306923c3Cc2073'
+        FARM_VAULT_WETH_TBTC_LP:
+          remark: 'Use with --abi FARM_VAULT '
+          address: '0xF553E1f826f42716cDFe02bde5ee76b2a52fc7EB'
+        FARM_WETH_POOL:
+          address: '0x3DA9D911301f8144bdF5c3c67886e5373DCdff8e'
+        FARM_DAI_POOL:
+          address: '0x15d3A64B2d5ab9E152F16593Cdebc4bB165B5B4A'
+        FARM_USDC_POOL:
+          address: '0x4F7c28cCb0F1Dbd1388209C67eEc234273C878Bd'
+        FARM_USDT_POOL:
+          address: '0x6ac4a7ab91e6fd098e13b7d347c6d4d1494994a2'
+        FARM_TUSD_POOL:
+          address: '0xeC56a21CF0D7FeB93C25587C12bFfe094aa0eCdA'
+        FARM_WBTC_POOL:
+          address: '0x917d6480Ec60cBddd6CbD0C8EA317Bcc709EA77B'
+        FARM_RENBTC_POOL:
+          address: '0x7b8Ff8884590f44e10Ea8105730fe637Ce0cb4F6'
+        FARM_CRVRENWBTC_POOL:
+          address: '0xA3Cf8D1CEe996253FAD1F8e3d68BDCba7B3A3Db5'
+        FARM_WBTC_TBTC_VAULT:
+          address: '0x9523FdC055F503F73FF40D7F66850F409D80EF34'
+        FARM_WETH_DAI_LP_VAULT:
+          address: '0x7aeb36e22e60397098C2a5C51f0A5fB06e7b859c'
+        FARM_WETH_USDC_LP_VAULT:
+          address: '0x156733b89Ac5C704F3217FEe2949A9D4A73764b5'
+        FARM_WETH_USDT_LP_VAULT:
+          address: '0x75071F2653fBC902EBaff908d4c68712a5d1C960'
+        FARM_WETH_WBTC_LP_VAULT:
+          address: '0xF1181A71CC331958AE2cA2aAD0784Acfc436CB93'
+        FARM_FARM_USDC_UNISWAP:
+          address: '0x514906fc121c7878424a5c928cad1852cc545892'
+        FARM_VAULT_DAI:
+          address: '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C'
+        FARM_VAULT_DAI_IMPLEMENTATION:
+          address: '0x9b3be0cc5dd26fd0254088d03d8206792715588b'
+      unit:
+        UNIT_VAULT:
+          address: '0xb1cFF81b9305166ff1EFc49A129ad2AfCd7BCf19'
+        UNIT_VAULT_MANAGER_STANDARD:
+          address: '0x56DD677842214CbB97Ad88dBAA58DD55e1b179Ea'
+        UNIT_VAULT_MANAGER_KEEPER_MAIN_ASSET_FOR_UNISWAP:
+          address: '0x211A6d4D4F49c0C5814451589d6378FdA614Adb9'
+        UNIT_VAULT_MANAGER_KEEPER_POOL_TOKEN_FOR_UNISWAP:
+          address: '0x3052764f1af2f8B7a887dEAfA42153530676079B'
+        UNIT_VAULT_MANAGER_KEEPER_MAIN_ASSET_FOR_SUSHISWAP:
+          address: '0x54ba276a62E7E3E76D362f672f00eD31a983067B'
+        UNIT_VAULT_MANAGER_KEEPER_POOL_TOKEN_FOR_SUSHISWAP:
+          address: '0xD90332DB0FE0e5eA1A195A5Ba6fc8949EaB8AB4E'
+        UNIT_LIQIDATION_TRIGGER_KEEPER_MAIN_ASSET_FOR_UNISWAP:
+          address: '0x989AC9c8353C3F01412705d7E50B4Ab9E804c227'
+        UNIT_LIQIDATION_TRIGGER_KEEPER_POOL_TOKEN_FOR_UNISWAP:
+          address: '0x0ca1A59a987922375234df94919A456F61e93E1e'
+        UNIT_LIQIDATION_TRIGGER_KEEPER_MAIN_ASSET_FOR_SUSHISWAP:
+          address: '0x20C854CdD322D3A501Da91374027b4b257DE57dd'
+        UNIT_LIQIDATION_TRIGGER_KEEPER_POOL_TOKEN_FOR_SUSHISWAP:
+          address: '0x78D09b58402c29016425497289E12FDd12f06027'
+        UNIT_CHAINLINKED_KEEPER_ORACLE_MAIN_ASSET_FOR_UNISWAP:
+          address: '0x90052A5A46137636d6366b4F0CB184C6f411bD53'
+        UNIT_CHAINLINKED_KEEPER_ORACLE_POOL_TOKEN_FOR_UNISWAP:
+          address: '0x3b5f4d33845d546c76DFb624ef002cb3a58391e9'
+        UNIT_CHAINLINKED_KEEPER_ORACLE_MAIN_ASSET_FOR_SUSHISWAP:
+          address: '0x0Ca3de93dE71E4A28EB5d04B72970d69458a3D21'
+        UNIT_CHAINLINKED_KEEPER_ORACLE_POOL_TOKEN_FOR_SUSHISWAP:
+          address: '0xEa2e09CEC87C7cD8f6Ae09d1906a7526f159e538'
+        UNIT_LIQUIDATION_AUCTION_01:
+          address: '0xa41a3625c02c60Ae932515E7F921ada1811aF6a5'
+        UNIT_VAULT_MANAGER_PARAMETERS:
+          address: '0x203153522B9EAef4aE17c6e99851EE7b2F7D312E'
+        UNIT_LOCK_DROP_CONTRACT:
+          address: '0x46DAc43Ca95e316Ef2124B1a4Dd7806e93106C42'
+        UNIT_FEE_DISTRIBUTION:
+          address: '0x3f93dE882dA8150Dc98a3a1F4626E80E3282df46'
+        UNIT_STAKING_V2:
+          address: '0x48ddd27a4d54cd3e8c34f34f7e66e998442dbce3'
+        UNIT_CONTROLLER:
+          address: '0xae37E8f9a3f960eE090706Fa4db41Ca2f2C56Cb8'
+        UNIT_FEE_DISTRIBUTION_V2:
+          address: '0x9f2138ccb930f0654B2C40E7e29FF8291452Eed8'
+        UNIT_VAULT_PARAMETERS:
+          address: '0xB46F8CF42e504Efe8BEf895f848741daA55e9f1D'
+        UNIT_VAULT_MANAGER_01:
+          address: '0x0e13ab042eC5AB9Fc6F43979406088B9028F66fA'
+        UNIT_VAULT_MANAGER_02:
+          address: '0xee84F58Ee39C6122C76C1Fa54f0B6f33da1642Ec'
+      crv:
+        CRV_ADAPTER_REN:
+          address: '0x73aB2Bd10aD10F7174a1AD5AFAe3ce3D991C5047'
+        CRV_ADAPTER_SBTC:
+          address: '0xAEade605D01FE9a8e9C4B3AA0130A90d62167029'
+        CRV_DEPOSIT_BUSD:
+          address: '0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB'
+        CRV_DEPOSIT_C2:
+          address: '0xeB21209ae4C2c9FF2a86ACA31E123764A3B6Bc06'
+        CRV_DEPOSIT_GUSD:
+          address: '0x0aE274c98c0415C0651AF8cF52b010136E4a0082'
+        CRV_DEPOSIT_PAX:
+          address: '0xA50cCc70b6a011CffDdf45057E39679379187287'
+        CRV_DEPOSIT_SBTC:
+          address: '0xAEade605D01FE9a8e9C4B3AA0130A90d62167029'
+        CRV_DEPOSIT_SUSD:
+          address: '0xFCBa3E75865d2d561BE8D220616520c171F12851'
+        CRV_DEPOSIT_USDT:
+          address: '0xac795D2c97e60DF6a99ff1c814727302fD747a80'
+        CRV_DEPOSIT_USDN:
+          address: '0x094d12e5b541784701FD8d65F11fc0598FBC6332'
+        CRV_DEPOSIT_Y:
+          address: '0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3'
+        CRV_FEE_DISTRIBUTION:
+          address: '0xA464e6DCda8AC41e03616F95f4BC98a13b8922Dc'
+        CRV_GAUGE_3POOL:
+          address: '0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A'
+        CRV_GAUGE_BUSD:
+          address: '0x69Fb7c45726cfE2baDeE8317005d3F94bE838840'
+        CRV_GAUGE_C2:
+          address: '0x7ca5b0a2910B33e9759DC7dDB0413949071D7575'
+        CRV_GAUGE_GUSD:
+          address: '0xC5cfaDA84E902aD92DD40194f0883ad49639b023'
+        CRV_GAUGE_HBTC:
+          address: '0x4c18E409Dc8619bFb6a1cB56D114C3f592E0aE79'
+        CRV_GAUGE_USDT:
+          address: '0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53'
+        CRV_GAUGE_USDN:
+          address: '0xF98450B5602fa59CC66e1379DFfB6FDDc724CfC4'
+        CRV_GAUGE_CONTROLLER:
+          remark: 'gauge controller'
+          address: '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB'
+        CRV_GAUGE_PAX:
+          address: '0x64E3C23bfc40722d3B649844055F1D51c1ac041d'
+        CRV_GAUGE_REN:
+          address: '0xB1F2cdeC61db658F091671F5f199635aEF202CAC'
+        CRV_GAUGE_SBTC:
+          address: '0x705350c4BcD35c9441419DdD5d2f097d7a55410F'
+        CRV_GAUGE_SUSD:
+          address: '0xA90996896660DEcC6E997655E065b23788857849'
+        CRV_GAUGE_Y:
+          address: '0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1'
+        CRV_REGISTRY:
+          address: '0x7002B727Ef8F5571Cb5F9D70D13DBEEb4dFAe9d1'
+        CRV_STAKING_REWARDS_SUSD:
+          address: '0xDCB6A51eA3CA5d3Fd898Fd6564757c7aAeC3ca92'
+        CRV_SWAP_3POOL:
+          address: '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'
+        CRV_SWAP_BUSD:
+          address: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27'
+        CRV_SWAP_C2:
+          address: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56'
+        CRV_SWAP_GUSD:
+          address: '0x4f062658EaAF2C1ccf8C8e36D6824CDf41167956'
+        CRV_SWAP_HBTC:
+          address: '0x4CA9b3063Ec5866A4B82E437059D2C43d1be596F'
+        CRV_SWAP_USDT:
+          remark: 'not used by curve.fi currently'
+          address: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C'
+        CRV_SWAP_PAX:
+          address: '0x06364f10B501e868329afBc005b3492902d6C763'
+        CRV_SWAP_REN:
+          address: '0x93054188d876f558f4a66B2EF1d97d16eDf0895B'
+        CRV_SWAP_SBTC:
+          address: '0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714'
+        CRV_SWAP_SUSD:
+          address: '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'
+        CRV_SWAP_USDN:
+          address: '0x0f9cb53Ebe405d49A0bbdBD291A65Ff571bC83e1'
+        CRV_SWAP_Y:
+          address: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51'
+        CRV_TOKEN_ESCROW:
+          address: '0x575CCD8e2D300e2377B43478339E364000318E2c'
+        CRV_TOKEN_MINTER:
+          address: '0xd061D61a4d941c39E5453435B6345Dc261C2fcE0'
+        CRV_VECRV:
+          address: '0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2'
+        CRV_VESTING_ESCROW:
+          address: '0xd2D43555134dC575BF7279F4bA18809645dB0F1D'
+        CRV_SWAP_MUSD:
+          address: '0x8474DdbE98F5aA3179B3B3F5942D724aFcdec9f6'
+        CRV_DEPOSIT_MUSD:
+          address: '0x78CF256256C8089d68Cde634Cf7cDEFb39286470'
+        CRV_SWAP_TBTC:
+          address: '0xC25099792E9349C7DD09759744ea681C7de2cb66'
+        CRV_DEPOSIT_TBTC:
+          address: '0x74Bd76482DC067FB5206499Efe19c16CCa62E9D3'
+        CRV_STAKE_SBTC:
+          address: '0x13C1542A468319688B89E323fe9A3Be3A90EBb27'
+        CRV_SWAP_HUSD:
+          address: '0x3eF6A01A0f81D6046290f3e2A8c5b843e738E604'
+        CRV_DEPOSIT_HUSD:
+          address: '0x0a53FaDa2d943057C47A301D25a4D9b3B8e01e8E'
+        CRV_SWAP_USDK:
+          address: '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb'
+        CRV_DEPOSIT_USDK:
+          address: '0x6600e98b71dabfD4A8Cac03b302B0189Adb86Afb'
+        CRV_SWAP_LINKUSD:
+          address: '0xE7a24EF0C5e95Ffb0f6684b813A78F2a3AD7D171'
+        CRV_DEPOSIT_LINKUSD:
+          address: '0x1de7f0866e2c4adAC7b457c58Cc25c8688CDa1f2'
+        CRV_DEPOSIT_PBTC:
+          address: '0x11F419AdAbbFF8d595E7d5b223eee3863Bb3902C'
+        CRV_SWAP_DUSD:
+          address: '0x8038C01A0390a8c547446a0b2c18fc9aEFEcc10c'
+        CRV_DEPOSIT_DUSD:
+          address: '0x61E10659fe3aa93d036d099405224E4Ac24996d0'
+        CRV_SWAP_OBTC:
+          address: '0xd81dA8D904b52208541Bade1bD6595D8a251F8dd'
+        CRV_DEPOSIT_OBTC:
+          address: '0xd5BCf53e2C81e1991570f33Fa881c49EEa570C8D'
+        CRV_SWAP_UST:
+          address: '0x890f4e345B1dAED0367A877a1612f86A1f86985f'
+        CRV_DEPOSIT_UST:
+          address: '0xB0a0716841F2Fc03fbA72A891B8Bb13584F52F2d'
+        CRV_SWAP_EURS:
+          address: '0x0Ce6a5fF5217e38315f87032CF90686C96627CAA'
+        CRV_SWAP_AAVE:
+          address: '0xDeBF20617708857ebe4F679508E7b7863a8A8EeE'
+        CRV_SWAP_STETH:
+          address: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'
+        CRV_GAUGE_HUSD:
+          address: '0x2db0E83599a91b508Ac268a6197b8B14F5e72840'
+        CRV_GAUGE_USDK:
+          address: '0xC2b1DF84112619D190193E48148000e3990Bf627'
+        CRV_GAUGE_MUSD:
+          address: '0x5f626c30EC1215f4EdCc9982265E8b1F411D1352'
+        CRV_GAUGE_TBTC:
+          address: '0x6828bcF74279eE32f2723eC536c22c51Eed383C6'
+        CRV_GAUGE_RSV:
+          address: '0x4dC4A289a8E33600D8bD4cf5F6313E43a37adec7'
+        CRV_GAUGE_DUSD:
+          address: '0xAEA6c312f4b3E04D752946d329693F7293bC2e6D'
+        CRV_DEPOSIT_SNOW:
+          address: '0x2021a9990640c8ff8FcCb553648571D525B53a6e'
+        CRV_GAUGE_SNOW:
+          address: '0x18478F737d40ed7DEFe5a9d6F1560d84E283B74e'
+        CRV_SWAP_BBTC:
+          address: '0x071c661B4DeefB59E2a3DdB20Db036821eeE8F4b'
+        CRV_DEPOSIT_BBTC:
+          address: '0xC45b2EEe6e09cA176Ca3bB5f7eEe7C47bF93c756'
+        CRV_GAUGE_BBTC:
+          address: '0xdFc7AdFa664b08767b735dE28f9E84cd30492aeE'
+        CRV_GAUGE_OBTC:
+          address: '0x11137B10C210b579405c21A07489e28F3c040AB1'
+        CRV_GAUGE_PBTC:
+          address: '0xd7d147c6Bb90A718c3De8C0568F9B560C79fa416'
+        CRV_GAUGE_UST:
+          address: '0x3B7020743Bc2A4ca9EaF9D0722d42E20d6935855'
+        CRV_GAUGE_EURS:
+          address: '0x90Bb609649E0451E5aD952683D64BD2d1f245840'
+        CRV_GAUGE_SETH:
+          address: '0x3C0FFFF15EA30C35d7A85B85c0782D6c94e1d238'
+        CRV_GAUGE_STETH:
+          address: '0x182B723a58739a9c974cFDB385ceaDb237453c28'
+        CRV_SWAP_SNOW:
+          address: '0xF0f745C81E4533c697cF0104c5EFdCbf84359542'
+        CRV_GAUGE_AAVE:
+          address: '0xd662908ADA2Ea1916B3318327A97eB18aD588b5d'
+        CRV_SWAP_RSV:
+          address: '0xC18cC39da8b11dA8c3541C598eE022258F9744da'
+        CRV_SWAP_PBTC:
+          address: '0x7F55DDe206dbAD629C080068923b36fe9D6bDBeF'
+        CRV_SWAP_SAAVE:
+          address: '0xEB16Ae0052ed37f479f7fe63849198Df1765a733'
+        CRV_GAUGE_SAAVE:
+          address: '0x462253b8F74B72304c145DB0e4Eebd326B22ca39'
+        CRV_SWAP_ANKRETH:
+          address: '0xA96A65c051bF88B4095Ee1f2451C2A9d43F53Ae2'
+        CRV_GAUGE_ANKRETH:
+          address: '0x6d10ed2cf043e6fcf51a0e7b4c2af3fa06695707'
+        CRV_SWAP_USDP:
+          address: '0x42d7025938bEc20B69cBae5A77421082407f053A'
+        CRV_GAUGE_USDP:
+          address: '0x055be5DDB7A925BfEF3417FC157f53CA77cA7222'
+        CRV_SWAP_IRONBANKUSD:
+          address: '0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF'
+        CRV_GAUGE_IRONBANKUSD:
+          address: '0xF5194c3325202F456c95c1Cf0cA36f8475C1949F'
+        CRV_SWAP_LINK:
+          address: '0xF178C0b5Bb7e7aBF4e12A4838C7b7c5bA2C623c0'
+        CRV_GAUGE_LINK:
+          address: '0xfd4d8a17df4c27c1dd245d153ccf4499e806c87d'
+        CRV_DEPOSIT_TUSD:
+          address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+        CRV_SWAP_TUSD:
+          address: '0xecd5e75afb02efa118af914515d6521aabd189f1'
+        CRV_GAUGE_TUSD:
+          address: '0x359FD5d6417aE3D8D6497d9B2e7A890798262BA4'
+        CRV_DEPOSIT_FRAX_USD:
+          address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+        CRV_GAUGE_FRAX_USD:
+          address: '0x72e158d38dbd50a483501c24f792bdaaa3e7d55c'
+        CRV_SWAP_FRAX_USD:
+          address: '0xd632f22692fac7611d2aa1c0d552930d43caed3b'
+        CRV_SWAP_LUSD:
+          address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA'
+        CRV_DEPOSIT_LUSD:
+          address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+        CRV_GAUGE_LUSD:
+          address: '0x9b8519a9a00100720ccdc8a120fbed319ca47a14'
+        CRV_SWAP_BUSDV2:
+          address: '0x4807862AA8b2bF68830e4C8dc86D0e9A998e085a'
+        CRV_DEPOSIT_BUSDV2:
+          address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+        CRV_GAUGE_BUSDV2:
+          address: '0xd4b22fedca85e684919955061fdf353b9d38389b'
+        CRV_SWAP_RETH:
+          address: '0xF9440930043eb3997fc70e1339dBb11F341de7A8'
+        CRV_GAUGE_RETH:
+          address: '0x824F13f1a2F29cFEEa81154b46C0fc820677A637'
+        CRV_GAUGE_TRICRYPTO:
+          address: '0x9582C4ADACB3BCE56Fea3e590F05c3ca2fb9C477'
+        CRV_DEPOSIT_TRICRYPTO:
+          address: '0x331aF2E331bd619DefAa5DAc6c038f53FCF9F785'
+        CRV_SWAP_ALUSD:
+          address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
+        CRV_DEPOSIT_ALUSD:
+          address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+        CRV_GAUGE_ALUSD:
+          address: '0x9582C4ADACB3BCE56Fea3e590F05c3ca2fb9C477'
+        CRV_SWAP_MIM_USD:
+          address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
+        CRV_DEPOSIT_MIM_USD:
+          address: '0xA79828DF1850E8a3A3064576f380D90aECDD3359'
+        CRV_GAUGE_MIM_USD:
+          address: '0xd8b712d29381748dB89c36BCa0138d7c75866ddF'
+        CRV_SWAP_TRICRYPTO2:
+          address: '0xD51a44d3FaE010294C616388b506AcdA1bfAAE46'
+        CRV_DEPOSIT_TRICRYPTO2:
+          address: '0x3993d34e7e99Abf6B6f367309975d1360222D446'
+        CRV_GAUGE_TRICRYPTO2:
+          address: '0xDeFd8FdD20e0f34115C7018CCfb655796F6B2168'
+        CRV_SWAP_EURT:
+          address: '0xfd5db7463a3ab53fd211b4af195c5bccc1a03890'
+        CRV_GAUGE_EURT:
+          address: '0xe8060Ad8971450E624d5289A10017dD30F5dA85F'
+      rari:
+        RARI_FUND_CONTROLLER:
+          address: '0x66f4856f1bbd1eb09e1c8d9d646f5a3a193da569'
+        RARI_FUND_PRICE_CONSUMER:
+          address: '0xFE98A52bCAcC86432E7aa76376751DcFAB202244'
+        RARI_FUND_PRICE_PROXY:
+          address: '0x4a785fa6fcd2e0845a24847beb7bddd26f996d4d'
+        RARI_COMPTROLLER:
+          address: '0xc54172e34046c1653d1920d40333Dd358c7a1aF4'
+        RARI_FUSE_POOL_DIRECTORY:
+          address: '0x835482FE0532f169024d5E9410199369aAD5C77E'
+        RARI_FUSE_8_TRIBE_REWARDS:
+          address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7'
+        RARI_LP_F_TRIBE_IMPLEMENTATION:
+          address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
+        RARI_FUND_MANAGER:
+          address: '0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a'
+        RARI_FUND_MANAGER_IMPLEMENTATION:
+          address: '0x6c85e8101e52ea7b569230f93bc452f291edcbec'
+      snow:
+        SNOW_POOL_YSNOW:
+          address: '0x4571753311e37ddb44faa8fb78a6df9a6e3c6c0b'
+        SNOW_POOL_YCRVSNOW:
+          address: '0xbf7ccd6c446acfcc5df023043f2167b62e81899b'
+        SNOW_POOL_ETH2SNOW:
+          address: '0x6208D3fdfC396eB065c8FFc291e6BC1902b8b1bf'
+        SNOW_POOL_ETH_SNOW_LP:
+          address: '0x4f1aD17E22f919fFf12bC936C1CaA9c5d49BF504'
+        SNOW_POOL_BTC_SNOW:
+          address: '0x7370c1eff84942D475F1e7D3AcdA3f89BE41aBdE'
+        SNOW_STAKE_YCRVSNOW:
+          address: '0x063D7646697369FA2d3521678c091e2eeFD8e1f5'
+        SNOW_STAKE_YSNOW:
+          address: '0x86D0e7AD012bF743b660235A531Dfc45608F4dc5'
+        SNOW_STAKE_ETH_SNOW:
+          address: '0x6639c50Ac9e6A04Cc6c9FE1a76451699d1B0B76c'
+        SNOW_STAKE_SNOW:
+          address: '0x7d2c8B58032844F222e2c80219975805DcE1921c'
+        SNOW_STAKE_ETH2SNOW:
+          address: '0x6208D3fdfC396eB065c8FFc291e6BC1902b8b1bf'
+        SNOW_STAKE_LP_ETH_SNOW:
+          address: '0x4f1aD17E22f919fFf12bC936C1CaA9c5d49BF504'
+        SNOW_STAKE_BTC_SNOW:
+          address: '0x7370c1eff84942D475F1e7D3AcdA3f89BE41aBdE'
+      uniswap:
+        paths:
+          FARM-USDT:
+            - 'USDT'
+            - 'WETH'
+            - 'USDC'
+            - 'FARM'
+          DUCK-MKR:
+            - 'MKR'
+            - 'WETH'
+            - 'DUCK'
+          DUCK-USDT:
+            - 'USDT'
+            - 'WETH'
+            - 'DUCK'
+          TRIBE-USDT:
+            - 'USDT'
+            - 'WETH'
+            - 'FEI'
+            - 'TRIBE'
+          FEI-TRIBE:
+            - 'FEI'
+            - 'TRIBE'
+          USDP-WETH:
+            - 'WETH'
+            - 'DUCK'
+            - 'USDP'
+          TRIBE-WETH:
+            - 'TRIBE'
+            - 'FEI'
+            - 'WETH'
+          TRIBE-ETH:
+            - 'TRIBE'
+            - 'FEI'
+            - 'ETH'
+        UNISWAP_FACTORY_V2:
+          address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+        UNISWAP_ROUTER_V2:
+          address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+        UNISWAP_SUSHI_WETH_V2:
+          address: '0xCE84867c3c02B05dc570d0135103d3fB9CC19433'
+        UNISWAP_PAIR_WETH_SNOW_V2:
+          address: '0xE4f8F3CB9b33247789e4984A457bb69A1a621Df3'
+        UNISWAP_PAIR_YSNOW_USDC_V2:
+          address: '0x9371801bb71ff2756c9ffac371b9c311f77bf986'
+        UNISWAP_PAIR_YCRVSNOW_USDC_V2:
+          address: '0x45ea0521d9e428ab078af2586c3bee97a5e5156c'
+        UNISWAP_FACTORY_V3:
+          address: '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+        UNISWAP_ROUTER_V3:
+          address: '0xE592427A0AEce92De3Edee1F18E0157C05861564'
+        UNISWAP_QUOTER_V3:
+          address: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
+        UNISWAP_V3_1:
+          address: '0x000000000022D473030F116dDEE9F6B43aC78BA3'
+      votium:
+        VOTIUM_VOTER_PROXY:
+          address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'
+        VOTIUM_BRIBE:
+          address: '0x19bbc3463dd8d07f55438014b021fb457ebd4595'
+        VOTIUM_MULTI_MERKLE_STASH:
+          address: '0x378ba9b73309be80bf4c2c027aad799766a7ed5a'
+      1inch:
+        1INCH_AGGREGATION_ROUTER_V3:
+          address: '0x11111112542D85B3EF69AE05771c2dCCff4fAa26'
+        1INCH_ROUTER_V4:
+          address: '0x1111111254fb6c44bac0bed2854e76f90643097d'
+        1INCH_ROUTER_V5:
+          address: '0x1111111254EEB25477B68fb85Ed929f73A960582'
+      aave:
+        AAVE_LENDING_POOL_ADDRESSES_PROVIDER:
+          address: '0x24a42fD28C976A61Df5D00D0599C34c4f90748c8'
+        AAVE_LENDING_POOL:
+          address: '0x398eC7346DcD622eDc5ae82352F02bE94C62d119'
+        AAVE_LENDING_POOL_CORE:
+          address: '0x3dfd23A6c5E8BbcFc9581d2E864a68feb6a076d3'
+      maker:
+        DEPLOYER:
+          address: '0xdDb108893104dE4E1C6d0E47c42237dB4E617ACc'
+        MULTICALL:
+          address: '0x5e227AD1969Ea493B43F840cfF78d08a6fc17796'
+        ZERO_ADDRESS:
+          address: '0x0000000000000000000000000000000000000000'
+        MCD_DEPLOY:
+          address: '0xbaa65281c2FA2baAcb2cb550BA051525A480D3F4'
+        MCD_GOV:
+          address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2'
+        GOV_GUARD:
+          address: '0x6eEB68B2C7A918f36B78E2DB80dcF279236DDFb8'
+        MCD_ADM:
+          address: '0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5'
+        MCD_VAT:
+          address: '0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B'
+        MCD_JUG:
+          address: '0x19c0976f590D67707E62397C87829d896Dc0f1F1'
+        MCD_CAT:
+          address: '0x78F2c2AF65126834c51822F56Be0d7469D7A523E'
+        MCD_VOW:
+          address: '0xA950524441892A31ebddF91d3cEEFa04Bf454466'
+        MCD_JOIN_DAI:
+          address: '0x9759A6Ac90977b93B58547b4A71c78317f391A28'
+        MCD_FLAP:
+          address: '0xdfE0fb1bE2a52CDBf8FB962D5701d7fd0902db9f'
+        MCD_FLOP:
+          address: '0x4D95A049d5B0b7d32058cd3F2163015747522e99'
+          fromBlock: 9697042
+          beg: '1030000000000000000'
+          pad: '1200000000000000000'
+          ttl: '21600'
+          tau: '259200'
+          bid: '50000000000000000000000000000000000000000000000000'
+        MCD_PAUSE:
+          address: '0xbE286431454714F511008713973d3B053A2d38f3'
+        MCD_PAUSE_PROXY:
+          address: '0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB'
+        MCD_GOV_ACTIONS:
+          address: '0x4F5f0933158569c026d617337614d00Ee6589B6E'
+        MCD_SPOT:
+          address: '0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3'
+        MCD_POT:
+          address: '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7'
+        MCD_END:
+          address: '0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5'
+        MCD_ESM:
+          address: '0x0581A0AbE32AAe9B5f0f68deFab77C6759100085'
+        PROXY_ACTIONS:
+          address: '0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038'
+        PROXY_ACTIONS_END:
+          address: '0x069B2fb501b6F16D1F5fE245B16F6993808f1008'
+        PROXY_ACTIONS_DSR:
+          address: '0x07ee93aEEa0a36FfF2A9B95dd22Bd6049EE54f26'
+        MCD_CDP_MANAGER:
+          address: '0x5ef30b9986345249bc32d8928B7ee64DE9435E39'
+        GET_CDPS:
+          address: '0x36a724Bd100c39f0Ea4D3A20F7097eE01A8Ff573'
+        OSM_MOM:
+          address: '0x76416A4d5190d071bfed309861527431304aA14f'
+        PROXY_FACTORY:
+          address: '0xA26e15C895EFc0616177B7c1e7270A4C7D51C997'
+        MCD_PROXY_REGISTRY:
+          address: '0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4'
+        PIP_ETH:
+          address: '0x81FE72B5A8d1A857d176C3E7d5Bd2679A9B85763'
+        MCD_JOIN_ETH_A:
+          address: '0x2F0b23f53734252Bda2277357e97e1517d6B042A'
+        MCD_FLIP_ETH_A:
+          address: '0xd8a04F5412223F513DC55F839574430f5EC15531'
+        BAT:
+          address: '0x0D8775F648430679A709E98d2b0Cb6250d2887EF'
+        PIP_BAT:
+          address: '0xB4eb54AF9Cc7882DF0121d26c5b97E802915ABe6'
+        MCD_JOIN_BAT_A:
+          address: '0x3D0B1912B66114d4096F48A8CEe3A56C231772cA'
+        MCD_FLIP_BAT_A:
+          address: '0xaA745404d55f88C108A28c86abE7b5A1E7817c07'
+        MCD_JOIN_SAI:
+          address: '0xad37fd42185Ba63009177058208dd1be4b136e6b'
+        MCD_FLIP_SAI:
+          address: '0x5432b2f3c0DFf95AA191C45E5cbd539E2820aE72'
+        PIP_USDC:
+          address: '0x77b68899b99b686F415d074278a9a16b336085A0'
+        MCD_JOIN_USDC_A:
+          address: '0xA191e578a6736167326d05c119CE0c90849E84B7'
+        MCD_FLIP_USDC_A:
+          address: '0x545521e0105C5698f75D6b3C3050CfCC62FB0C12'
+        MCD_JOIN_USDC_B:
+          address: '0x2600004fd1585f7270756DDc88aD9cfA10dD0428'
+        MCD_FLIP_USDC_B:
+          address: '0x6002d3B769D64A9909b0B26fC00361091786fe48'
+        PIP_WBTC:
+          address: '0xf185d0682d50819263941e5f4EacC763CC5C6C42'
+        MCD_JOIN_WBTC_A:
+          address: '0xBF72Da2Bd84c5170618Fbe5914B0ECA9638d5eb5'
+        MCD_FLIP_WBTC_A:
+          address: '0xF70590Fa4AaBe12d3613f5069D02B8702e058569'
+        PIP_TUSD:
+          address: '0xeE13831ca96d191B688A670D47173694ba98f1e5'
+        MCD_JOIN_TUSD_A:
+          address: '0x4454aF7C8bb9463203b66C816220D41ED7837f44'
+        MCD_FLIP_TUSD_A:
+          address: '0x04C42fAC3e29Fd27118609a5c36fD0b3Cb8090b3'
+        PIP_ZRX:
+          address: '0x7382c066801E7Acb2299aC8562847B9883f5CD3c'
+        MCD_FLIP_ZRX_A:
+          address: '0x92645a34d07696395b6e5b8330b000D0436A9aAD'
+        MCD_JOIN_ZRX_A:
+          address: '0xc7e8Cd72BDEe38865b4F5615956eF47ce1a7e5D0'
+        PIP_KNC:
+          address: '0xf36B79BD4C0904A5F350F1e4f776B81208c13069'
+        MCD_FLIP_KNC_A:
+          address: '0xAD4a0B5F3c6Deb13ADE106Ba6E80Ca6566538eE6'
+        MCD_JOIN_KNC_A:
+          address: '0x475F1a89C1ED844A08E8f6C50A00228b5E59E4A9'
+        PIP_MANA:
+          address: '0x8067259EA630601f319FccE477977E55C6078C13'
+        MCD_FLIP_MANA_A:
+          address: '0x4bf9D2EBC4c57B9B783C12D30076507660B58b3a'
+        MCD_JOIN_MANA_A:
+          address: '0xA6EA3b9C04b8a38Ff5e224E7c3D6937ca44C0ef9'
+        PROXY_PAUSE_ACTIONS:
+          address: '0x6bda13D43B7EDd6CAfE1f70fB98b5d40f61A1370'
+        PROXY_DEPLOYER:
+          address: '0x1b93556AB8dcCEF01Cd7823C617a6d340f53Fb58'
+        SAI_TUB:
+          address: '0x448a5065aeBB8E423F0896E6c5D525C040f59af3'
+        MIGRATION:
+          address: '0xc73e0383F3Aff3215E6f04B0331D58CeCf0Ab849'
+        MIGRATION_PROXY_ACTIONS:
+          address: '0x2E1F6062d9fB227069741E40f89186DF222FB426'
+        MKR_REDEEM:
+          address: '0x642AE78FAfBB8032Da552D619aD43F1D81E4DD7C'
+      kyber:
+        KyberNetworkProxy:
+          address: '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
+          abifile: 'abi/KyberNetworkProxy'
+        KyberNetwork:
+          address: '0x9ae49C0d7F8F9EF4B864e004FE86Ac8294E20950'
+          abifile: 'abi/KyberNetwork'
+        PermissionlessOrderbookReserveLister:
+          address: '0x84afa106fbf9b45e369724024cae14e8c7529c26'
+          abifile: 'abi/PermissionlessOrderbookReserveLister'
+        KyberReserve:
+          address: '0x63825c174ab367968EC60f061753D3bbD36A0D8F'
+          abifile: 'abi/KyberReserve'
+        OrderbookReserve:
+          address: '0x9D27a2D71Ac44E075f764d5612581E9Afc1964fd'
+          abifile: 'abi/OrderbookReserve'
+        ConversionRates:
+          address: '0x97D7126b6FF7C4D95601912f4Cdf790a3Cd1edaB'
+          abifile: 'abi/ConversionRates'
+        ExpectedRate:
+          address: '0x96B610046D63638d970E6243151311d8827D69a5'
+          abifile: 'abi/ExpectedRate'
+        FeeBurner:
+          address: '0x52166528FCC12681aF996e409Ee3a421a4e128A3'
+          abifile: 'abi/FeeBurner'
+        SanityRates:
+          address: '0xdfc85C08d5e5924aB49750E006CF8a826ffb7B13'
+          abifile: 'abi/SanityRates'
+        WhiteList:
+          address: '0x6e106a75D369d09A9Ea1DCc16Da844792aA669a3'
+          abifile: 'abi/WhiteList'
+        KyberNetworkENSResolver:
+          address: '0x1982131C7D6959ff7768EE39c023Ad002d8c9759'
+          abifile: 'abi/KyberNetworkENSResolver'
+      fei:
+        FEI_CORE:
+          address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9'
+        FEI_DAO:
+          address: '0xE087F94c3081e1832dC7a22B48c6f2b5fAaE579B'
+        FEI_DAO_TIMELOCK:
+          address: '0x639572471f2f318464dc01066a56867130e45E25'
+        FEI_UNISWAP_INCENTIVE:
+          address: '0xfe5b6c2a87A976dCe20130c423C679f4d6044cD7'
+        FEI_ETH_BONDING_CURVE:
+          address: '0xe1578B4a32Eaefcd563a9E6d0dc02a4213f673B7'
+        FEI_UNISWAP_PCV_DEPOSIT:
+          address: '0x9b0C6299D08fe823f2C0598d97A1141507e4ad86'
+        FEI_UNISWAP_PCV_CONTROLLER:
+          address: '0x7a165F8518A9Ec7d5DA15f4B77B1d7128B5D9188'
+        FEI_UNISWAP_ORACLE:
+          address: '0x087F35bd241e41Fc28E43f0E8C58d283DD55bD65'
+        FEI_BONDING_CURVE_ORACLE:
+          address: '0x89714d3AC9149426219a3568543200D1964101C4'
+        FEI_REWARDS_DISTRIBUTOR:
+          address: '0xEf1a94AF192A88859EAF3F3D8C1B9705542174C5'
+        FEI_STAKING_REWARDS:
+          address: '0x18305DaAe09Ea2F4D51fAa33318be5978D251aBd'
+        FEI_GENESIS_GROUP:
+          address: '0xBFfB152b9392e38CdDc275D818a3Db7FE364596b'
+        FEI_ROUTER:
+          address: '0x9271D303b57c204636C38Df0eD339b18Bf98f909'
+      token:
+        AETH:
+          address: '0x3a3A65aAb0dd2A17E3F1947bA16138cd37d08c04'
+        ADAI:
+          address: '0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d'
+        AUSDC:
+          address: '0x9bA00D6856a4eDF4665BcA2C2309936572473B7E'
+        ASUSD:
+          address: '0x625aE63000f46200499120B906716420bd059240'
+        ATUSD:
+          address: '0x4DA9b813057D04BAef4e5800E36083717b4a0341'
+        AUSDT:
+          address: '0x71fc860F7D3A592A4a98740e39dB31d25db65ae8'
+        ABUSD:
+          address: '0x6Ee0f7BB50a54AB5253dA0667B0Dc2ee526C30a8'
+        ABAT:
+          address: '0xE1BA0FB44CCb0D11b80F92f4f8Ed94CA3fF51D00'
+        AENJ:
+          address: '0x712DB54daA836B53Ef1EcBb9c6ba3b9Efb073F40'
+        AKNC:
+          address: '0x9D91BE44C06d373a8a226E1f3b146956083803eB'
+        ALEND:
+          address: '0x7D2D3688Df45Ce7C552E19c27e007673da9204B8'
+        ALINK:
+          address: '0xA64BD6C70Cb9051F6A9ba1F163Fdc07E0DfB5F84'
+        AMANA:
+          address: '0x6FCE4A401B6B80ACe52baAefE4421Bd188e76F6f'
+        AMKR:
+          address: '0x7deB5e830be29F91E298ba5FF1356BB7f8146998'
+        AREN:
+          address: '0x69948cC03f478B95283F7dbf1CE764d0fc7EC54C'
+        AREP:
+          address: '0x71010A9D003445aC60C4e6A7017c1E89A477B438'
+        ASNX:
+          address: '0x328C4c80BC7aCa0834Db37e6600A6c49E12Da4DE'
+        AWBTC:
+          address: '0xFC4B8ED459e00e5400be803A9BB3954234FD50e3'
+        AZRX:
+          address: '0x6Fb0855c404E09c47C3fBCA25f08d4E41f9F062f'
+        APY_POOL_TOKEN:
+          address: '0xe18b0365D5D09F394f84eE56ed29DD2d8D6Fba5f'
+        BAL:
+          address: '0xba100000625a3754423978a60c9317c58a424e3d'
+        CDAI:
+          address: '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643'
+        CUSDC:
+          address: '0x39AA39c021dfbaE8faC545936693aC917d5E7563'
+        BUSD:
+          address: '0x4Fabb145d64652a948d72533023f6E7A623C7C53'
+        CRV:
+          address: '0xD533a949740bb3306d119CC777fa900bA034cd52'
+        CRV_LP_3POOL:
+          address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490'
+        CRV_LP_C2:
+          address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2'
+        CRV_LP_Y:
+          address: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8'
+        CRV_LP_BUSD:
+          address: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B'
+        CRV_LP_FRAX_USD:
+          address: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B'
+        CRV_LP_GUSD:
+          address: '0xD2967f45c4f384DEEa880F807Be904762a3DeA07'
+        CRV_LP_HBTC:
+          address: '0xb19059ebb43466C323583928285a49f558E572Fd'
+        CRV_LP_PAX:
+          address: '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
+        CRV_LP_REN:
+          address: '0x49849C98ae39Fff122806C06791Fa73784FB3675'
+        CRV_LP_SBTC:
+          address: '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3'
+        CRV_LP_SUSD:
+          address: '0xC25a3A3b969415c80451098fa907EC722572917F'
+        CRV_LP_TRICRYPTO:
+          address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
+        CRV_LP_TUSD:
+          address: '0xecd5e75afb02efa118af914515d6521aabd189f1'
+        CRV_LP_USDT:
+          address: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23'
+        CRV_LP_USDN:
+          address: '0x4f3E8F405CF5aFC05D68142F3783bDfE13811522'
+        DAI:
+          address: '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+        DANDY:
+          remark: 'DEGO dandy token'
+          address: '0x9Dfc4B433D359024Eb3E810d77d60fbE8B0d9B82'
+        DEGO:
+          address: '0x88ef27e69108b2633f8e1c184cc37940a075cc02'
+        DGD:
+          address: '0xe0b7927c4af23765cb51314a0e0521a9645f0e2a'
+        DPT:
+          address: '0x10c71515602429c19d53011ea7040b87a4894838'
+        ENG:
+          address: '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4'
+        ENJ:
+          address: '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
+        ETH:
+          address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+        FARM:
+          address: '0xa0246c9032bC3A600820415aE600c6388619A14D'
+        FEI:
+          address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA'
+        FUEL:
+          address: '0xea38eaa3c86c8f9b751533ba2e562deb9acded40'
+        FUN:
+          address: '0x419d0d8bdd9af5e606ae2232ed285aff190e711b'
+        GUSD:
+          address: '0xdF574c24545E5FfEcb9a659c229253D4111d87e1'
+        HST:
+          address: '0x554c20b7c486beee439277b4540a434566dc4c02'
+        KNC:
+          address: '0xdd974D5C2e2928deA5F71b9825b8b646686BD200'
+        LEND:
+          address: '0x80fB784B7eD66730e8b1DBd9820aFD29931aab03'
+        LINK:
+          address: '0x514910771AF9Ca656af840dff83E8264EcF986CA'
+        LRC:
+          address: '0xbbbbca6a901c926f240b89eacb641d8aec7aeafd'
+        MANA:
+          address: '0x0F5D2fB29fb7d3CFeE444a200298f468908cC942'
+        MKR:
+          address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2'
+        MKR_OLD:
+          address: '0xC66eA802717bFb9833400264Dd12c2bCeAa34a6d'
+        MOD:
+          address: '0x957c30ab0426e0c93cd8241e2c60392d08c6ac8e'
+        OMG:
+          address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07'
+        ODEX:
+          address: '0xa960d2ba7000d58773e7fa5754dec3bb40a069d5'
+        PAXG:
+          address: '0x45804880De22913dAFE09f4980848ECE6EcbAf78'
+        REN:
+          address: '0x408e41876cccdc0f92210600ef50372656052a38'
+        REP:
+          address: '0x1985365e9f78359a9B6AD760e32412f4a445E862'
+        SAI:
+          address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
+        SNX:
+          address: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F'
+        STAKE:
+          address: '0x0Ae055097C6d159879521C384F1D2123D1f195e6'
+        SUSD:
+          address: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51'
+        SUSHI:
+          address: '0x6B3595068778DD592e39A122f4f5a5cF09C90fE2'
+        KIMCHI:
+          address: '0x1E18821E69B9FAA8e6e75DFFe54E7E25754beDa0'
+        TUSD:
+          address: '0x0000000000085d4780B73119b644AE5ecd22b376'
+        UMA:
+          address: '0x04fa0d235c4abf4bcf4787af4cf447de572ef828'
+        UNI:
+          address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
+        USDN:
+          address: '0x674C6Ad92Fd080e4004b2312b45f796a192D27a0'
+        USDT:
+          address: '0xdac17f958d2ee523a2206206994597c13d831ec7'
+        WBTC:
+          address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'
+        WETH:
+          address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        XAUT:
+          address: '0x4922a015c4407F87432B179bb209e125432E4a2A'
+        XFI:
+          address: '0x5befbb272290dd5b8521d4a938f6c4757742c430'
+        YFI:
+          address: '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e'
+        YUNO:
+          address: '0x4B4F5286e0f93E965292B922B9Cd1677512F1222'
+        ZRX:
+          address: '0xE41d2489571d322189246DaFA5ebDe1F4699F498'
+        CRV_LP_MUSD:
+          address: '0x1AEf73d49Dedc4b1778d0706583995958Dc862e6'
+        CRV_LP_TBTC:
+          address: '0x64eda51d3Ad40D56b9dFc5554E06F94e1Dd786Fd'
+        CRV_LP_HUSD:
+          address: '0x5B5CFE992AdAC0C9D48E05854B2d91C73a003858'
+        CRV_LP_USDK:
+          address: '0x97E2768e8E73511cA874545DC5Ff8067eB19B787'
+        CRV_LP_LINKUSD:
+          address: '0x6D65b498cb23deAba52db31c93Da9BFFb340FB8F'
+        CRV_LP_PBTC:
+          address: '0xDE5331AC4B3630f94853Ff322B66407e0D6331E8'
+        CRV_LP_DUSD:
+          address: '0x3a664Ab939FD8482048609f652f9a0B0677337B9'
+        CRV_LP_UST:
+          address: '0x94e131324b6054c0D789b190b2dAC504e4361b53'
+        CRV_LP_EURS:
+          address: '0x194eBd173F6cDacE046C53eACcE9B953F28411d1'
+        CRV_LP_AAVE:
+          address: '0xFd2a8fA60Abd58Efe3EeE34dd494cD491dC14900'
+        CRV_LP_STETH:
+          address: '0x06325440D014e39736583c165C2963BA99fAf14E'
+        CRV_LP_SNOW:
+          address: '0x3921574E4146fC09701a1B24CFb0f9906e8FEe92'
+        CRV_LP_BBTC:
+          address: '0x410e3E86ef427e30B9235497143881f717d93c2A'
+        BBTC:
+          address: '0x9BE89D2a4cd102D8Fecc6BF9dA793be995C22541'
+        CRV_SWAP_SETH:
+          address: '0xc5424B857f758E906013F3555Dad202e4bdB4567'
+        CRV_LP_SETH:
+          address: '0xA3D87FffcE63B53E0d54fAa1cc983B7eB0b74A9c'
+        CRV_LP_RSV:
+          address: '0xC2Ee6b0334C261ED60C72f6054450b61B8f18E35'
+        CRV_LP_OBTC:
+          address: '0x2fE94ea3d5d4a175184081439753DE15AeF9d614'
+        SNOW:
+          address: '0xfe9A29aB92522D14Fc65880d817214261D8479AE'
+        SNOW_LP_YSNOW:
+          address: '0x173f8ee61c0fe712cae2a2fc8d5c0ccdda57e6da'
+        SNOW_LP_YCRVSNOW:
+          address: '0x078b728243b975d1a284666c30b30530a8c087fe'
+        STARK_FAKE:
+          address: '0x40D1BF170f17C8648cd5acCD1D801027C8B73019'
+        CRV_LP_SAAVE:
+          address: '0x02d341CcB60fAaf662bC0554d13778015d1b285C'
+        CRV_LP_ANKRETH:
+          address: '0xaA17A236F2bAdc98DDc0Cf999AbB47D47Fc0A6Cf'
+        CRV_LP_USDP:
+          address: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6'
+        CRV_LP_IRONBANKUSD:
+          address: '0x5282a4eF67D9C33135340fB3289cc1711c13638C'
+        CRV_LP_LINK:
+          address: '0xcee60cfa923170e4f8204ae08b4fa6a3f5656f3a'
+        DUCK:
+          address: '0x92e187a03b6cd19cb6af293ba17f2745fd2357d5'
+        USDP:
+          address: '0x1456688345527bE1f37E9e627DA0837D6f08C925'
+        COL:
+          remark: 'http://unit.xyz currancy. 1 DUCK equals 100 COL.'
+          address: '0xC76FB75950536d98FA62ea968E1D6B45ffea2A55'
+        KP3R:
+          address: '0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44'
+        DODO:
+          address: '0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd'
+        SEUR:
+          address: '0xd71ecff9342a5ced620049e616c5035f1db98620'
+        TRIBE:
+          address: '0xc7283b66eb1eb5fb86327f08e1b5816b0720212b'
+        KICK:
+          address: '0xc12d1c73ee7dc3615ba4e37e4abfdbddfa38907e'
+        TRU:
+          address: '0x4C19596f5aAfF459fA38B0f7eD92F11AE6543784'
+        TRU_IMPLEMENTATION:
+          address: '0x095527F5bEa113E9575B662c5ba01D990A280f2F'
+        MNE:
+          address: '0x426ca1ea2406c07d75db9585f22781c096e3d0e0'
+        MIM:
+          address: '0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3'
+        SPELL:
+          address: '0x090185f2135308BaD17527004364eBcC2D37e5F6'
+        CRV_LP_LUSD:
+          address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA'
+        CRV_LP_BUSDV2:
+          address: '0x4807862AA8b2bF68830e4C8dc86D0e9A998e085a'
+        CRV_LP_RETH:
+          address: '0x53a901d48795C58f485cBB38df08FA96a24669D5'
+        CRV_LP_ALUSD:
+          address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
+        CRV_LP_MIM_USD:
+          address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
+        CRV_LP_TRICRYPTO2:
+          address: '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff'
+        CRV_LP_EURT:
+          address: '0xfd5db7463a3ab53fd211b4af195c5bccc1a03890'
+        QDUCK:
+          address: '0xE85d5FE256F5f5c9E446502aE994fDA12fd6700a'
+        RARI_FUND_TOKEN:
+          address: '0x016bf078ABcaCB987f0589a6d3BEAdD4316922B0'
+        CVXCRV:
+          address: '0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7'
+        RARI_LP_F_TRIBE:
+          address: '0xFd3300A9a74b3250F1b2AbC12B47611171910b07'
+        RARI_LP_F_FEI:
+          address: '0xd8553552f8868c1ef160eedf031cf0bcf9686945'
+        RARI_LP_F_FEI_IMPLEMENTATION:
+          address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
+        RARI_LP_F_FEI_IMPLEMENTATION_IMPLEMENTATION:
+          address: '0x0000000000000000000000000000000000000000'
+        EXRD:
+          address: '0x6468e79a80c0eab0f9a2b574c8d5bc374af59414'
+        RARI_LP_F_DAI:
+          address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43'
+        RARI_LP_F_DAI_IMPLEMENTATION:
+          address: '0x67E70eeB9DD170f7B4A9EF620720c9069D5e706C'
+        RARI_LP_F_DAI_IMPLEMENTATION_IMPLEMENTATION:
+          address: '0x0000000000000000000000000000000000000000'
+        XRD:
+          address: '0x6468e79A80C0eaB0F9A2B574c8d5bC374Af59414'
+        USDC:
+          address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      other:
+        VOTIUM_VOTER_PROXY:
+          address: '0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49'
+    rinkeby:
+      provider:
+        http:
+          url: 'http://localhost:8545'
+        ws: null
+        infura:
+          url: 'wss://mainnet.infura.io/ws/v3/'
+      chainid: 4
+      uniswap:
+        UNISWAP_FACTORY:
+          address: '0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36'
+        UNISWAP_ROUTER2:
+          address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+    kovan:
+      provider:
+        http:
+          url: 'http://localhost:8545'
+        ws: null
+        infura:
+          url: 'wss://mainnet.infura.io/ws/v3/'
+      chainid: 42
+      aave:
+        referralCode: 0
+        AAVE_LENDING_POOL_ADDRESSES_PROVIDER:
+          address: '0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5'
+        AAVE_LENDING_POOL:
+          address: '0x580D4Fdc4BF8f9b5ae2fb9225D584fED4AD5375c'
+        AAVE_LENDING_POOL_CORE:
+          address: '0x95D1189Ed88B380E319dF73fF00E479fcc4CFa45'
+        aETH:
+          address: '0xD483B49F2d55D2c53D32bE6efF735cB001880F79'
+        aDAI:
+          address: '0x58AD4cB396411B691A9AAb6F74545b2C5217FE6a'
+        aUSDC:
+          address: '0x02F626c6ccb6D2ebC071c068DC1f02Bf5693416a'
+        aSUSD:
+          address: '0xb9c1434aB6d5811D1D0E92E8266A37Ae8328e901'
+        aTUSD:
+          address: '0xA79383e0d2925527ba5Ec1c1bcaA13c28EE00314'
+        aUSDT:
+          address: '0xA01bA9fB493b851F4Ac5093A324CB081A909C34B'
+        aBUSD:
+          address: '-'
+        aBAT:
+          address: '0x5ad67de6Fb697e92a7dE99d991F7CdB77EdF5F74'
+        aKNC:
+          address: '0xB08EC9EdB6BD7971220FEa04644174f3EbfbDe96'
+        aLEND:
+          address: '0xa2facD0F9Ef0Bb75cFc64Ad692F79378b5C3673a'
+        aLINK:
+          address: '0xEC23855Ff01012E1823807CE19a790CeBc4A64dA'
+        aMANA:
+          address: '0xe68204D69Cbfaf6124190EFa65ad9C591C0D48e4'
+        aMKR:
+          address: '0xfB762B5BAb463f7F35610Ba65e2534993a1c09C6'
+        aREP:
+          address: '0x0578469469Db1129271f4eb3EB9D97426506c44c'
+        aSNX:
+          address: '0xb4D480f963f4F685F1D51d2B6159D126658B1dA8'
+        aWBTC:
+          address: '0xCD5C52C7B30468D16771193C47eAFF43EFc47f5C'
+        aZRX:
+          address: '0x0F456900c6bdFddfA27E1E4E4c84EB823a2eE13c'
+      maker:
+        DEPLOYER:
+          address: '0xdB33dFD3D61308C33C63209845DaD3e6bfb2c674'
+        MULTICALL:
+          address: '0xC6D81A2e375Eee15a20E6464b51c5FC6Bb949fdA'
+        FAUCET:
+          address: '0x57aAeAE905376a4B1899bA81364b4cE2519CBfB3'
+        MCD_DEPLOY:
+          address: '0x13141b8a5E4A82Ebc6b636849dd6A515185d6236'
+        MCD_GOV:
+          address: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD'
+        GOV_GUARD:
+          address: '0xE50303C6B67a2d869684EFb09a62F6aaDD06387B'
+        MCD_ADM:
+          address: '0xbBFFC76e94B34F72D96D054b31f6424249c1337d'
+        MCD_VAT:
+          address: '0xbA987bDB501d131f766fEe8180Da5d81b34b69d9'
+        MCD_JUG:
+          address: '0xcbB7718c9F39d05aEEDE1c472ca8Bf804b2f1EaD'
+        MCD_CAT:
+          address: '0x0511674A67192FE51e86fE55Ed660eB4f995BDd6'
+        MCD_VOW:
+          address: '0x0F4Cbe6CBA918b7488C26E29d9ECd7368F38EA3b'
+        MCD_JOIN_DAI:
+          address: '0x5AA71a3ae1C0bd6ac27A1f28e1415fFFB6F15B8c'
+        MCD_FLAP:
+          address: '0xc6d3C83A080e2Ef16E4d7d4450A869d0891024F5'
+        MCD_FLOP:
+          address: '0x52482a3100F79FC568eb2f38C4a45ba457FBf5fA'
+          fromBlock: 9697042
+          beg: '1030000000000000000'
+          pad: '1200000000000000000'
+          ttl: '21600'
+          tau: '259200'
+          bid: '50000000000000000000000000000000000000000000000000'
+        MCD_PAUSE:
+          address: '0x8754E6ecb4fe68DaA5132c2886aB39297a5c7189'
+        MCD_PAUSE_PROXY:
+          address: '0x0e4725db88Bb038bBa4C4723e91Ba183BE11eDf3'
+        MCD_GOV_ACTIONS:
+          address: '0x0Ca17E81073669741714354f16D800af64e95C75'
+        MCD_DAI:
+          address: '0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa'
+        MCD_SPOT:
+          address: '0x3a042de6413eDB15F2784f2f97cC68C7E9750b2D'
+        MCD_POT:
+          address: '0xEA190DBDC7adF265260ec4dA6e9675Fd4f5A78bb'
+        MCD_END:
+          address: '0x24728AcF2E2C403F5d2db4Df6834B8998e56aA5F'
+        MCD_ESM:
+          address: '0x0C376764F585828ffB52471c1c35f855e312a06c'
+        PROXY_ACTIONS:
+          address: '0xd1D24637b9109B7f61459176EdcfF9Be56283a7B'
+        PROXY_ACTIONS_END:
+          address: '0x7c3f28f174F2b0539C202a5307Ff48efa61De982'
+        PROXY_ACTIONS_DSR:
+          address: '0xc5CC1Dfb64A62B9C7Bb6Cbf53C2A579E2856bf92'
+        MCD_CDP_MANAGER:
+          address: '0x1476483dD8C35F25e568113C5f70249D3976ba21'
+        DSR_MANAGER:
+          address: '0x7f5d60432DE4840a3E7AE7218f7D6b7A2412683a'
+        GET_CDPS:
+          address: '0x592301a23d37c591C5856f28726AF820AF8e7014'
+        ILK_REGISTRY:
+          address: '0x6618BD7bBaBFacC518Fdec43542E4a73629B0819'
+        OSM_MOM:
+          address: '0x5dA9D1C3d4f1197E5c52Ff963916Fe84D2F5d8f3'
+        FLIPPER_MOM:
+          address: '0xf3828caDb05E5F22844f6f9314D99516D68a0C84'
+        PROXY_FACTORY:
+          address: '0xe11E3b391F7E8bC47247866aF32AF67Dd58Dc800'
+        MCD_PROXY_REGISTRY:
+          address: '0x64A436ae831C1672AE81F674CAb8B6775df3475C'
+        PIP_ETH:
+          address: '0x75dD74e8afE8110C8320eD397CcCff3B8134d981'
+        MCD_JOIN_ETH_A:
+          address: '0x775787933e92b709f2a3C70aa87999696e74A9F8'
+        MCD_FLIP_ETH_A:
+          address: '0xc78EdADA7e8bEa29aCc3a31bBA1D516339deD350'
+        BAT:
+          address: '0x9f8cFB61D3B2aF62864408DD703F9C3BEB55dff7'
+        PIP_BAT:
+          address: '0x5C40C9Eb35c76069fA4C3A00EA59fAc6fFA9c113'
+        MCD_JOIN_BAT_A:
+          address: '0x2a4C485B1B8dFb46acCfbeCaF75b6188A59dBd0a'
+        MCD_FLIP_BAT_A:
+          address: '0xc0126c3383777bDc175E659A51020E56307dDe21'
+        USDC:
+          address: '0xBD84be3C303f6821ab297b840a99Bd0d4c4da6b5'
+        PIP_USDC:
+          address: '0x4c51c2584309b7BF328F89609FDd03B3b95fC677'
+        MCD_JOIN_USDC_A:
+          address: '0x4c514656E7dB7B859E994322D2b511d99105C1Eb'
+        MCD_FLIP_USDC_A:
+          address: '0xc29Ad1913C3B415497fdA1eA15c132502B8fa372'
+        MCD_JOIN_USDC_B:
+          address: '0xaca10483e7248453BB6C5afc3e403e8b7EeDF314'
+        MCD_FLIP_USDC_B:
+          address: '0x3c9eF711B68882d9732F60758e7891AcEae2Aa7c'
+        WBTC:
+          address: '0x7419f744bBF35956020C1687fF68911cD777f865'
+        PIP_WBTC:
+          address: '0x2f38a1bD385A9B395D01f2Cbf767b4527663edDB'
+        MCD_JOIN_WBTC_A:
+          address: '0xB879c7d51439F8e7AC6b2f82583746A0d336e63F'
+        MCD_FLIP_WBTC_A:
+          address: '0x28dd4263e1FcE04A9016Bd7BF71a4f0F7aB93810'
+        TUSD:
+          address: '0xD6CE59F06Ff2070Dd5DcAd0866A7D8cd9270041a'
+        PIP_TUSD:
+          address: '0xE4bAECdba7A8Ff791E14c6BF7e8089Dfdf75C7E7'
+        MCD_JOIN_TUSD_A:
+          address: '0xe53f6755A031708c87d80f5B1B43c43892551c17'
+        MCD_FLIP_TUSD_A:
+          address: '0xD4A145d161729A4B43B7Ab7DD683cB9A16E01a1b'
+        ZRX:
+          address: '0xC2C08A566aD44129E69f8FC98684EAA28B01a6e7'
+        PIP_ZRX:
+          address: '0x218037a42947E634191A231fcBAEAE8b16a39b3f'
+        MCD_JOIN_ZRX_A:
+          address: '0x85D38fF6a6FCf98bD034FB5F9D72cF15e38543f2'
+        MCD_FLIP_ZRX_A:
+          address: '0xe07F1219f7d6ccD59431a6b151179A9181e3902c'
+        KNC:
+          address: '0x9800a0a3c7e9682e1AEb7CAA3200854eFD4E9327'
+        PIP_KNC:
+          address: '0x10799280EF9d7e2d037614F5165eFF2cB8522651'
+        MCD_JOIN_KNC_A:
+          address: '0xE42427325A0e4c8e194692FfbcACD92C2C381598'
+        MCD_FLIP_KNC_A:
+          address: '0x644699674D06cF535772D0DC19Ad5EA695000F51'
+        MANA:
+          address: '0x221F4D62636b7B51b99e36444ea47Dc7831c2B2f'
+        PIP_MANA:
+          address: '0xE97D2b077Fe19c80929718d377981d9F754BF36e'
+        MCD_JOIN_MANA_A:
+          address: '0xdC9Fe394B27525e0D9C827EE356303b49F607aaF'
+        MCD_FLIP_MANA_A:
+          address: '0x5CB9D33A9fE5244019e6F5f45e68F18600805264'
+        PROXY_PAUSE_ACTIONS:
+          address: '0x7c52826c1efEAE3199BDBe68e3916CC3eA222E29'
+        PROXY_DEPLOYER:
+          address: '0xA9fCcB07DD3f774d5b9d02e99DE1a27f47F91189'
+      kyber:
+        KyberNetworkProxy:
+          address: '0x692f391bCc85cefCe8C237C01e1f636BbD70EA4D'
+          abifile: 'abi/KyberNetworkProxy'
+        KyberNetwork:
+          address: '0x118A7b23B7a2e6A57963d017A7E76A4E2636F075'
+          abifile: 'abi/KyberNetwork'
+        PermissionlessOrderbookReserveLister:
+          address: '0x7dE123798f649c9937A75a0f6668E4d06bFf5993'
+          abifile: 'abi/PermissionlessOrderbookReserveLister'
+        KyberReserve:
+          address: '0x45460BD0f9a68b98Bf1f5c478B7584E057e32eF5'
+          abifile: 'abi/KyberReserve'
+        ConversionRates:
+          address: '0x6B2e614977F893baddf3AA704698BD71BEf9CeFF'
+          abifile: 'abi/ConversionRates'
+        ExpectedRate:
+          address: '0xFf20EE9bfC059B2805cAB6046EAfea7Bccb8b60B'
+          abifile: 'abi/ExpectedRate'
+        FeeBurner:
+          address: '0x0E49481279407295A2555b89D5e6C699b94621e0'
+          abifile: 'abi/FeeBurner'
+        SanityRates:
+          address: '0x152506cD5Ae485c65eC5551c77591fcE2A4bC482'
+          abifile: 'abi/SanityRates'
+        WhiteList:
+          address: '0x9C36F317849529b6DA5758f538467F326f8f62B7'
+          abifile: 'abi/WhiteList'
+      uniswap:
+        UNISWAP_FACTORY:
+          address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+        UNISWAP_ROUTER2:
+          address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+      token:
+        BAT:
+          address: '0x0D8775F648430679A709E98d2b0Cb6250d2887EF'
+        BUSD:
+          address: '0x4Fabb145d64652a948d72533023f6E7A623C7C53'
+        DAI:
+          address: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2'
+        ENJ:
+          address: '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
+        ETH:
+          address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+        KNC:
+          address: '0xad67cB4d63C9da94AcA37fDF2761AaDF780ff4a2'
+        LEND:
+          address: '0x80fB784B7eD66730e8b1DBd9820aFD29931aab03'
+        LINK:
+          address: '0x514910771AF9Ca656af840dff83E8264EcF986CA'
+        MANA:
+          address: '0x0F5D2fB29fb7d3CFeE444a200298f468908cC942'
+        MKR:
+          address: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD'
+        OMG:
+          address: '0xdB7ec4E4784118D9733710e46F7C83fE7889596a'
+        POLY:
+          address: '0xd92266fd053161115163a7311067F0A4745070b5'
+        REN:
+          address: '0x408e41876cccdc0f92210600ef50372656052a38'
+        REP:
+          address: '0x1985365e9f78359a9B6AD760e32412f4a445E862'
+        SNX:
+          address: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F'
+        SUSD:
+          address: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51'
+        TUSD:
+          address: '0x0000000000085d4780B73119b644AE5ecd22b376'
+        USDC:
+          address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+        USDT:
+          address: '0xdAC17F958D2ee523a2206206994597C13D831ec7'
+        WBTC:
+          address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'
+        WETH:
+          address: '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
+        ZIL:
+          address: '0xAb74653cac23301066ABa8eba62b9Abd8a8c51d6'
+        ZRX:
+          address: '0xE41d2489571d322189246DaFA5ebDe1F4699F498'
+    ropsten:
+      provider:
+        http:
+          url: 'http://localhost:8545'
+        ws: null
+        infura:
+          url: 'wss://mainnet.infura.io/ws/v3/'
+      chainid: 3
+      aave:
+        referralCode: 0
+        LendingPoolAddressesProvider:
+          address: '0x1c8756FD2B28e9426CDBDcC7E3c4d64fa9A54728'
+        LendingPool:
+          address: '0x9E5C7835E4b13368fd628196C4f1c6cEc89673Fa'
+        LendingPoolCore:
+          address: '0x4295Ee704716950A4dE7438086d6f0FBC0BA9472'
+        aETH:
+          address: '0x2433A1b6FcF156956599280C3Eb1863247CFE675'
+        aDAI:
+          address: '0xcB1Fe6F440c49E9290c3eb7f158534c2dC374201'
+        aUSDC:
+          address: '0x2dB6a31f973Ec26F5e17895f0741BB5965d5Ae15'
+        aSUSD:
+          address: '0x5D17e0ea2d886F865E40176D71dbc0b59a54d8c1'
+        aTUSD:
+          address: '0x82F01c5694f36690a985F01dC0aD46e1B20E7a1a'
+        aUSDT:
+          address: '0x790744bC4257B4a0519a3C5649Ac1d16DDaFAE0D'
+        aBUSD:
+          address: '0x81E065164bAC7203c3bFEB1a749F48a64383c6eE'
+        aBAT:
+          address: '0x0D0Ff1C81F2Fbc8cbafA8Df4bF668f5ba963Dab4'
+        aKNC:
+          address: '0xCf6efd4528d27Df440fdd585a116D3c1fC5aDdEe'
+        aLEND:
+          address: '0x383261d0e287f0A641322AEB15E3da50147Dd36b'
+        aLINK:
+          address: '0x52fd99c15e6FFf8D4CF1B83b2263a501FDd78973'
+        aMANA:
+          address: '0x8e96a4068da80F66ef1CFc7987f0F834c26106fa'
+        aMKR:
+          address: '0xEd6A5d671f7c55aa029cbAEa2e5E9A18E9d6a1CE'
+        aREP:
+          address: '0xE4B92BcDB2f972e1ccc069D4dB33d5f6363738dE'
+        aSNX:
+          address: null
+        aWBTC:
+          address: '0xA1c4dB01F8344eCb11219714706C82f0c0c64841'
+        aZRX:
+          address: '0x5BDC773c9D3515a5e3Dd415428F92a90E8e63Ae4'
+      kyber:
+        KyberNetworkProxy:
+          address: '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
+          abifile: 'abi/KyberNetworkProxy'
+        KyberNetwork:
+          address: '0x3f9a8e219ab1ad42f96b22c294e564b2b48fe636'
+          abifile: 'abi/KyberNetwork'
+        PermissionlessOrderbookReserveLister:
+          address: '0x405a5fae110c86eb2e5a76809a17fc5bee2d3ccd'
+          abifile: 'abi/PermissionlessOrderbookReserveLister'
+        KyberReserve:
+          address: '0xEB52Ce516a8d054A574905BDc3D4a176D3a2d51a'
+          abifile: 'abi/KyberReserve'
+        ConversionRates:
+          address: '0x6B2e614977F893baddf3AA704698BD71BEf9CeFF'
+          abifile: 'abi/ConversionRates'
+        ExpectedRate:
+          address: '0xDce692e577002298b3c7ce7E002Ac77244546884'
+          abifile: 'abi/ExpectedRate'
+        FeeBurner:
+          address: '0x81ae4dE9A3Aec67a35C05c889052260E39BC42a4'
+          abifile: 'abi/FeeBurner'
+        SanityRates:
+          address: '0xnot_found'
+          abifile: 'abi/SanityRates'
+        WhiteList:
+          address: '0x0f69eA3FA0F1766f91cAca1962e2E85d6a7c20A6'
+          abifile: 'abi/WhiteList'
+      token:
+        ETH:
+          address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+        DAI:
+          address: '0xaD6D458402F60fD3Bd25163575031ACDce07538D'
+        ENG:
+          address: '0x95cc8d8f29D0f7fcC425E8708893E759d1599c97'
+        KNC:
+          address: '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6'
+        ZIL:
+          address: '0xaD78AFbbE48bA7B670fbC54c65708cbc17450167'
 keys:
   uniswap:
     type: 'uniswap'
