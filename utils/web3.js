@@ -2,11 +2,13 @@ const baseDir = __dirname + '/../'
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   ?
-  process.env.NODE_CONFIG_DIR + require('path').delimiter
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
   :
-  "")
-  + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/" +
-  require('path').delimiter + "config/radix/"
+    "") +
+	baseDir + "config/" + require('path').delimiter + 
+	baseDir + "config/secrets/" + require('path').delimiter +
+	"../.config/cceb/" + require('path').delimiter +
+	"config/radix/" 
 
 var config = require('config')
 const qrEncoding = require('qr-encoding')
@@ -18,6 +20,7 @@ const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
 const axios = require('axios')
 var log4js = require('log4js')
 var fs = require('fs')
+const path = require('path')
 const network = config.get('web3.network')
 const common = new Common({chain: config.get(`web3.networks.${network}.chainid`)})
 const pressAnyKey = require('press-any-key')
@@ -101,7 +104,13 @@ async function getProviders (network, filter) {
 					config.get(`web3.networks.${network}.provider.${provider}.url`) +
 					(
 						config.has(`web3.networks.${network}.provider.${provider}.api-key`) ?
-						config.get(`web3.networks.${network}.provider.${provider}.api-key`)
+						fs.readFileSync(
+							path.join(
+								config.get('passwordDir'),
+								config.get(`web3.networks.${network}.provider.${provider}.api-key`)
+							),
+							'utf8'
+						)
 						:
 						""
 					)
@@ -124,7 +133,17 @@ async function getProviders (network, filter) {
 async function getPrivateKeySignature (web3, rawTx, type) {
   var tx
   const	account = await getAddressName(rawTx.from)
-  const privateKey = Buffer.from(config.get(`web3.account.${account}.privatekey`), 'hex')
+
+	const privateKeyConfig = 
+		fs.readFileSync(
+			path.join(
+				config.get('passwordDir'),
+				config.get(`web3.account.${account}.privatekey`)
+				),
+			'utf8'
+		)
+
+  const privateKey = Buffer.from(privateKeyConfig, 'hex')
   switch (type) {
     case 'sign_transaction':
       tx = Transaction.fromTxData(rawTx, {common})
@@ -408,7 +427,16 @@ async function getGasPrice (web3) {
   var ethGasstationWorked = true
   var gasPrices = {}
   try {
-    gasPrices = await axios.get(config.get('web3.ethgasstation.url') + config.get('web3.ethgasstation.api-key'), {timeout: config.get('web3.ethgasstation.timeout')})
+		const apiKey = 
+		fs.readFileSync(
+			path.join(
+				config.get('passwordDir'),
+				config.get('web3.ethgasstation.api-key')
+				),
+			'utf8'
+		)
+
+    gasPrices = await axios.get(config.get('web3.ethgasstation.url') + apiKey, {timeout: config.get('web3.ethgasstation.timeout')})
   } catch (e) {
     ethGasstationWorked = false
     log.debug('Ethgasstation did not work.')
@@ -574,10 +602,20 @@ async function getNonce (address) {
     var resLength = 1
     var nonce = 0
     var nonceTx
+
+		const apiKey = 
+		fs.readFileSync(
+			path.join(
+				config.get('passwordDir'),
+				config.get('web3.etherscan.api-key')
+				),
+			'utf8'
+		)
+
     while (typeof nonceTx === 'undefined' && resLength > 0 && nonce === 0) {
 
       var txs = (await axios.get(
-        config.get('web3.etherscan.nonce_url') + config.get('web3.etherscan.api-key') + '&address=' + await getAddress(address) + '&page=' + page,
+        config.get('web3.etherscan.nonce_url') + apiKey + '&address=' + await getAddress(address) + '&page=' + page,
         {timeout: config.get('web3.etherscan.timeout')}
       )).data.result
 
@@ -608,9 +646,19 @@ async function getWeb3Function (web3, functionString) {
 
 async function getSourceCode (web3, addressName) {
   const address = await getAddress(addressName)
+
+		const apiKey = 
+		fs.readFileSync(
+			path.join(
+				config.get('passwordDir'),
+				config.get('web3.etherscan.api-key')
+				),
+			'utf8'
+		)
+
   try {
     var source = await axios.get(
-      config.get('web3.etherscan.contract_url') + config.get('web3.etherscan.api-key') + '&action=getsourcecode&address=' + address,
+      config.get('web3.etherscan.contract_url') + apiKey + '&action=getsourcecode&address=' + address,
       {timeout: config.get('web3.etherscan.timeout')}
     )
   } catch (e) {
@@ -655,13 +703,23 @@ async function getSourceCode (web3, addressName) {
 }
 
 async function getAbi (web3, abi, address, recurseCount) {
+	const apiKey = 
+		fs.readFileSync(
+			path.join(
+				config.get('passwordDir'),
+				config.get('web3.etherscan.api-key')
+			),
+			'utf8'
+		)
+
   try {
     var abiJson = JSON.parse(fs.readFileSync(`${baseDir}abi/${abi}`, 'utf8'))
   } catch (e) {
     try {
       log.debug('Downloading abi from etherscan.')
       try {
-        const url = config.get('web3.etherscan.contract_url') + config.get('web3.etherscan.api-key') + '&action=getabi&address=' + await getAddress(abi)
+
+        const url = config.get('web3.etherscan.contract_url') + apiKey + '&action=getabi&address=' + await getAddress(abi)
         log.debug({url})
 
         abiJson = await axios.get(
@@ -671,7 +729,7 @@ async function getAbi (web3, abi, address, recurseCount) {
       } catch (e) {
         log.debug(`address: ${address}`)
         if (address !== null) {
-          const url = config.get('web3.etherscan.contract_url') + config.get('web3.etherscan.api-key') + '&action=getabi&address=' + address
+          const url = config.get('web3.etherscan.contract_url') + apiKey + '&action=getabi&address=' + address
           log.debug({url})
 
           abiJson = await axios.get(

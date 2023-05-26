@@ -6,9 +6,11 @@ process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   ?
     process.env.NODE_CONFIG_DIR + require('path').delimiter
   :
-    "")
-  + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/" +
-   require('path').delimiter + "config/radix/" 
+    "") +
+	baseDir + "config/" + require('path').delimiter + 
+	baseDir + "config/secrets/" + require('path').delimiter +
+	"../.config/cceb/" + require('path').delimiter +
+	"config/radix/" 
 
 var config = require('config')
 const axios = require('axios')

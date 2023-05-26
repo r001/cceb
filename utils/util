@@ -2,6 +2,21 @@
 const config = require('config')
 const ccxt = require('ccxt')
 var log4js = require('log4js')
+const fs = require('fs')
+const path = require('path')
+const baseDir = __dirname + '/../'
+
+process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
+  ?
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
+  :
+    "") +
+	baseDir + "config/" + require('path').delimiter + 
+	baseDir + "config/secrets/" + require('path').delimiter +
+	"../.config/cceb/" + require('path').delimiter +
+	"config/radix/" 
+
+process.env.ALLOW_CONFIG_MUTATIONS = 'true'
 
 log4js.configure(
 	{
@@ -21,7 +36,19 @@ log.level = config.get('loglevel')
 
 function getExchange (exchangeId) {
 	const ExchangeClass = ccxt[exchangeId]
-	return new ExchangeClass(config.get('keys.' + exchangeId))
+	const exchangeConfig = config.get('keys.' + exchangeId)
+
+	exchangeConfig.secret = 
+	fs.readFileSync(
+		path.join(
+			config.get('passwordDir'),
+			exchangeConfig.secret
+		),
+		'utf8'
+  ).trim()
+
+	log.debug(`exchangeConfig: ${JSON.stringify(exchangeConfig)}`)
+	return new ExchangeClass(exchangeConfig)
 }
 
 function evalExpr (variableName, variableValue, expression, bigNumber = false) {

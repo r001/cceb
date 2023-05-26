@@ -1,5 +1,4 @@
 const log4js = require('log4js')
-const config = require('config')
 const pressAnyKey = require('press-any-key')
 const {decimalToPrecision, TRUNCATE, DECIMAL_PLACES, PAD_WITH_ZERO, SIGNIFICANT_DIGITS} = require ('ccxt')
 const chrono = require('chrono-node')
@@ -7,6 +6,8 @@ const columnify = require('columnify')
 const ut = require('./util')
 const w3 = require('./web3.js')
 const BN = require('bignumber.js')
+var fs = require('fs')
+const path = require('path')
 
 log4js.configure(
   {
@@ -20,6 +21,22 @@ log4js.configure(
     categories: {default: {appenders: ['out'], level: 'info', enableCallStack: true}},
   }
 )
+
+const baseDir = __dirname + '/../'
+
+process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
+  ?
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
+  :
+    "") +
+	baseDir + "config/" + require('path').delimiter + 
+	baseDir + "config/secrets/" + require('path').delimiter +
+	"../.config/cceb/" + require('path').delimiter +
+	"config/radix/" 
+
+process.env.ALLOW_CONFIG_MUTATIONS = 'true'
+
+const config = require('config')
 
 const log = log4js.getLogger()
 log.level = config.get('loglevel')
@@ -901,6 +918,16 @@ async function withdraw (exchange, args) {
   if (config.has(confTag)) tag = config.get(confTag)
   const address = config.get(confDestination)
   const params = config.get(confParams)
+	if (params.trade_pwd) {
+		params.trade_pwd = 
+			fs.readFileSync(
+				path.join(
+					config.get('passwordDir'),
+					params.trade_pwd
+				),
+			'utf8'
+		)
+	}
   await exchange.withdraw(args.token, amt, address, tag, params)
 }
 
@@ -911,6 +938,7 @@ async function dispListBalances (exchange, args, params) {
 
 async function listBalances (exchange, args, params = {}) {
   var filtered
+	log.debug(`params: ${JSON.stringify(params)}`)
   var balances = await exchange.fetchBalance(params)
   const balanceType = (params && params.type) || 'total'
   var balance = balances[balanceType]

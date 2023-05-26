@@ -1,20 +1,22 @@
 const BN = require('bignumber.js')
 const yargs = require('yargs/yargs')(process.argv.slice(2))
-const baseDir = __dirname + '/'
+const baseDir = __dirname + '/../'
 process.chdir(baseDir)
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   ?
-  process.env.NODE_CONFIG_DIR + require('path').delimiter
+    process.env.NODE_CONFIG_DIR + require('path').delimiter
   :
-  "")
-  + baseDir + "config/" + require('path').delimiter + baseDir + "config/secrets/" +
-  require('path').delimiter + "config/radix/" 
+    "") +
+	baseDir + "config/" + require('path').delimiter + 
+	baseDir + "config/secrets/" + require('path').delimiter +
+	"../.config/cceb/" + require('path').delimiter +
+	"config/radix/" 
 
 const config = require('config')
 const w3 = require('../utils/web3.js')
 const fs = require('fs')
-const openRpc = JSON.parse(fs.readFileSync(`${baseDir}../config/radix/open-rpc.spec.json`, `utf8`))
+const openRpc = JSON.parse(fs.readFileSync(`${baseDir}/config/radix/open-rpc.spec.json`, `utf8`))
 var log4js = require('log4js')
 
 log4js.configure(
@@ -403,7 +405,7 @@ function argParse () {
                 .option('other-exchange', {
                   type: 'string',
                   alias: ['o', 'otherExchange'],
-                  default: 'coinbasepro',
+                  default: 'kraken',
                   desc: 'The other exchange to get currency price from',
                 }
                 )
