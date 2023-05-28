@@ -22,7 +22,7 @@ const log = log4js.getLogger()
 log.level = config.get('loglevel')
 const network = config.get('web3.network')
 
-async function signV2 (walletconnectV2, event) {
+async function signV2 (walletconnectV2, event, args) {
 	const web3 = await w3.getWeb3(network)
 	const {topic, params, id} = event
 	const {request, chainId} = params
@@ -79,9 +79,22 @@ async function signV2 (walletconnectV2, event) {
 			approveRequestV2(walletconnectV2, topic, id, signature)
 			break
 		case "eth_signTypedData":
+		case 'eth_signTypedData_v1':
+		case 'eth_signTypedData_v3':
+		case 'eth_signTypedData_v4':
+		case 'eth_signTypedData_v5':
+		case 'eth_signTypedData_v6':
+		case 'eth_signTypedData_v7':
+		case 'eth_signTypedData_v8':
+		case 'eth_signTypedData_v9':
 			from = methodParams[0]
 			var typedData = methodParams[1]
-			var version = `V${typedData.domain.version}`
+			var version = 'V4' // default version
+			if (args && args.typeddataversion) {
+				version = `V${args.typeddataversion}`
+			} else if (method[19]) {
+				version = `V${method[19]}`
+			} 
 			if (chainId !== typedData.domain.chainId) { 
 				await walletconnectV2.rejectSession({
 					id,
@@ -92,6 +105,10 @@ async function signV2 (walletconnectV2, event) {
 			}
 			await visualizeTypedData(web3, JSON.parse(typedData))
 			log.info(`Signing typed data`)
+			log.debug(`Method: ${method}`)
+			log.debug(`Version: ${version}`)
+			log.debug(`From: ${from}`)
+			log.debug(`CChainId: ${chainId}`)
 
 			signature = '0x' + await getResV2(
 				'eth_signTypedData', 
@@ -242,8 +259,21 @@ async function signV1 (walletConnect, payload, args) {
 			break
 		case 'eth_signTypedData':
 		case 'eth_signTypedData_v4':
+		case 'eth_signTypedData_v5':
+		case 'eth_signTypedData_v6':
+		case 'eth_signTypedData_v7':
+		case 'eth_signTypedData_v8':
+		case 'eth_signTypedData_v9':
+			var version = 'V4' // default version
+			if (args && args.typeddataversion) {
+				version = `V${args.typeddataversion}`
+			} else if (payload.method[19]) {
+				version = `V${payload.method[19]}`
+			} 
 			// await visualizeTypedData(web3, JSON.parse(payload.params[1]))
 			log.info(`Signing typed data`)
+			log.debug(`Typed data version: ${version}`)
+			log.debug(`payload.method: ${payload.method}`)
 			from = payload.params[0]
 
 			result = '0x' + (
@@ -254,7 +284,7 @@ async function signV1 (walletConnect, payload, args) {
 						type: 'sign_typed_data',
 						data: payload.params[1],
 						from: payload.params[0],
-						version: payload.method === 'eth_signTypedData_v4' ? 'V4' : 'V3'
+						version,
 					},
 					walletConnect,
 					payload

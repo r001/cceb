@@ -682,6 +682,14 @@ function argParse () {
                       }
                       )
 
+                      .option('typeddataversion', {
+                        alias: ['d', 'tver'],
+												choice: [1, 3, 4],
+                        desc: 'Voersion of typed data signing that must be used.',
+                        type: 'number',
+                      }
+                      )
+
                       .option('theirgas', {
                         alias:'t',
                         desc: 'Use site\'s gas estimation if possible',

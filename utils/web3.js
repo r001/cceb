@@ -110,7 +110,7 @@ async function getProviders (network, filter) {
 								config.get(`web3.networks.${network}.provider.${provider}.api-key`)
 							),
 							'utf8'
-						)
+						).trim()
 						:
 						""
 					)
@@ -141,7 +141,7 @@ async function getPrivateKeySignature (web3, rawTx, type) {
 				config.get(`web3.account.${account}.privatekey`)
 				),
 			'utf8'
-		)
+		).trim()
 
   const privateKey = Buffer.from(privateKeyConfig, 'hex')
   switch (type) {
@@ -434,7 +434,7 @@ async function getGasPrice (web3) {
 				config.get('web3.ethgasstation.api-key')
 				),
 			'utf8'
-		)
+		).trim()
 
     gasPrices = await axios.get(config.get('web3.ethgasstation.url') + apiKey, {timeout: config.get('web3.ethgasstation.timeout')})
   } catch (e) {
@@ -610,7 +610,7 @@ async function getNonce (address) {
 				config.get('web3.etherscan.api-key')
 				),
 			'utf8'
-		)
+		).trim()
 
     while (typeof nonceTx === 'undefined' && resLength > 0 && nonce === 0) {
 
@@ -654,7 +654,7 @@ async function getSourceCode (web3, addressName) {
 				config.get('web3.etherscan.api-key')
 				),
 			'utf8'
-		)
+		).trim()
 
   try {
     var source = await axios.get(
@@ -710,7 +710,7 @@ async function getAbi (web3, abi, address, recurseCount) {
 				config.get('web3.etherscan.api-key')
 			),
 			'utf8'
-		)
+		).trim()
 
   try {
     var abiJson = JSON.parse(fs.readFileSync(`${baseDir}abi/${abi}`, 'utf8'))

@@ -121,7 +121,7 @@ async function walletconnectv2 (args, uri) {
 	walletConnectV2.on("session_request", async event => {
 		log.info(`Session Request`)
 		log.debug(`Session Request: ${JSON.stringify(event, null, 2)}`)
-		await wc.signV2(walletConnectV2, event)
+		await wc.signV2(walletConnectV2, event, args)
 	});		
 
 	walletConnectV2.on("session_delete", async () => {

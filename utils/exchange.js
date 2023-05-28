@@ -926,7 +926,7 @@ async function withdraw (exchange, args) {
 					params.trade_pwd
 				),
 			'utf8'
-		)
+		).trim()
 	}
   await exchange.withdraw(args.token, amt, address, tag, params)
 }
