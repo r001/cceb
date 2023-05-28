@@ -918,7 +918,7 @@ async function withdraw (exchange, args) {
   if (config.has(confTag)) tag = config.get(confTag)
   const address = config.get(confDestination)
   const params = config.get(confParams)
-	if (params.trade_pwd) {
+	if (params && params.trade_pwd) {
 		params.trade_pwd = 
 			fs.readFileSync(
 				path.join(

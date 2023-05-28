@@ -35,19 +35,24 @@ const log = log4js.getLogger()
 log.level = config.get('loglevel')
 
 function getExchange (exchangeId) {
+	log.debug(`exchangeId: ${exchangeId}`)
 	const ExchangeClass = ccxt[exchangeId]
 	const exchangeConfig = config.get('keys.' + exchangeId)
 
-	exchangeConfig.secret = 
-	fs.readFileSync(
-		path.join(
-			config.get('passwordDir'),
-			exchangeConfig.secret
-		),
-		'utf8'
-  ).trim()
-
 	log.debug(`exchangeConfig: ${JSON.stringify(exchangeConfig)}`)
+
+	if (!exchangeConfig.secretRead) {
+		exchangeConfig.secret = 
+			fs.readFileSync(
+				path.join(
+					config.get('passwordDir'),
+					exchangeConfig.secret
+				),
+				'utf8'
+			).trim()
+	} 
+	exchangeConfig.secretRead = true;
+
 	return new ExchangeClass(exchangeConfig)
 }
 
