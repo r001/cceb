@@ -181,7 +181,7 @@ async function walletconnectv1 (args, uri) {
 				log.info("Session killed");
 				walletConnectV1.transportClose()
 				log.info("Transport closed");
-				process.exit(0)
+				process && process.exit(0)
 			});
 		})
 
@@ -204,7 +204,7 @@ async function walletconnectv1 (args, uri) {
 			}
 			log.info(`Disconnected: ${JSON.stringify(payload)}`)
 			walletConnectV1.transportClose()
-			process || process.exit(0)
+			process && process.exit(0)
 		})
 
 		// eslint-disable-next-line no-constant-condition
