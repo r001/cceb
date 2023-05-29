@@ -1,16 +1,18 @@
 loglevel: 'warn'
 passwordDir: '../.p/'
 web3:
-  txSpeed: 'fast'
-  txSpeedRemark: 'values "fastest": < 30 sec, "fast": < 2 min, "average": < 5 min, "safeLow": < 30 min'
+  txSpeed: 'FastGasPrice'
+  txSpeedRemark: 'FastGasPrice: < 30 sec, ProposedGasPrice: < 2 min, SafeGasPrice: < 5 min' 
   network: 'mainnet'
   defaultFrom: 'ETH-1'
+  defaultTypedDataVersion: 'V4'
   gasOverhead: 10000
   defaultGaslimit: 800000
   erc20abi: 'abi/ERC20'
   etherscan:
     contract_url: 'https://api.etherscan.io/api?module=contract&apikey='
     nonce_url: 'https://api.etherscan.io/api?module=account&action=txlist&startblock=0&endblock=99999999&offset=10&sort=desc&apikey='
+    gas_price_url: 'https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey='
     timeout: 15000
   ethgasstation:
     url: 'https://ethgasstation.info/api/ethgasAPI.json?api-key='

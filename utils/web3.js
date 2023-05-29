@@ -424,39 +424,40 @@ async function getLedgerEthereumDerivePath (web3, from, transport) {
 
 async function getGasPrice (web3) {
   let gasPrice
-  var ethGasstationWorked = true
+  var etherscanWorked = true
   var gasPrices = {}
   try {
 		const apiKey = 
 		fs.readFileSync(
 			path.join(
 				config.get('passwordDir'),
-				config.get('web3.ethgasstation.api-key')
+				config.get('web3.etherscan.api-key')
 				),
 			'utf8'
 		).trim()
 
-    gasPrices = await axios.get(config.get('web3.ethgasstation.url') + apiKey, {timeout: config.get('web3.ethgasstation.timeout')})
+    gasPrices = await axios.get(config.get('web3.etherscan.gas_price_url') + apiKey, {timeout: config.get('web3.etherscan.timeout')})
   } catch (e) {
-    ethGasstationWorked = false
-    log.debug('Ethgasstation did not work.')
+    etherscanWorked = false
+    log.debug('Etherscan did not work.')
     gasPrice = await web3.eth.getGasPrice(web3)
     log.info('Web3 gasprice: ' + new BN(gasPrice).div(10 ** 9).toString() + ' GWei')
   }
 
-  if (ethGasstationWorked) {
+  if (etherscanWorked) {
     const speed = config.get('web3.txSpeed')
-    const required = ['fastest', 'fast', 'average', 'safeLow']
+    const required = ['FastGasPrice', 'ProposedGasPrice', 'SafeGasPrice']
     if (!required.includes(speed)) {
       throw new Error(`Wrong speed value of '${speed}'. Use any of '${required.join("', '")}'.`)
     }
-    const gasPriceRec = gasPrices['data'][speed]
+		log.debug('Etherscan result: ', gasPrices)
+    const gasPriceRec = gasPrices['data']['result'][speed]
     if (!gasPriceRec) {
       throw new Error('Panic: no valid gasprice from Etherscan.')
     }
-    gasPrice = new BN(gasPriceRec / 10).times(10 ** 9)
-    //log.debug('Ethgasstation result: ', gasPrices)
-    log.info('Ethgasstation gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+    gasPrice = new BN(gasPriceRec).times(10 ** 9)
+    //log.debug('Etherscan result: ', gasPrices)
+    log.info('Etherscan gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
   }
 
   return gasPrice

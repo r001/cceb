@@ -89,7 +89,7 @@ async function signV2 (walletconnectV2, event, args) {
 		case 'eth_signTypedData_v9':
 			from = methodParams[0]
 			var typedData = methodParams[1]
-			var version = 'V4' // default version
+			var version = config.get('web3.defaultTypedDataVersion') // default version 'V4'
 			if (args && args.typeddataversion) {
 				version = `V${args.typeddataversion}`
 			} else if (method[19]) {
@@ -264,7 +264,7 @@ async function signV1 (walletConnect, payload, args) {
 		case 'eth_signTypedData_v7':
 		case 'eth_signTypedData_v8':
 		case 'eth_signTypedData_v9':
-			var version = 'V4' // default version
+			var version = config.get('web3.defaultTypedDataVersion') // default version 'V4'
 			if (args && args.typeddataversion) {
 				version = `V${args.typeddataversion}`
 			} else if (payload.method[19]) {
