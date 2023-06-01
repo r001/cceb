@@ -100,14 +100,14 @@ function sleep (ms) {
 }
 
 async function dispOrderbook (exchange, args) {
-  const orderbook = await getOrderbook(exchange, args)
+  const orderbook = await ut.getOrderbook(exchange, args)
   let cumulativeSum = 0
   const market = exchange.markets[args.pair]
   const asks = orderbook.asks
   const bids = orderbook.bids
   var priceCurrency = 1
   if (args.currency) {
-    priceCurrency = await getPriceInOtherCurrency(
+    priceCurrency = await ut.getPriceInOtherCurrency(
       args.otherExchange,
       args.pair.replace(/.*\//, ''),
       args.currency
@@ -174,17 +174,6 @@ async function dispOrderbook (exchange, args) {
 
   const columns = columnify(orderColumns, {align: 'right'})
   console.log(columns)
-}
-
-async function getPriceInOtherCurrency (exchangeName, baseToken, quoteToken) {
-  const exchange1 = ut.getExchange(exchangeName)
-  const orderbook = await getOrderbook(exchange1, {limit: 5, pair: baseToken + '/' + quoteToken})
-  return orderbook.asks[0][0]
-}
-
-async function getOrderbook (exchange, args) {
-  const limit = args.limit ? args.limit : undefined
-  return await exchange.fetchOrderBook(args.pair, limit)
 }
 
 async function dispMarkets (exchange, args) {
@@ -687,7 +676,7 @@ async function addOrderKyber (args, amount, buy) {
 async function addOrderCentralized (exchange, args, amount, buy, price) {
   const quoteToken = args.pair.replace(/.*\//, '')
   const baseToken = args.pair.replace(/\/.*/, '')
-  const currPrice = await getPriceInOtherCurrency (args.exchange, baseToken, quoteToken)
+  const currPrice = await ut.getPriceInOtherCurrency (args.exchange, baseToken, quoteToken)
   log.debug(`currPrice: ${currPrice}`)
   if (args.batchMinRate) {
     if ((buy && currPrice > args.batchMinRate) || (!buy && currPrice < args.batchMinRate)) {
@@ -821,7 +810,7 @@ async function fitPriceAndAmountToMarket (exchange, price, amount, pair) {
 }
 
 async function getSpendAmountFromOrderbook (exchange, tokenAmount, args) {
-  const orderbook = await getOrderbook(exchange, args)
+  const orderbook = await ut.getOrderbook(exchange, args)
   var amountToSpend = tokenAmount
   var orderNum = 0
   var finalAmount = 0
@@ -1020,8 +1009,6 @@ module.exports = {
   dispOrderbook,
   fitPriceAndAmountToMarket,
   getMarkets,
-  getOrderbook,
-  getPriceInOtherCurrency,
   getSpendAmountFromOrderbook,
   listBalances,
   listOrders,

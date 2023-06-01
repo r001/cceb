@@ -59,6 +59,20 @@ if (require.main === module) {
 var args = argParse()
 if (!args.getYargsCompletions) log.debug(args)
 //fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({args}));
+const EIP_1559 = !args.legacy
+if (EIP_1559) {
+	log.debug(`EIP_1559 gas market is used.`)
+
+	args.gasPrice = {
+		maxPriorityFeePerGas: args.maxPriorityFeePerGas,
+		maxFeePerGas: args.maxFeePerGas
+	}
+
+	// TODO: fix case with args.gasPrice
+	args.gasprice = args.gasPrice
+
+	log.debug(`args.gasPrice: ${JSON.stringify(args.gasPrice)}`)
+}
 
 let exchange
 if ('exchange' === args._[0]) {

@@ -16,7 +16,7 @@ const QRCode = require('qrcode')
 const Web3 = require('web3')
 const BN = require('bignumber.js')
 const {Common, Chain, Hardfork} = require('@ethereumjs/common')
-const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
+const {Transaction, FeeMarketEIP_1559Transaction} = require('@ethereumjs/tx')
 const axios = require('axios')
 var log4js = require('log4js')
 var fs = require('fs')
@@ -27,9 +27,11 @@ const pressAnyKey = require('press-any-key')
 const shell = require('shelljs')
 const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
 const Eth = require("@ledgerhq/hw-app-eth").default
+const {ledgerService} = require("@ledgerhq/hw-app-eth").default
 const sigUtil = require('@metamask/eth-sig-util')
 const {bufArrToArr, fromRpcSig, stripHexPrefix} = require('@ethereumjs/util')
 const {RLP} = require('@ethereumjs/rlp')
+const ut = require('./util')
 // console.log(network)
 
 log4js.configure(
@@ -144,15 +146,19 @@ async function getPrivateKeySignature (web3, rawTx, type) {
 		).trim()
 
   const privateKey = Buffer.from(privateKeyConfig, 'hex')
+	const EIP_1559 = !rawTx.gasPrice
   switch (type) {
     case 'sign_transaction':
-      tx = Transaction.fromTxData(rawTx, {common})
-      log.debug('gasPrice: ', '0x' + tx.gasPrice.toString("hex"))
-      log.debug('gasLimit: ', '0x' + tx.gasLimit.toString("hex"))
-      log.debug('value: ', '0x' + tx.value.toString("hex"))
+			var createTransaction
 
-      tx.sign(privateKey)
-      return tx.r.toString("hex") + tx.s.toString("hex") + tx.v.toString("hex")
+			if (EIP_1559) {
+				createTransaction = FeeMarketEIP_1559Transaction.fromTxData
+			} else {
+				createTransaction = Transaction.fromTxData
+			}
+				tx = createTransaction(rawTx, {common})
+				tx.sign(privateKey)
+				return tx.r.toString("hex") + tx.s.toString("hex") + tx.v.toString("hex")
     case 'sign_message':
     case 'sign_personal_message':
       return sigUtil.personalSign({privateKey, data: rawTx.data})
@@ -175,20 +181,28 @@ async function getLedgerSignature (web3, rawTx, type) {
 
   switch (type) {
     case 'sign_transaction':
-			log.debug({rawLedger})
-      var lTx = Transaction.fromTxData(rawTx, {common})
+			if (rawTx.gasPrice) {
+				log.debug({rawLedger})
+				var lTx = Transaction.fromTxData(rawTx, {common})
 
-      log.debug({
-        serialized:lTx.serialize().toString("hex"),
-        r: lTx.r.toString("hex"),
-        s:lTx.s.toString("hex"),
-        v:lTx.v.toString("hex")
-      })
+				log.debug({
+					serialized:lTx.serialize().toString("hex"),
+					r: lTx.r.toString("hex"),
+					s: lTx.s.toString("hex"),
+					v: lTx.v.toString("hex")
+				})
 
-      signed = await eth.signTransaction(
-        derivePath,
-        Buffer.from(RLP.encode(bufArrToArr(lTx))).toString('hex')
-      )
+				signed = await eth.signTransaction(
+					derivePath,
+					Buffer.from(RLP.encode(bufArrToArr(lTx))).toString('hex')
+				)
+			} else {
+				//EIP-1559 transaction signing
+				let tx = FeeMarketEIP_1559Transaction.fromTxData(rawTx, {common})
+				let unsignedTx = tx.getMessageToSign(false)
+				let resolution = await ledgerService.resolveTransaction(tx)
+				signed = await eth.signTransaction(derivePath, unsignedTx, resolution)
+			}
 
       break
     case 'sign_personal_message':
@@ -310,9 +324,20 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
     data: txData,
     value: toHex(value),
     gasLimit: toHex(gasLimit),
-    gasPrice: toHex(gasPrice),
     nonce: toHex(txCount),
   }
+
+	const EIP_1559 = typeof gasPrice === 'object'
+	if (EIP_1559) {
+		//convert to hex
+		gasPrice.maxPriorityFeePerGas = `0x${gasPrice.maxPriorityFeePerGas.toString(16)}`
+		gasPrice.maxFeePerGas = `0x${gasPrice.maxFeePerGas.toString(16)}`
+
+		//add to rawTx
+		rawTx = {...rawTx, ...gasPrice}
+	} else {
+		rawTx = {...rawTx, gasPrice}
+	}
 
   log.debug(rawTx)
   const accounts = config.get(`web3.account`)
@@ -349,8 +374,13 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
   log.debug('Raw tx: ', rawTx)
   var tx = Transaction.fromTxData(rawTx, {common})
 	log.debug('Tx to json: ', JSON.stringify(tx.toJSON()))
-  log.debug('gasPrice: ', '0x' + tx.gasPrice.toString(16))
-  log.debug('gasLimit: ', '0x' + tx.gasLimit.toString(16))
+	if (EIP_1559) {
+		log.debug('maxPriorityFeePerGas: ', '0x' + tx.maxPriorityFeePerGas.toString(16))
+		log.debug('maxFeePerGas: ', '0x' + tx.maxFeePerGas.toString(16))
+	} else {
+		log.debug('gasPrice: ', '0x' + tx.gasPrice.toString(16))
+	} 
+	log.debug('gasLimit: ', '0x' + tx.gasLimit.toString(16))
   log.debug('value: ', '0x' + tx.value.toString(16))
   log.debug('from: ', '0x' + tx.getSenderAddress().toString())
 
@@ -422,8 +452,9 @@ async function getLedgerEthereumDerivePath (web3, from, transport) {
   await transport.close()
 }
 
-async function getGasPrice (web3) {
-  let gasPrice
+async function getGasPrice (web3, gasPrice) {
+	log.debug(`getGasPrice()`)
+	log.debug(`gasPrice: ${gasPrice}`)
   var etherscanWorked = true
   var gasPrices = {}
   try {
@@ -450,14 +481,38 @@ async function getGasPrice (web3) {
     if (!required.includes(speed)) {
       throw new Error(`Wrong speed value of '${speed}'. Use any of '${required.join("', '")}'.`)
     }
-		log.debug('Etherscan result: ', gasPrices)
-    const gasPriceRec = gasPrices['data']['result'][speed]
+		log.trace('Etherscan result: ', gasPrices)
+    let gasPriceRec = gasPrices['data']['result'][speed]
     if (!gasPriceRec) {
       throw new Error('Panic: no valid gasprice from Etherscan.')
     }
-    gasPrice = new BN(gasPriceRec).times(10 ** 9)
-    //log.debug('Etherscan result: ', gasPrices)
-    log.info('Etherscan gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+		gasPriceRec = new BN(gasPriceRec).times(10 ** 9)
+		const EIP_1559 = typeof gasPrice === 'object'
+		if (EIP_1559) {
+			log.debug(`EIP_1559 used to declare gas cost`)
+			const suggestBaseFee = new BN(gasPrices['data']['result']['suggestBaseFee']).times(10 ** 9)
+
+			const maxPriorityFeePerGas = 
+				gasPrice.maxPriorityFeePerGas && 
+				BN(gasPrice.maxPriorityFeePerGas) ||
+				gasPriceRec.minus(suggestBaseFee)
+
+			const	maxFeePerGas =
+					gasPrice.maxFeePerGas &&
+					BN(gasPrice.maxFeePerGas) ||
+					gasPriceRec
+
+			gasPrice = {maxPriorityFeePerGas, maxFeePerGas}
+		} else  {
+			log.debug(`legacy used to declare gas cost`)
+			gasPrice = gasPriceRec
+		} 
+		//log.debug('Etherscan result: ', gasPrices)
+		if (EIP_1559) {
+			log.info(`Etherscan maxPriorityFeePerGas: ${gasPrice.maxPriorityFeePerGas.div(10 ** 9).toFixed(6)} GWei maxFeePerGas: ${gasPrice.maxFeePerGas.div(10 ** 9).toFixed(6)} GWei`)
+		} else {
+			log.info('Etherscan gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+		}
   }
 
   return gasPrice
@@ -529,7 +584,11 @@ async function kyberTrade (
       throw Error(`Current Ether balance is: ${strBalance} Ether, Ether to spend is larger: ${strQty} Ether`)
     }
   }
-  var gasPrice = new BN(await getGasPrice(web3))
+  var gasPrice = await getGasPrice(web3)
+	const EIP_1559 = typeof gasPrice === 'object'
+	if (EIP_1559) {
+		gasPrice = gasPrice.maxFeePerGas
+	}
   log.info(`Gasprice: ${gasPrice.div(10 ** 9).toString()} GWei`)
 
   const maxGasPrice = new BN(await getKyberMaxGasPrice(web3))
@@ -808,6 +867,8 @@ async function getAddressAndCheck (web3, to) {
 
 async function access (web3, block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata, gasOverhead, getHashFast) {
 
+	const EIP_1559 = typeof gasPrice === 'object'
+
   if (multipleUse) {
     web3 = await getWeb3(network)
   }
@@ -962,8 +1023,18 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
     log.debug(`Send method is used to access ${methodName} function.`)
 
     var txData = calldata ? calldata : ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
-    if (!gasPrice) gasPrice = await getGasPrice(web3)
+    if (
+			!gasPrice || 
+			(
+				EIP_1559 &&
+				(
+					!args.maxPriorityFeePerGas ||
+					!args.maxFeePerGas
+				)
+			)
+			) gasPrice = await getGasPrice(web3, gasPrice)
 
+		var ethUsdPrice = BN(await ut.getPriceInOtherCurrency('gate', 'ETH', 'USD'))
     if (!gasLimit) {
       if (!ether) {
         try {
@@ -984,16 +1055,38 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
               value,
             })
           }
-          console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
-          gasLimit += gasOverhead || config.get(`web3.gasOverhead`)
-          console.log(`netw est. gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
+					if (EIP_1559) {
+						var ethCost = BN(gasPrice.maxFeePerGas).times(BN(gasLimit)).div(10**18)
+						var usdCost = ethCost.times(ethUsdPrice)
+						console.log(`estimated gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
+						gasLimit += gasOverhead || config.get(`web3.gasOverhead`)
+						ethCost = BN(gasPrice.maxFeePerGas).times(BN(gasLimit)).div(10**18)
+						usdCost = ethCost.times(ethUsdPrice)
+						console.log(`overhead est. gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
+					} else {
+						ethCost = BN(gasPrice).times(BN(gasLimit)).div(10**18)
+						usdCost = ethCost.times(ethUsdPrice)
+						console.log(`gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
+						gasLimit += gasOverhead || config.get(`web3.gasOverhead`)
+						ethCost = BN(gasPrice).times(BN(gasLimit)).div(10**18)
+						usdCost = ethCost.times(ethUsdPrice)
+						console.log(`overhead est. gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
+					}
         } catch (e) {
           log.warn(`Gaslimit estimation unsuccessful.`)
           gasLimit =  config.get(`web3.defaultGaslimit`)
         }
       } else {
         gasLimit = 21000 //gaslimit of sending ether
-        console.log(`estimated gas: ${gasLimit} estimated eth cost: ${BN(gasPrice).times(BN(gasLimit)).div(10**18).toFixed(6)}`)
+				if (EIP_1559) {
+					ethCost = BN(gasPrice.maxFeePerGas).times(BN(gasLimit)).div(10**18)
+					usdCost = ethCost.times(ethUsdPrice)
+					console.log(`estimated gas: ${gasLimit} estimated eth cost: ${ethCost.toFixed(6)} eestimated usd cost: ${usdCost.toFixed(6)}`)
+				} else {
+					ethCost = BN(gasPrice).times(BN(gasLimit)).div(10**18)
+					usdCost = ethCost.times(ethUsdPrice)
+					console.log(`estimated gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
+				}
       }
     }
 

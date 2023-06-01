@@ -157,21 +157,20 @@ function argParse () {
 
                 .option('gaslimit', {
                   type: 'string',
-                  alias:'g',
+                  alias: ['g', 'gasLimit'],
                   desc: 'Decentralized swaps only. Gaslimit of transaction',
                 }
                 )
 
                 .option('to', {
                   type: 'string',
-                  alias:'o',
                   desc: 'Uniswap only. Recipient of output tokens',
                 }
                 )
 
                 .option('gasprice', {
                   type: 'string',
-                  alias:'p',
+                  alias: ['p', 'gasPrice'],
                   desc: 'Decentralized swaps only. Gas price of transaction',
                 }
                 )
@@ -404,7 +403,7 @@ function argParse () {
 
                 .option('other-exchange', {
                   type: 'string',
-                  alias: ['o', 'otherExchange'],
+                  alias: ['otherExchange'],
                   default: 'kraken',
                   desc: 'The other exchange to get currency price from',
                 }
@@ -569,21 +568,20 @@ function argParse () {
 
                 .option('gaslimit', {
                   type: 'string',
-                  alias:'g',
+                  alias: ['g', 'gasLimit'],
                   desc: 'Decentralized swaps only. Gaslimit of transaction',
                 }
                 )
 
                 .option('to', {
                   type: 'string',
-                  alias:'o',
                   desc: 'Uniswap only. Recipient of output tokens',
                 }
                 )
 
                 .option('gasprice', {
                   type: 'string',
-                  alias:'c',
+                  alias: ['p', 'gasPrice'],
                   desc: 'Decentralized swaps only. Gas price of transaction',
                 }
                 )
@@ -621,21 +619,6 @@ function argParse () {
           }
           )
 
-          .option('gaslimit', {
-            alias:['g'], 
-            desc: 'Gas limit of transaction',
-            type: 'string',
-          }
-          )
-          .coerce('gaslimit', gaslimit => numberFormatted(gaslimit))
-
-          .option('gasprice', {
-            alias:['p'], 
-            desc: 'Gas price of transaction',
-            type: 'string',
-          }
-          )
-          .coerce('gasprice', gasprice => numberFormatted(gasprice))
           .option('nonce', {
             alias:'n',
             desc: 'Nonce of transaction',
@@ -643,6 +626,22 @@ function argParse () {
           }
           )
 
+          .option('max-priority-fee-per-gas', {
+            alias:['priority', 'maxPriorityFeePerGas', 'o'], 
+            desc: 'Maximum priority fee to be paid.',
+            type: 'string',
+          }
+          )
+          .coerce('max-priority-fee-per-gas', maxPriorityFeePerGas => numberFormatted(maxPriorityFeePerGas))
+					
+          .option('max-fee-per-gas', {
+            alias:['m', 'maxFeePerGas', 'maxfee'], 
+            desc: 'Maximum total fee to be paid per gas.',
+            type: 'string',
+          }
+          )
+          .coerce('max-fee-per-gas', maxFeePerGas => numberFormatted(maxFeePerGas))
+					
           .option('block', {
             alias:'b',
             type: 'number',
@@ -650,6 +649,36 @@ function argParse () {
           }
           )
 
+          .option('gaslimit', {
+            alias:['g', 'gasLimit'], 
+            desc: 'Gas limit of transaction. (use --legacy flag to use --gaslimit)',
+            type: 'string',
+          }
+          )
+          .coerce('gaslimit', gaslimit => numberFormatted(gaslimit))
+
+          .option('gasprice', {
+            alias:['p', 'gasPrice'], 
+            desc: 'Gas price of transaction. (use --legacy flag to enable it). Not recommended! Please use --max-priority-fee-per-gas and/or --max-fee-per-gas instead.',
+            type: 'string',
+          }
+          )
+          .coerce('gasprice', gasprice => numberFormatted(gasprice))
+
+					.option('legacy', {
+						desc: 'Use legacy transaction format instead of the default EIP-1559 one.',
+						type: 'boolean',
+					}
+					)
+					.check((argv) => {
+						if (!argv.legacy && argv.gasprice) {
+							throw new Error('Add --legacy to use --gasprice, or use --max-priority-fee-per-gas and/or --max-fee-per-gas. --gasprice is not valid with EIP-1559 transactions.')
+						} else if (argv.legacy && (argv.maxPriorityFeePerGas || argv.maxFeePerGas)) {
+							throw new Error('Cannot use --max-priority-fee-per-gas nor --max-fee-per-gas with --legacy. Use --gasprice instead or skip --legacy flag.')
+						}
+						return true
+					})
+					
           .command({
             //cceb eth
             command: 'walletconnect <walletConnectCommand>',
@@ -1331,7 +1360,6 @@ function argParse () {
 
                       .option('for', {
                         type: 'string',
-                        alias: 'o',
                         desc: 'Payback for someone else',
                       }
                       )

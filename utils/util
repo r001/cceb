@@ -56,6 +56,18 @@ function getExchange (exchangeId) {
 	return new ExchangeClass(exchangeConfig)
 }
 
+async function getPriceInOtherCurrency (exchangeName, baseToken, quoteToken) {
+  const exchange1 = getExchange(exchangeName)
+  const orderbook = await getOrderbook(exchange1, {limit: 5, pair: baseToken + '/' + quoteToken})
+  return orderbook.asks[0][0]
+}
+
+async function getOrderbook (exchange, args) {
+  const limit = args.limit ? args.limit : undefined
+  return await exchange.fetchOrderBook(args.pair, limit)
+}
+
+
 function evalExpr (variableName, variableValue, expression, bigNumber = false) {
   const keywords = new RegExp('plus|minus|times|multipliedBy|dividedBy|div|exponentiatedBy|pow|modulo|mod|squareRoot|sqrt|absoluteValue|abs|precision|sd|decimalPlaces|dp', 'g')
 	// security check expression
@@ -99,4 +111,6 @@ module.exports = {
   evalExpr,
   getExchange,
   minBN,
+  getOrderbook,
+  getPriceInOtherCurrency,
 }

@@ -412,7 +412,14 @@ async function dispVaultOpen (args) {
 async function estimateGasCost (gas) {
   var price = await exchange.getPriceInOtherCurrency('coinbasepro', 'ETH', 'USD')
   var gasPrice = BN(await w3.getGasPrice())
-  const total = gasPrice.times(price).times(gas).div(BN(10).pow(18)).toFixed()
+	const EIP_1559 = typeof gasPrice === 'object'
+	var gasCost
+	if (EIP_1559) {
+		gasCost = gasPrice.maxFeePerGas
+	} else { 
+		gasCost = gasPrice
+	}
+  const total = gasCost.times(price).times(gas).div(BN(10).pow(18)).toFixed()
   return total
 }
 

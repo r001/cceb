@@ -94,6 +94,9 @@ const network = config.get('web3.network')
 		
 		if (args._[1] === 'send') {
 			const tx = JSON.parse(args.txjson)
+			if (!tx.gasPrice) {
+				tx.gasPrice = {maxFeePerGas: tx.maxFeePerGas, maxPriorityFeePerGas: tx.maxPriorityFeePerGas}
+			}
 			return await w3.broadcastTx(
 				web3,
 				tx.from,
@@ -151,6 +154,7 @@ const network = config.get('web3.network')
 		)
 
 		log.debug('args.args: ' + JSON.stringify(args.args))
+		log.debug(`args.gasPrice: ${args.gasPrice}`)
 
 		return await w3.access(
 			web3,
@@ -161,8 +165,8 @@ const network = config.get('web3.network')
 			args.abi,
 			args.from,
 			args.value,
-			args.gaslimit,
-			args.gasprice,
+			args.gasLimit,
+			args.gasPrice,
 			args.nonce,
 			null, // inputs
 			null, // multiple use
