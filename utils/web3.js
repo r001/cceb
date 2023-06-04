@@ -235,7 +235,7 @@ async function getAirsignSignature (rawTx, type) {
 
   log.debug(`signable: ${JSON.stringify(signable)}`)
 
-  const ethSignRequest = qrEncoding.encode(JSON.stringify(signable))
+  const ethSignRequest = qrEncoding.encode(JSON.stringify(signable)).toCBOR()
 	let keyCode = 0
 	let uc = ethSignRequest.toUREncoder(config.get('qrCodeSize'))
   while (keyCode === 0) {
