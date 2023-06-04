@@ -5,6 +5,7 @@ var log4js = require('log4js')
 const fs = require('fs')
 const path = require('path')
 const baseDir = __dirname + '/../'
+const Web3 = require('web3')
 
 process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
   ?
@@ -107,7 +108,76 @@ function minBN (bn1, bn2) {
   return bn2.times(1)
 }
 
+async function getWeb3 (network) {
+	var web3, type, preferred = true
+	try {
+		let {web3:w, type:t} = await getProviders(network, preferred)
+		web3 = w
+		type = t
+	} catch (e) {
+		try {
+			let {web3:w, type:t} = await getProviders(network, !preferred)
+			web3 = w
+			type = t
+		} catch (e) {
+			throw new Error(`No rpc connection.`)
+		}
+	}
+	log.debug(`${type[web3.currentProvider.host || web3.currentProvider.url]} rpc provider used.`)
+	log.debug(`${JSON.stringify(type)}`)
+  return web3
+}
+
+async function getProviders (network, filter) {
+  var providers = Object.keys(config.get(`web3.networks.${network}.provider`))
+	var type = {}
+
+	var web3 = await Promise.any(
+		providers
+		.filter(provider =>
+			!filter ||
+			(
+				config.has(`web3.networks.${network}.provider.${provider}.preferred`) &&
+				config.get(`web3.networks.${network}.provider.${provider}.preferred`)
+			)
+		)
+		.map(async provider => {
+			const providerType = config.get(`web3.networks.${network}.provider.${provider}.type`)
+
+			web3 = new Web3(
+				Web3.givenProvider ||
+				new Web3.providers[providerType](
+					config.get(`web3.networks.${network}.provider.${provider}.url`) +
+					(
+						config.has(`web3.networks.${network}.provider.${provider}.api-key`) ?
+						fs.readFileSync(
+							path.join(
+								config.get('passwordDir'),
+								config.get(`web3.networks.${network}.provider.${provider}.api-key`)
+							),
+							'utf8'
+						).trim()
+						:
+						""
+					)
+				)
+			)
+
+			type[web3.currentProvider.host || web3.currentProvider.url] = provider
+			log.debug({url: web3.currentProvider.host || web3.currentProvider.url, provider})
+//			let syncing = await web3.eth.isSyncing()
+//			if (syncing) {
+//				throw new Error(`${web3.currentProvider.host || web3.currentProvider.url} is syncing.`)
+//			}
+//			log.debug({isSyncing: syncing})
+			return web3
+		}))
+
+	return {web3, type}
+}
+
 module.exports = {
+	getWeb3,
   evalExpr,
   getExchange,
   minBN,

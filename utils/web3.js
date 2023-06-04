@@ -29,9 +29,12 @@ const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").de
 const Eth = require("@ledgerhq/hw-app-eth").default
 const {ledgerService} = require("@ledgerhq/hw-app-eth").default
 const sigUtil = require('@metamask/eth-sig-util')
-const {bufArrToArr, fromRpcSig, stripHexPrefix} = require('@ethereumjs/util')
+const {bufArrToArr, fromRpcSig, stripHexPrefix,} = require('@ethereumjs/util')
 const {RLP} = require('@ethereumjs/rlp')
 const ut = require('./util')
+const {keccak256} = require('ethereum-cryptography') 
+const {EthSignRequest, CryptoKeyPath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+
 // console.log(network)
 
 log4js.configure(
@@ -64,73 +67,6 @@ function toHex (value) {
   return '0x' + (raw.length % 2 === 1 ? '0' : '') + raw.slice(2)
 }
 
-async function getWeb3 (network) {
-	var web3, type, preferred = true
-	try {
-		let {web3:w, type:t} = await getProviders(network, preferred)
-		web3 = w
-		type = t
-	} catch (e) {
-		try {
-			let {web3:w, type:t} = await getProviders(network, !preferred)
-			web3 = w
-			type = t
-		} catch (e) {
-			throw new Error(`No rpc connection.`)
-		}
-	}
-	log.debug(`${type[web3.currentProvider.host || web3.currentProvider.url]} rpc provider used.`)
-	log.debug(`${JSON.stringify(type)}`)
-  return web3
-}
-
-async function getProviders (network, filter) {
-  var providers = Object.keys(config.get(`web3.networks.${network}.provider`))
-	var type = {}
-
-	var web3 = await Promise.any(
-		providers
-		.filter(provider =>
-			!filter ||
-			(
-				config.has(`web3.networks.${network}.provider.${provider}.preferred`) &&
-				config.get(`web3.networks.${network}.provider.${provider}.preferred`)
-			)
-		)
-		.map(async provider => {
-			const providerType = config.get(`web3.networks.${network}.provider.${provider}.type`)
-
-			web3 = new Web3(
-				Web3.givenProvider ||
-				new Web3.providers[providerType](
-					config.get(`web3.networks.${network}.provider.${provider}.url`) +
-					(
-						config.has(`web3.networks.${network}.provider.${provider}.api-key`) ?
-						fs.readFileSync(
-							path.join(
-								config.get('passwordDir'),
-								config.get(`web3.networks.${network}.provider.${provider}.api-key`)
-							),
-							'utf8'
-						).trim()
-						:
-						""
-					)
-				)
-			)
-
-			type[web3.currentProvider.host || web3.currentProvider.url] = provider
-			log.debug({url: web3.currentProvider.host || web3.currentProvider.url, provider})
-			let syncing = await web3.eth.isSyncing()
-			if (syncing) {
-				throw new Error(`${web3.currentProvider.host || web3.currentProvider.url} is syncing.`)
-			}
-			log.debug({isSyncing: syncing})
-			return web3
-		}))
-
-	return {web3, type}
-}
 
 async function getPrivateKeySignature (web3, rawTx, type) {
   var tx
@@ -179,9 +115,15 @@ async function getLedgerSignature (web3, rawTx, type) {
   var signed, rawLedger, typedData, sanitizedData, domainSeparator,
     typedDataHash
 
+	const EIP_1559 = !rawTx.gasPrice
   switch (type) {
     case 'sign_transaction':
-			if (rawTx.gasPrice) {
+			if (EIP_1559) {
+				let tx = FeeMarketEIP_1559Transaction.fromTxData(rawTx, {common})
+				let unsignedTx = tx.getMessageToSign(false)
+				let resolution = await ledgerService.resolveTransaction(tx)
+				signed = await eth.signTransaction(derivePath, unsignedTx, resolution)
+			} else {
 				log.debug({rawLedger})
 				var lTx = Transaction.fromTxData(rawTx, {common})
 
@@ -196,12 +138,6 @@ async function getLedgerSignature (web3, rawTx, type) {
 					derivePath,
 					Buffer.from(RLP.encode(bufArrToArr(lTx))).toString('hex')
 				)
-			} else {
-				//EIP-1559 transaction signing
-				let tx = FeeMarketEIP_1559Transaction.fromTxData(rawTx, {common})
-				let unsignedTx = tx.getMessageToSign(false)
-				let resolution = await ledgerService.resolveTransaction(tx)
-				signed = await eth.signTransaction(derivePath, unsignedTx, resolution)
 			}
 
       break
@@ -253,16 +189,27 @@ async function calcV (v) {
   return v
 }
 
+async function getFakeDerivePath (address, parentFingerprintBuffer) {
+	let addressHash = keccak256(Uint8Array.from(Buffer.from(address, 'hex')))
+	return new CryptoKeyPath (
+		[0, 1, 2, 3].map(index => new PathComponent({index: addressHash[index], hardened:true})),
+		parentFingerprintBuffer
+	)
+}
+
 async function getAirsignSignature (rawTx, type) {
   var signature
   log.info(`External signer used`)
   var signable
-
+	var accountData = config.get((await getAddressType(rawTx.from)).confPath)
+	var parentFingerprint = Buffer.from(accountData.parentFingerprint || '12345678', 'hex')
+	const derivePath = accountData.derivePath || await getFakeDerivePath(rawTx.from, parentFingerprint) 
+	log.debug(JSON.stringify({derivePath}))
   switch (type) {
     case 'sign_transaction':
       signable = {
-        from: rawTx.from,
-        type: type,
+				derivePath,
+        type,
         payload: {
           ...rawTx,
           chainId: config.get(`web3.networks.${network}.chainid`)
@@ -275,7 +222,7 @@ async function getAirsignSignature (rawTx, type) {
     case 'sign_personal_message':
     case 'sign_typed_data':
       signable = {
-        from: rawTx.from,
+				derivePath,
         type: type,
         payload: rawTx.data,
         version: rawTx.version,
@@ -288,19 +235,23 @@ async function getAirsignSignature (rawTx, type) {
 
   log.debug(`signable: ${JSON.stringify(signable)}`)
 
-  const encoded = qrEncoding.encode(JSON.stringify(signable))
+  const ethSignRequest = qrEncoding.encode(JSON.stringify(signable))
+	let keyCode = 0
+	let uc = ethSignRequest.toUREncoder(config.get('qrCodeSize'))
+  while (keyCode === 0) {
+		let qrEncoded = uc.next()	
 
-  QRCode.toString(encoded, {type: 'terminal'}, (err, str) => {
-    if (err) throw new Error(err)
-    console.log(str) //FIXME: make this optional
-  })
+		QRCode.toString(qrEncoded, {type: 'terminal'}, (err, str) => {
+			if (err) throw new Error(err)
+			console.log(str)
+		})
 
-  console.log(encoded)
-  console.log('')
+		console.log(qrEncoded)
+		console.log('')
 
+		keyCode = await pressAnyKey('Press any key to continue!')
+	}
   // console.log(`  ./ccb eth send '{"from": "${from}", ${Object.keys(signable.payload).map(key => `"${key}": "${signable.payload[key]}"`).join(', ')}}' <signature>`)
-
-  await pressAnyKey('Press any key to continue!')
 
   const zbarcam = shell.exec("zbarcam")
 
@@ -589,6 +540,7 @@ async function kyberTrade (
 	if (EIP_1559) {
 		gasPrice = gasPrice.maxFeePerGas
 	}
+	gasPrice = new BN(gasPrice)
   log.info(`Gasprice: ${gasPrice.div(10 ** 9).toString()} GWei`)
 
   const maxGasPrice = new BN(await getKyberMaxGasPrice(web3))
@@ -631,8 +583,8 @@ async function extractAbi (web3, abi, regexp, type) {
   log.debug(`abi: ${abi}`)
   log.debug(`regexp: ${regexp}`)
   const abiJson = await getAbi(web3, abi, await getAddress(abi))
-  const contract = new web3.eth.Contract(abiJson)
-  return contract.options.jsonInterface
+
+  const functions = abiJson
     .filter(abi =>
       (
         type.includes(abi.type) ||
@@ -652,6 +604,8 @@ async function extractAbi (web3, abi, regexp, type) {
       ((abi.stateMutability && !/nonPayable|payable/.test(abi.stateMutability)) || abi.constant ? ` ${abi.stateMutability || 'view'}` : '')
     )
     .filter(func => (new RegExp(regexp, 'i')).test(func))
+
+	return functions
 
 }
 
@@ -776,6 +730,7 @@ async function getAbi (web3, abi, address, recurseCount) {
     var abiJson = JSON.parse(fs.readFileSync(`${baseDir}abi/${abi}`, 'utf8'))
   } catch (e) {
     try {
+			
       log.debug('Downloading abi from etherscan.')
       try {
 
@@ -803,6 +758,25 @@ async function getAbi (web3, abi, address, recurseCount) {
 
       abiJson = JSON.parse(abiJson.data.result)
 
+			log.trace({abiJson, address})
+			const implAddr = await proxyImplAddress(web3, abiJson, address)
+			log.debug({implAddr})
+			log.debug({recurseCount})
+			if (implAddr && (!recurseCount || recurseCount < 1)) {
+
+				log.debug('here getAbi')
+
+				log.debug({implAddr})
+
+				const abiImpl = await getAbi(
+					web3,
+					`${abi}_IMPLEMENTATION`,
+					implAddr,
+					1
+				)
+
+				abiJson = [...abiJson, ...abiImpl]
+			}
       log.debug(`Writing abi/${abi}`)
 
       fs.writeFileSync(
@@ -815,25 +789,6 @@ async function getAbi (web3, abi, address, recurseCount) {
     } catch (e) {
       throw Error(`Could not download abi. Either timeout error, or valid value missing in config/default.yaml->web3->etherscan.`)
     }
-  }
-  log.trace({abiJson, address})
-  const implAddr = await proxyImplAddress(web3, abiJson, address)
-  log.debug({implAddr})
-  log.debug({recurseCount})
-  if (implAddr && (!recurseCount || recurseCount < 1)) {
-
-    log.debug('here getAbi')
-
-    log.debug({implAddr})
-
-    const abiImpl = await getAbi(
-      web3,
-      `${abi}_IMPLEMENTATION`,
-      implAddr,
-      1
-    )
-
-    abiJson = [...abiJson, ...abiImpl]
   }
   return abiJson
 }
@@ -870,7 +825,7 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 	const EIP_1559 = typeof gasPrice === 'object'
 
   if (multipleUse) {
-    web3 = await getWeb3(network)
+    web3 = await ut.getWeb3(network)
   }
 
   web3.eth.handleRevert = true
@@ -1154,6 +1109,7 @@ async function getFunctionParams (web3, abi, to, calldata, funcName = null, inpu
   try {
     funcName = funcObject['name']
   } catch (e) {
+
     throw new Error(`Function "${funcName}" not found at contract ${to}.`)
   }
 
@@ -1311,6 +1267,10 @@ async function importAddress (web3, args) {
 
 async function proxyImplAddress (web3, abiJson, address) {
 
+	if (!web3) {
+				const network = config.get('web3.network')
+				web3 = await ut.getWeb3(network)
+	}
   var res_EIP_897
   var res_EIP_1967
 
@@ -1427,15 +1387,17 @@ async function getAddressNames (regex, contractNamesOnly = false) {
 }
 
 async function getAddressType (address) {
+	let confPath
   if (!address || (typeof address === 'number' && address === 0)) return {address: '0x0000000000000000000000000000000000000000', type: null}
   if (address.match(/^0x[A-Fa-f0-9]{40}$/i)) {
     var addrNames = Object.keys(config.get(`web3.account`))
     for (idx = 0; idx < addrNames.length; idx++) {
-      conf = `web3.networks.${network}.${addrNames[idx]}.address`
+			confPath = `web3.networks.${network}.${addrNames[idx]}`
+      conf = `${confPath}.address`
       if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
         log.debug(`Address ${address} is ${addrNames[idx]}.`)
         log.debug(`Address ${addrNames[idx]} is a web3 account.`)
-        return {address: config.get(conf), type: 'account'}
+				return {address: config.get(conf), type: 'account', confPath}
       }
     }
     const addresses = Object.keys(config.get(`web3.networks.${network}`))
@@ -1444,15 +1406,16 @@ async function getAddressType (address) {
     for (idx = 0; idx < addresses.length; idx++) {
       addrNames = Object.keys(config.get(`web3.networks.${network}.${addresses[idx]}`))
       for (id1 = 0; id1 < addrNames.length; id1++) {
-        conf = `web3.networks.${network}.${addresses[idx]}.${addrNames[id1]}.address`
+				confPath = `web3.networks.${network}.${addresses[idx]}.${addrNames[id1]}`
+        conf = `${confPath}.address`
         if (config.has(conf) && config.get(conf).toLowerCase() === address.toLowerCase()) {
           log.debug(`Address ${address} is a ${addresses[idx]} contract.`)
           address = config.get(conf)
-          return {address: Web3.utils.toChecksumAddress(address), type: addresses[idx]}
+          return {address: Web3.utils.toChecksumAddress(address), type: addresses[idx], confPath}
         }
       }
     }
-    return {address: Web3.utils.toChecksumAddress(address), type: 'none'}
+		return {address: Web3.utils.toChecksumAddress(address), type: 'none', confPath: 'none'}
   } else {
     var conf = `web3.account.${address}.address`
     if (config.has(conf)) {
@@ -1551,7 +1514,6 @@ module.exports = {
   getPath,
   getPrivateKeySignature,
   getSourceCode,
-  getWeb3,
   getWeb3Function,
   importAddress,
   kyberGetRates,

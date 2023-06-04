@@ -4,6 +4,7 @@ const config = require('config')
 const colors = require('colors')
 const inquirer = require('inquirer')
 const {getSdkError} = require("@walletconnect/utils")
+const ut = require('../util')
 
 log4js.configure(
   {
@@ -23,7 +24,7 @@ log.level = config.get('loglevel')
 const network = config.get('web3.network')
 
 async function signV2 (walletconnectV2, event, args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
 	const {topic, params, id} = event
 	const {request, chainId} = params
 	const {method, params: methodParams} = request
@@ -167,7 +168,7 @@ async function signV2 (walletconnectV2, event, args) {
 }
 
 async function signV1 (walletConnect, payload, args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
 	var from 
 	switch (payload.method) {
 		case 'personal_sign':

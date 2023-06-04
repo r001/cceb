@@ -4,6 +4,8 @@ const columnify = require('columnify')
 const fs = require('fs')
 const log4js = require('log4js')
 const w3 = require('../web3.js')
+const ut = require('../util')
+
 
 log4js.configure(
 	{
@@ -98,7 +100,7 @@ log.level = config.get('loglevel')
 	}
 
 	async function curveInfo (args, baseDir) {
-		var web3 = await w3.getWeb3(network)
+		var web3 = await ut.getWeb3(network)
 		var fileNames = await fs.promises.readdir(baseDir + 'abi')
 		fileNames = fileNames.filter(fileName => /^CRV_GAUGE_/.test(fileName) && fileName !== 'CRV_GAUGE_CONTROLLER')
 

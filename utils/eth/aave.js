@@ -1,6 +1,7 @@
 const BN = require('bignumber.js')
 const config = require('config')
 const w3 = require('../web3.js')
+const ut = require('../util')
 const log4js = require('log4js')
 
 log4js.configure(
@@ -30,7 +31,7 @@ async function getReferralCode () {
 }
 
 async function aaveDeposit (block, token, amount, from, gaslimit, gasprice, nonce) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
   const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(web3, block, token))
     const depositAmt = BN(amount).times(BN(10).pow(decimals)).integerValue()
     const referralCode = await getReferralCode()
@@ -88,7 +89,7 @@ async function dispAaveWithdraw (args) {
 }
 
 async function aaveWithdraw (args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
   const aToken = 'a' + args.token
     const decimals = Number(await w3.decimals(web3, args.block, aToken))
     var amount
@@ -121,7 +122,7 @@ async function dispAaveCollateral (block, token, disable, from, gaslimit, gaspri
 }
 
 async function aaveCollateral (block, token, disable, from, gaslimit, gasprice, nonce) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
   if (token === 'ETH') {
     token = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
   } 
@@ -143,7 +144,7 @@ async function aaveBorrow (
     nonce,
     block
     ) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
   const decimals = token === 'ETH' ? 18 : Number(await w3.decimals(web3, block, token))
     const borrowAmt = BN(amount).times(BN(10).pow(decimals)).integerValue()
     const interestRateMode = fixed ? 1 : 2
@@ -157,7 +158,7 @@ async function dispAavePayback (args) {
 }
 
 async function aavePayback (args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
 
   const decimals = 
     args.token === 'ETH' ?
@@ -233,7 +234,7 @@ async function dispAaveSwapRate (args) {
 }
 
 async function aaveSwapRate (args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
   const lendingPool = await w3.access(web3, args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
     await w3.access(
@@ -256,7 +257,7 @@ async function dispAaveRebalance (args) {
 }
 
 async function aaveRebalance (args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
 
   const lendingPool = await w3.access(web3, args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
@@ -280,7 +281,7 @@ async function dispAaveLiquidate (args) {
 }
 
 async function aaveLiquidate (args) { //TODO: implement
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
 
   const lendingPool = await w3.access(web3, args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
@@ -307,7 +308,7 @@ async function dispAaveInfo (args) {
 }
 
 async function aaveInfo (args) {
-	const web3 = await w3.getWeb3(network)
+	const web3 = await ut.getWeb3(network)
   const lendingPool = await w3.access(web3, args.block, 'AAVE_LENDING_POOL_ADDRESSES_PROVIDER', 'getLendingPool')
 
     if (args._[3] === 'reserve') {

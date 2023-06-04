@@ -8,13 +8,14 @@ process.env.NODE_CONFIG_DIR = (process.env.NODE_CONFIG_DIR
     process.env.NODE_CONFIG_DIR + require('path').delimiter
   :
     "") +
-	baseDir + "config/" + require('path').delimiter + 
+	baseDir + "config/" + require('path').delimiter +
 	baseDir + "config/secrets/" + require('path').delimiter +
 	"../.config/cceb/" + require('path').delimiter +
-	"config/radix/" 
+	"config/radix/"
 
 const config = require('config')
 const w3 = require('../utils/web3.js')
+const ut = require('./util')
 const fs = require('fs')
 const openRpc = JSON.parse(fs.readFileSync(`${baseDir}/config/radix/open-rpc.spec.json`, `utf8`))
 var log4js = require('log4js')
@@ -47,7 +48,7 @@ function argParse () {
       //cceb
       command: 'exchange <exchangeCommand>',
       desc: 'Exchange tokens via centralized or decentralized exchanges',
-      builder: (yargs) => {
+      builder: (yargs) =>
         yargs.command({
           //cceb exchange
           command: 'listorders <exchange> [token] [closed] [pair]',
@@ -58,7 +59,7 @@ function argParse () {
             desc: 'Name of exchange',
             type: 'string',
             choices: Object.keys(config.get('keys')),
-          }) 
+          })
           .option('token', {
             alias: 't',
             type: 'string',
@@ -79,9 +80,9 @@ function argParse () {
         })
           .command({
             //cceb exchange
-            command: 'add [exchange] [side] [type] [amount] [pair] [price]',
+            command: 'add <exchange> [side] [type] [amount] [pair] [price]',
             desc: 'Add new order to exchange',
-            builder: yargs => {
+            builder: yargs =>
               yargs
                 .positional('exchange', {
                   type: 'string',
@@ -180,20 +181,17 @@ function argParse () {
                   desc: 'Extra parameters for exchange in json string format',
                 }
                 )
-
-            }
-
           })
           .command({
             //cceb exchange
             command: 'rm <exchange> <order>',
             desc: 'Remove order from exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
+                  choices: Object.keys(config.get('keys')),
                 }
                 )
 
@@ -202,33 +200,29 @@ function argParse () {
                   desc: 'The order id to cancel',
                 }
                 )
-
-            }
           })
           .command({
             //cceb exchange
-            command: 'rmall <exchange> <order>',
+            command: 'rmall <exchange>',
             desc: 'Remove all open orders from exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
+                  choices: Object.keys(config.get('keys')),
                 }
                 )
-            }
           })
           .command({
             //cceb exchange
             command: 'listbalances <exchange> [token] [dust-limit]',
             desc: 'List all non-dust balances on exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
-
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+									choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
@@ -247,17 +241,16 @@ function argParse () {
                   desc: 'Amounts less than dust-limit will not be listed',
                 }
                 )
-            }
           })
           .command({
             //cceb exchange
             command: 'withdraw <exchange> <token> <amount> <destination> [digits]',
             desc: 'Withdraw token from exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+                  choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
@@ -288,20 +281,17 @@ function argParse () {
                   desc: 'Destination to withdraw to',
                 }
                 )
-
-
-            }
           })
           .command({
             //cceb exchange
             command: 'deposit <exchange> <token>',
             desc: 'Get deposit address of token for exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
+                  choices: Object.keys(config.get('keys')),
                 }
                 )
 
@@ -310,31 +300,29 @@ function argParse () {
                   desc: 'Token to deposit',
                 }
                 )
-            }
           })
           .command({
             //cceb exchange
             command: 'markets <exchange>',
             desc: 'Display all token pairs on an exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+                  choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
-            }
           })
           .command({
             //cceb exchange
             command: 'price <exchange> <pair> [amount] [sell] [usd] [eur]',
             desc: 'Display all token pairs on an exchange. (not implemented)',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+                  choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
@@ -373,17 +361,16 @@ function argParse () {
                   desc: 'Get price in USD from coinbasepro',
                 }
                 )
-            }
           })
           . command({
             //cceb exchange
             command: 'orderbook <exchange> <pair> [limit] [price-precision] [amount-precision]',
             desc: 'Download orderbook from exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+                  choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
@@ -429,17 +416,16 @@ function argParse () {
                   desc: 'Precision of amounts in digits after zero',
                 }
                 )
-            }
           })
           .command({
             //cceb exchange
             command: 'trickle <exchange> <side> <type> <amount> <pair> <price> [batch-size] [batch-size-variance] [batch-min-rate] [batch-retry-time] [batch-time] [batch-time-variance] [params] [due-time] [min-percent] [max-slippage] [path] [from] [gaslimit] [to] [gasprice]',
             desc: 'Buy or sell in small batches not to ruin market price',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+                  choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
@@ -586,30 +572,27 @@ function argParse () {
                 }
                 )
 
-            }
           })
           .command({
             //cceb exchange
             command: 'rmall <exchange> <order>',
             desc: 'Remove all open orders from exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('exchange', {
                   type: 'string',
-                  choice: Object.keys(config.get('keys')),
+                  choices: Object.keys(config.get('keys')),
                   desc: 'Name of exchange',
                 }
                 )
-            }
           })
           .demandCommand()
-      }
     })
     .command({
       //cceb
       command: 'eth <ethCommand> [from] [gaslimit] [gasprice] [nonce] [block]',
       desc: 'Do stuff with the Ethereum blockchain',
-      builder: (yargs) => {
+      builder: (yargs) =>
         yargs
           .option('from', {
             alias:'f',
@@ -627,21 +610,21 @@ function argParse () {
           )
 
           .option('max-priority-fee-per-gas', {
-            alias:['priority', 'maxPriorityFeePerGas', 'o'], 
+            alias:['priority', 'maxPriorityFeePerGas', 'o'],
             desc: 'Maximum priority fee to be paid.',
             type: 'string',
           }
           )
           .coerce('max-priority-fee-per-gas', maxPriorityFeePerGas => numberFormatted(maxPriorityFeePerGas))
-					
+
           .option('max-fee-per-gas', {
-            alias:['m', 'maxFeePerGas', 'maxfee'], 
+            alias:['m', 'maxFeePerGas', 'maxfee'],
             desc: 'Maximum total fee to be paid per gas.',
             type: 'string',
           }
           )
           .coerce('max-fee-per-gas', maxFeePerGas => numberFormatted(maxFeePerGas))
-					
+
           .option('block', {
             alias:'b',
             type: 'number',
@@ -650,7 +633,7 @@ function argParse () {
           )
 
           .option('gaslimit', {
-            alias:['g', 'gasLimit'], 
+            alias:['g', 'gasLimit'],
             desc: 'Gas limit of transaction. (use --legacy flag to use --gaslimit)',
             type: 'string',
           }
@@ -658,7 +641,7 @@ function argParse () {
           .coerce('gaslimit', gaslimit => numberFormatted(gaslimit))
 
           .option('gasprice', {
-            alias:['p', 'gasPrice'], 
+            alias:['p', 'gasPrice'],
             desc: 'Gas price of transaction. (use --legacy flag to enable it). Not recommended! Please use --max-priority-fee-per-gas and/or --max-fee-per-gas instead.',
             type: 'string',
           }
@@ -678,18 +661,18 @@ function argParse () {
 						}
 						return true
 					})
-					
+
           .command({
             //cceb eth
             command: 'walletconnect <walletConnectCommand>',
             desc: 'Display all token pairs on an exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .command({
-                  //cceb eth walletconnect	
+                  //cceb eth walletconnect
                   command: 'connect <uri> [accounts..]',
                   desc: 'Connect to Walletconnect',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .positional('uri', {
                         desc: 'Walletconnect uri from Qr code',
@@ -713,7 +696,7 @@ function argParse () {
 
                       .option('typeddataversion', {
                         alias: ['d', 'tver'],
-												choice: [1, 3, 4],
+												choices: [1, 3, 4],
                         desc: 'Voersion of typed data signing that must be used.',
                         type: 'number',
                       }
@@ -743,7 +726,7 @@ function argParse () {
                       )
 
                       .option('overridegaslimit', {
-                        alias:['g', 'gaslimit'], 
+                        alias:['g', 'gaslimit'],
                         desc: 'Override gas limit of all tx',
                         type: 'string',
                       }
@@ -765,15 +748,13 @@ function argParse () {
                       }
                       )
                       .coerce('overridenonce', gasprice => numberFormatted(gasprice))
-                  }
                 })
-            }
           })
           .command({
             //cceb eth
-            command: 'web3 <function> [parameters..]',
+            command: 'web3 [function] [parameters..]',
             desc: 'Display all token pairs on an exchange',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('function', {
                   desc: 'Web3 function or parameter to use (eg.: web3.eth.getAccounts)',
@@ -787,16 +768,15 @@ function argParse () {
                   default: []
                 }
                 )
-                .coerce('parameters', 
+                .coerce('parameters',
                   parameters => parameters.map(parameter => numberFormatted(parameter))
                 )
-            }
           })
           .command({
             //cceb eth
-            command: 'tx [contract] [func] [args..]',
+						command: 'tx [contract] [func] [args..]',
             desc: 'Create an ethereum transaction. Send or call method is used automatically based on abi',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('contract', {
                   desc: 'Contract address',
@@ -846,13 +826,12 @@ function argParse () {
                   type: 'string',
                 }
                 )
-            }
           })
           .command({
             //cceb eth
             command: 'abi <contract> [ls]',
             desc: 'Displays abi of smart contract',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .positional('contract', {
                   desc: 'Contract address',
@@ -867,14 +846,12 @@ function argParse () {
                   type: 'string',
                 }
                 )
-
-            }
           })
           .command({
             //cceb eth
             command: 'send <txjson> <signature>',
             desc: 'Sends a prepared transaction (json formatted) to the blockchain',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
 
                 .positional('txjson', {
@@ -888,13 +865,12 @@ function argParse () {
                   desc: 'Signature created by external signer',
                 }
                 )
-            }
           })
           .command({
             //cceb eth
             command: 'address <contr>',
             desc: 'Get contract address from contract name, or vica versa',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
 
                 .positional('contr', {
@@ -903,14 +879,13 @@ function argParse () {
                 }
                 )
 
-            }
           })
           .command({
             //cceb eth
             command: 'source <contractName>',
             alias: ['so'],
             desc: 'Download and display source code of contract',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
 
                 .positional('contractName', {
@@ -919,14 +894,13 @@ function argParse () {
                 }
                 )
 
-            }
           })
           .command({
             //cceb eth
             command: 'import <contractName> <contractAddress> [location]',
             alias: ['im'],
             desc:'Map contract address to a human readable name and download and store contract abi',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
 
                 .positional('contractName', {
@@ -948,14 +922,13 @@ function argParse () {
                 }
                 )
 
-            }
           })
           .command({
             //cceb eth
             command: 'nonce <account>',
             alias: ['no'],
             desc:'Get highest nonce of account',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
 
                 .positional('account', {
@@ -964,13 +937,12 @@ function argParse () {
                 }
                 )
 
-            }
           })
           .command({
             //cceb eth
             command: 'maker <makerCommand> [vault] [from] [estimate]',
             desc: 'Commands to operate MakerDao vaults',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .option('vault', {
                   alias: 'v',
@@ -997,7 +969,7 @@ function argParse () {
                   //cceb eth maker
                   command: 'info <type>',
                   desc: 'Get vault info',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('type', {
@@ -1005,13 +977,12 @@ function argParse () {
                         type: 'string',
                       }
                       )
-                  }
                 })
                 .command({
                   //cceb eth maker
                   command: 'open <type>',
                   desc: 'Open new MakerDao vault',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('type', {
@@ -1019,13 +990,12 @@ function argParse () {
                         type: 'string',
                       }
                       )
-                  }
                 })
                 .command({
                   //cceb eth maker
                   command: 'deposit <type> <amount>',
                   desc: 'Deposit collateral to vault',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('type', {
@@ -1049,13 +1019,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
                   //cceb eth maker
                   command: 'withdraw <type> <amount>',
                   desc: 'Withdraw collateral from vault',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('type', {
@@ -1070,13 +1040,13 @@ function argParse () {
                       }
                       )
                       .coerce('amount', amount => numberFormatted(amount))
-                  }
+
                 })
                 .command({
                   //cceb eth maker
                   command: 'generate <type> <amount>',
                   desc: 'Generate DAI stablecoin',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('type', {
@@ -1091,13 +1061,13 @@ function argParse () {
                       }
                       )
                       .coerce('amount', amount => numberFormatted(amount))
-                  }
+
                 })
                 .command({
                   //cceb eth maker
                   command: 'payback <type> <amount>',
                   desc: 'Payback an amount of DAI to vault type',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('type', {
@@ -1112,7 +1082,7 @@ function argParse () {
                       }
                       )
                       .coerce('amount', amount => numberFormatted(amount))
-                  }
+
                 })
                 .command({
                   //cceb eth maker
@@ -1123,7 +1093,7 @@ function argParse () {
                   //cceb eth maker
                   command: 'flop [count]',
                   desc: 'Make a count of new bids',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .option('count', {
@@ -1133,13 +1103,13 @@ function argParse () {
                       }
                       )
                       .coerce('count', count => numberFormatted(count))
-                  }
+
                 })
                 .command({
                   //cceb eth maker
                   command: 'tick <id>',
                   desc: 'Bid a better price for an expired auction',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('id', {
@@ -1148,13 +1118,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
                   //cceb eth maker
                   command: 'dent <id> [amount]',
                   desc: 'Bid for an auction of id',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('id', {
@@ -1171,13 +1141,13 @@ function argParse () {
                       )
                       .coerce('amount', amount => numberFormatted(amount))
 
-                  }
+
                 })
                 .command({
                   //cceb eth maker
                   command: 'deal <id>',
                   desc: 'Finish an auction and receive MKR',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('id', {
@@ -1185,12 +1155,12 @@ function argParse () {
                         desc: 'Idealifier of auction to finish',
                       }
                       )
-                  }
+
                 }).command({
                   //cceb eth maker
                   command: 'flog <contract> [from-block] [to-block] [amount]',
                   desc: 'Get events of bad debt from contract from blocknumber to blocknumber',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('contract', {
@@ -1224,15 +1194,14 @@ function argParse () {
                       )
                       .coerce('amount', amount => numberFormatted(amount))
 
-                  }
+
                 })
-            }
           })
           .command({
             //cceb eth
             command: 'aave <aaveCommand> [referral] [estimate]',
             desc: 'Commands accessing https://aave.com lending protocol',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .option('referral', {
                   type: 'string',
@@ -1250,10 +1219,10 @@ function argParse () {
                 )
 
                 .command({
-                  //cceb eth aave 
-                  command: 'deposit <amount> <token>', 
+                  //cceb eth aave
+                  command: 'deposit <amount> <token>',
                   desc: 'Deposit an amount of token to aave',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .positional('amount', {
                         type: 'string',
@@ -1268,13 +1237,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'withdraw <amount> <token>', 
+                  //cceb eth aave
+                  command: 'withdraw <amount> <token>',
                   desc: 'Withdraw an amount of token from aave',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .positional('amount', {
                         type: 'string',
@@ -1288,13 +1257,13 @@ function argParse () {
                         desc: 'Token you want to withdraw',
                       }
                       )
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'collateral <token> [disable]', 
+                  //cceb eth aave
+                  command: 'collateral <token> [disable]',
                   desc: 'Enable(/disable) token as collateral in aave',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .positional('token', {
                         type: 'string',
@@ -1309,13 +1278,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'borrow <amount> <token> [fixed]', 
+                  //cceb eth aave
+                  command: 'borrow <amount> <token> [fixed]',
                   desc: 'Borrow an amount of token against a collateral in aave',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .positional('amount', {
                         type: 'string',
@@ -1337,13 +1306,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'payback <amount> <token> [for]', 
+                  //cceb eth aave
+                  command: 'payback <amount> <token> [for]',
                   desc: 'Payback an amount of token for ourselfes or others',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .positional('amount', {
                         type: 'string',
@@ -1364,13 +1333,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'swaprate <token> [for]', 
+                  //cceb eth aave
+                  command: 'swaprate <token> [for]',
                   desc: 'Toggle between fixed and variable rate for token',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('token', {
@@ -1379,13 +1348,13 @@ function argParse () {
                       }
                       )
 
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'rebalance <token> [for]', 
+                  //cceb eth aave
+                  command: 'rebalance <token> [for]',
                   desc: 'Rebalancei (actualize) fixed interest rate for token for ourselves or others',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('token', {
@@ -1399,13 +1368,13 @@ function argParse () {
                         desc: 'Address to rebalance for. Default: '+ config.get('web3.defaultFrom'),
                       }
                       )
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'liquidate <collateraltoken> <loantoken> <user> <amount>', 
+                  //cceb eth aave
+                  command: 'liquidate <collateraltoken> <loantoken> <user> <amount>',
                   desc: 'Liquidate undercollaterized position for collateral token and loan token owned by address',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
 
                       .positional('collateraltoken', {
@@ -1432,19 +1401,19 @@ function argParse () {
                       }
                       )
                       .coerce('amount', amount => numberFormatted(amount))
-                  }
+
                 })
                 .command({
-                  //cceb eth aave 
-                  command: 'info <aaveInfoCommand>', 
+                  //cceb eth aave
+                  command: 'info <aaveInfoCommand>',
                   desc: 'Get info on reserves',
-                  builder: (yargs) => {
+                  builder: (yargs) =>
                     yargs
                       .command({
                         //cceb eth aave info
-                        command: 'reserve <token>', 
+                        command: 'reserve <token>',
                         desc: 'Get info on token reserve',
-                        builder: (yargs) => {
+                        builder: (yargs) =>
                           yargs
                             .positional('token', {
                               type: 'string',
@@ -1452,18 +1421,18 @@ function argParse () {
                             }
                             )
 
-                        }
+
                       })
                       .command({
                         //cceb eth aave info
-                        command: 'account', 
+                        command: 'account',
                         desc: 'Get account info for account address',
                       })
                       .command({
                         //cceb eth aave info
-                        command: 'user <token>', 
+                        command: 'user <token>',
                         desc: 'Get info on user\'s token reserves',
-                        builder: (yargs) => {
+                        builder: (yargs) =>
                           yargs
                             .positional('token', {
                               type: 'string',
@@ -1471,21 +1440,17 @@ function argParse () {
                             }
                             )
 
-                        }
+
                       })
 
-                  }
+
                 })
-
-
-
-            }
           })
           .command({
             //cceb eth
             command: 'curve <curveCommand>',
             desc: 'Commands accessing https://curve.fi protocol',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
 
                 .command({
@@ -1493,10 +1458,8 @@ function argParse () {
                   command: 'info',
                   desc: 'Commands accessing https://curve.fi protocol',
                 })
-
-            }
           })
-      },
+      ,
       handler: (argv) => {
         console.log(`setting ${argv.key} to ${argv.value}`)
       }
@@ -1505,13 +1468,13 @@ function argParse () {
       //cceb
       command: 'ledger <ledgerCommand>',
       desc: 'Do stuff with Ledger cold wallet https://www.ledger.com/ ',
-      builder: (yargs) => {
+      builder: (yargs) =>
         yargs
           .command({
             //cceb ledger
             command: 'addresses [wallet] [live] [start-position] [count]',
             desc: 'List first ten addresses',
-            builder: (yargs) => {
+            builder: (yargs) =>
               yargs
                 .option('wallet', {
                   type: 'string',
@@ -1531,7 +1494,7 @@ function argParse () {
 
                 .option('start-position', {
                   type: 'string',
-                  alias:['s', 'startPosition'], 
+                  alias:['s', 'startPosition'],
                   default: 0,
                   desc: 'List accounts starting from this position. Starting at 0',
                 }
@@ -1546,48 +1509,50 @@ function argParse () {
                 )
                 .coerce('count', count => numberFormatted(Number.toString(count)))
 
-            }
           })
-      }
     })
     .command({
       //cceb
       command: 'radix <radixCommand> [username] [password]',
       desc: 'Interact with Radix network. https://www.radixdlt.com',
-      builder: (yargs) => buildRadixCommands(yargs) 
+      builder: (yargs) => buildRadixCommands(yargs)
     })
     .demandCommand()
-    .completion('completion', function (current, argv, completionFilter, done) {
+    .completion('completion', async function (current, argv, completionFilter, done) {
       // if 'apple' present return default completions
       //fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({current, argv}));
       if (tab('cceb eth web3', argv)) {
-        handleEthWeb3(current, argv, done, completionFilter)
+        await handleEthWeb3(current, argv, done, completionFilter)
       } else if (tab('cceb eth source', argv)) {
-        handleEthTxContract(current, argv, done, completionFilter)
+        await handleEthTxContract(current, argv, done, completionFilter)
       } else if (tab('cceb eth nonce', argv)) {
-        handleEthTxArgs(current, argv, done, completionFilter)
+        await handleEthTxArgs(current, argv, done, completionFilter)
       } else if (tab('cceb eth abi', argv)) {
-        handleEthTxContract(current, argv, done, completionFilter)
+        await handleEthTxContract(current, argv, done, completionFilter)
       } else if (tab('cceb eth address', argv)) {
-        handleEthTxArgs(current, argv, done, completionFilter)
+        await handleEthTxArgs(current, argv, done, completionFilter)
       } else if (tab('cceb eth tx', argv)) {
-        handleEthTxContract(current, argv, done, completionFilter)
+        await handleEthTxContract(current, argv, done, completionFilter)
       } else if (tab('cceb eth tx .*', argv)) {
-        handleEthTxFunc(current, argv, done, completionFilter)
+        await handleEthTxFunc(current, argv, done, completionFilter)
       } else if (tab('cceb eth tx .* .*', argv, true)) {
-        handleEthTxArgs(current, argv, done, completionFilter)
+        await handleEthTxArgs(current, argv, done, completionFilter)
+      } else if (tab('cceb eth walletconnect connect', argv, true)) {
+				done(['<uri>', '[accounts..]'])
+      } else if (tab('cceb eth walletconnect connect .*', argv, true)) {
+        done(['[account1]', '[account2]'])
       } else if (tab('cceb exchange add', argv)) {
-        done(Object.keys(config.get('keys')))	
+        done(Object.keys(config.get('keys')))
       } else if (tab('cceb exchange add .*', argv)) {
-        done(['buy', 'sell'])	
+        done(['buy', 'sell'])
       } else if (tab('cceb exchange add .* .*', argv)) {
-        done(['limit', 'market'])	
+        done(['limit', 'market'])
       } else if (tab('cceb exchange add .* .* .*', argv)) {
-        done(['max', '<amount>'])	
+        done(['max', '<amount>'])
       } else if (tab('cceb exchange add .* .* .* .*', argv)) {
-        done(['aaa', ' aaa'])	
+        done(['aaa', ' aaa'])
       } else if (tab('cceb exchange add .* .* .* .* .*', argv)) {
-        done([' ', '<price>'])	
+        done([' ', '<price>'])
       } else {
         //fs.writeFileSync("/home/user/cceb/args.txt", `completionFilter: whyyyyy?`)
         completionFilter()
@@ -1613,20 +1578,20 @@ function buildRadixCommands (yargs) {
     }
     )
 
-  openRpc.methods.reduce((y, method) => 
+  openRpc.methods.reduce((y, method) =>
     y.command({
       //cceb radix
       command: method.name + method.params.reduce(
         (paramsString, param) => paramsString + (param.required ? ' <':' [') + param.name + (param.required ? '>':']')
         , ""),
       desc: method.summary,
-      builder: (yargs) => buildArgs(yargs, method) 
+      builder: (yargs) => buildArgs(yargs, method)
     })
-    , yargs) 
-} 
+    , yargs)
+}
 
 function buildArgs (yargs, method) {
-  method.params.reduce((yargs, param) => { 
+  method.params.reduce((yargs, param) => {
     param.required ?
       yargs.positional(param.name, {
         type: param.schema.type === 'integer' ? 'string': !param.schema.type ? 'string' : param.schema.type,
@@ -1662,14 +1627,14 @@ function numberFormatted (numString) {
     microether: 12,
     petawei: 15,
     pw: 15,
-    finney: 15,	
+    finney: 15,
     milliether: 15,
     ether: 18,
   }
 
-  const units = Object.keys(exponent)	
+  const units = Object.keys(exponent)
 
-  numString = units.reduce((acc, unit) => 
+  numString = units.reduce((acc, unit) =>
     acc && acc.replace(new RegExp('^\\s*([-+]?[0-9.]*)\\s*' + unit, 'i'), (match, p1) =>
       BN(p1 || 1).times(BN(10).pow(exponent[unit])).toFixed())
     , numString)
@@ -1683,58 +1648,69 @@ function numberFormatted (numString) {
 
 async function handleEthTxArgs (current, argv, done, completionFilter) {
   return await Promise.all(completionFilter(async (err, comp) => {
-    if (current.match(/[A-Z]/) && !current.match(/[a-z]/)) {
-      comp = await w3.getAddressNames('^'+ current)	
+    if (current === '' || current.match(/[A-Z]/) && !current.match(/[a-z]/)) {
+      comp = await w3.getAddressNames('^'+ current)
     }
     done(comp)
   }))
 }
 
 async function handleEthTxFunc (current, argv, done, completionFilter) {
-  try {
+	try {
     var ret = await Promise.all(completionFilter(async (err, comp) => {
       if (argv._[3] === 'ETH') {
         comp = ['balance', 'balanceOf', 'transfer']
       } else {
-        //fs.writeFileSync("/home/user/cceb/args.txt", JSON.stringify({err, comp}) + `argv: ${JSON.stringify(argv)} \n`)
+	
+				try {
+					const abiFucntions = await w3.getAbiFunctions(null, argv._[3], '.*')
 
-        comp = (await w3.getAbiFunctions(argv._[3], '.*'))
-          .filter(fn => fn.match(new RegExp('^' + (current || ''))))
-          .map(fn => fn.replace(/ /g, '_'))
+					comp = abiFucntions
+						.filter(fn => fn.match(new RegExp('^' + (current || ''))))
+						.map(fn => fn.replace(/ /g, '_'))
 
+				} catch (e) {
+					// do nothing
+					comp = ['could_not_load_functions_:(']
+					done(comp)
+					return
+				}
       }
-
-      var funcNames = comp.map(fn => fn.replace(/\(.*/, ''))
-      funcNames = [...new Set(funcNames)]
-      if (funcNames.length === 1) {
-        comp = funcNames
-      }
-      done(comp)
+			
+			var funcNames = comp.map(fn => fn.replace(/\(.*/, ''))
+			funcNames = [...new Set(funcNames)]
+			if (funcNames.length === 1) {
+				comp = funcNames
+			}
+			done(comp)
     }))
-  } catch (e) {
 
-    //fs.writeFileSync("/home/user/cceb/args.txt", e.stack)
-  }
-  return ret 
+		if (!ret) ret = completionFilter
+		return ret
+	} catch (e) {
+		return completionFilter
+	}
 }
 
 async function handleEthTxContract (current, argv, done, completionFilter) {
   return await Promise.all(completionFilter(async (err, comp) => {
-    comp = await w3.getAddressNames('^'+ current, true)	
+    comp = await w3.getAddressNames('^'+ current, true)
     //fs.writeFileSync("/home/user/cceb/args.txt", "handleEthTxContract: " + JSON.stringify(comp))
     done(comp)
   }))
 }
 
 async function handleEthWeb3 (current, argv, done, completionFilter) {
-  const network = config.get('web3.network')
-  var web3 = await w3.getWeb3(network)
-
+	try {
   await Promise.all(completionFilter(async (err, comp) => {
+		const network = config.get('web3.network')
+		const web3 = await ut.getWeb3(network)
     if (current.match(/^web3.eth.I/)) {
+
       comp = comp.concat(ibanFuncs().map(key => 'web3.eth.Iban.' + key))
 
     } else if (current.match(/^web3.eth.n/)) {
+
       comp = comp.concat(Object.keys(web3.eth.net).filter(
         key => ![
           'setProvider',
@@ -1765,19 +1741,21 @@ async function handleEthWeb3 (current, argv, done, completionFilter) {
       comp.push("web3.eth")
       comp.push("web3.utils")
     } else {
-      let funcsOffered = await web3MatchingCmd(current) 
+      let funcsOffered = await web3MatchingCmd(web3, current)
 
-      // if after multiple occurances removed from array it remains same length => 
-      // func has unique name  
+      // if after multiple occurances removed from array it remains same length =>
+      // func has unique name
       if ([...new Set(funcsOffered)].length < funcsOffered.length) {
         throw new Error('Fucnction occurs in multiple places use full path eg: web3.eth.getBlockNumber')
       }
       comp = funcsOffered.concat(['web3'])
-
     }
     done(comp)
   })
   )
+	} catch (e) {
+		return completionFilter
+	}
 }
 
 function ibanFuncs () {
@@ -1792,9 +1770,11 @@ function ibanFuncs () {
 
 }
 
-async function web3MatchingCmd (command, fullPath = false, exact = false) {
-  const network = config.get('web3.network')
-  var web3 = await w3.getWeb3(network)
+async function web3MatchingCmd (web3, command, fullPath = false, exact = false) {
+	if (!web3) {
+		const network = config.get('web3.network')
+		web3 = await ut.getWeb3(network)
+	}
 	return await web3MatchingCommands(web3, command, fullPath, exact)
 }
 
@@ -1832,7 +1812,7 @@ function tab (commands, argv, commandLengthCanBeGreaterArgsLength = false) {
     (acc, command, idx) =>  acc && (!argv._[idx + 1] || (argv._[idx + 1]).match(new RegExp('^' + command + '$')))
     , true)
 
-  var matches = commandsEqualsArgv && 
+  var matches = commandsEqualsArgv &&
     (
       (
         !commandLengthCanBeGreaterArgsLength &&
@@ -1852,4 +1832,5 @@ function tab (commands, argv, commandLengthCanBeGreaterArgsLength = false) {
 module.exports = {
   argParse,
   web3MatchingCommands,
+	web3MatchingCmd,
 }

@@ -238,7 +238,7 @@ async function addOrder (exchange, args) {
 }
 
 async function addOrderUniswap (args, amount, buy) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
 
   if (args.type === 'limit') {
     throw new Error(`Limit orders not supported (yet).`)
@@ -487,7 +487,7 @@ async function addOrderUniswap (args, amount, buy) {
 
 async function addOrderKyber (args, amount, buy) {
   const network = config.get('web3.network')
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
 
   if (args.type === 'limit') {
     log.error(`Limit orders not supported (yet).`)

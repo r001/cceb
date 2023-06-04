@@ -1,5 +1,6 @@
 loglevel: 'warn'
 passwordDir: '../.p/'
+qrCodeSize: 1000
 web3:
   txSpeed: 'FastGasPrice'
   txSpeedRemark: 'FastGasPrice: < 30 sec, ProposedGasPrice: < 2 min, SafeGasPrice: < 5 min' 

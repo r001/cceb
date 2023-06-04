@@ -1,5 +1,6 @@
 const dateFormat = require('dateformat')
 const w3 = require('../web3.js')
+const ut = require('../util')
 const BN = require('bignumber.js')
 const log4js = require('log4js')
 const config = require('config')
@@ -39,7 +40,7 @@ async function dispVaultPayback (args) {
 }
 
 async function vaultPayback (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   if (args.estimate) {
     var gas = 159676
     console.log(await estimateGasCost(gas))
@@ -125,7 +126,7 @@ async function dispVaultGenerate (args) {
 }
 
 async function vaultGenerate (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   web3.eth.handleRevert = true
   if (args.estimate) {
     var gas = 208114
@@ -220,7 +221,7 @@ async function dispVaultWithdraw (args) {
 }
 
 async function vaultWithDraw (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   const vaultTypeHex = web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(args.type).toString('hex'))
   var collCoin = args.type.replace(/-.*/, '')
   if (args.estimate) {
@@ -310,7 +311,7 @@ async function dispVaultDeposit (args) {
 }
 
 async function vaultDeposit (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   const vaultTypeHex = web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(args.type).toString('hex'))
   var collCoin = args.type.replace(/-.*/, '')
   if (args.estimate) {
@@ -424,7 +425,7 @@ async function estimateGasCost (gas) {
 }
 
 async function vaultOpen (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   if (args.estimate) {
     console.log(await estimateGasCost(229642))
     process.exit(0)
@@ -469,7 +470,7 @@ async function dispVaultInfo (args) {
 }
 
 async function getVaultId (from, vault, type, block) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   const vaultTypeHex = web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(type).toString('hex'))
   // check if cdp is registered with proxy
   var proxyAddress = await w3.access(web3, block,  'MCD_PROXY_REGISTRY', 'proxies', [from])
@@ -497,7 +498,7 @@ async function getVaultId (from, vault, type, block) {
 }
 
 async function getUrnParams (block, vaultId, type) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   const vaultAddr = await w3.access(web3, block, 'MCD_CDP_MANAGER', 'urns', [vaultId])
 
   const vaultTypeHex = web3.eth.abi.encodeParameter('bytes32', '0x' + Buffer.from(type).toString('hex'))
@@ -511,7 +512,7 @@ async function getUrnParams (block, vaultId, type) {
 }
 
 async function vaultInfo (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   var vaults = []
   var {proxyAddress, fromAddress, vaultId} = await getVaultId(args.from, args.vault, args.type)
 
@@ -561,7 +562,7 @@ async function dispFlog (args) {
 }
 
 async function getFlog (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
 
   const logs = await web3.eth.getPastLogs(
     {
@@ -633,7 +634,7 @@ async function dispFlop (args) {
 }
 
 async function getFlop (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   return await w3.access(
     web3, 
     args.block,
@@ -654,7 +655,7 @@ async function dispTick (args) {
 }
 
 async function getTick (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   return await w3.access(
     web3, 
     args.block,
@@ -675,7 +676,7 @@ async function dispDent (args) {
 }
 
 async function getDent (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   var lot
   var beg
   if (!args.amount) {
@@ -727,7 +728,7 @@ async function dispDeal (args) {
 }
 
 async function getDeal (args) {
-  var web3 = await w3.getWeb3(network)
+  var web3 = await ut.getWeb3(network)
   return await w3.access(
     web3, 
     args.block,

@@ -24,7 +24,7 @@ log.level = config.get('loglevel')
 const network = config.get('web3.network')
 
 	async function dispEthTransaction (args) {
-		var web3 = await w3.getWeb3(network)
+		var web3 = await ut.getWeb3(network)
 		if (args._[1] === 'source') {
 			console.log(await w3.getSourceCode(args.contractName))
 			return
