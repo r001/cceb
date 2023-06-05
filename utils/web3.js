@@ -34,6 +34,7 @@ const {RLP} = require('@ethereumjs/rlp')
 const ut = require('./util')
 const {keccak256} = require('ethereum-cryptography') 
 const {EthSignRequest, CryptoKeyPath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const uuid = require('uuid') 
 
 // console.log(network)
 
@@ -194,22 +195,22 @@ async function getFakeDerivePath (address, parentFingerprintBuffer) {
 	return new CryptoKeyPath (
 		[0, 1, 2, 3].map(index => new PathComponent({index: addressHash[index], hardened:true})),
 		parentFingerprintBuffer
-	)
+	).getPath()
 }
 
 async function getAirsignSignature (rawTx, type) {
   var signature
   log.info(`External signer used`)
-  var signable
+  var signable, signableSpecific
 	var accountData = config.get((await getAddressType(rawTx.from)).confPath)
 	var parentFingerprint = Buffer.from(accountData.parentFingerprint || '12345678', 'hex')
 	const derivePath = accountData.derivePath || await getFakeDerivePath(rawTx.from, parentFingerprint) 
-	log.debug(JSON.stringify({derivePath}))
+	const uuid = uuid.v4()
+	log.debug(JSON.stringify({derivePath, parentFingerprint, accountData, uuid, rawTx, type}))
+
   switch (type) {
     case 'sign_transaction':
-      signable = {
-				derivePath,
-        type,
+      signableSpecific = {
         payload: {
           ...rawTx,
           chainId: config.get(`web3.networks.${network}.chainid`)
@@ -221,9 +222,7 @@ async function getAirsignSignature (rawTx, type) {
     case 'sign_message':
     case 'sign_personal_message':
     case 'sign_typed_data':
-      signable = {
-				derivePath,
-        type: type,
+      signableSpecific = {
         payload: rawTx.data,
         version: rawTx.version,
       }
@@ -232,21 +231,22 @@ async function getAirsignSignature (rawTx, type) {
     default:
       throw new Error(`Unknown type ${type}`)
   }
+	signable = {...signableSpecific, type, derivePath, uuid}
 
   log.debug(`signable: ${JSON.stringify(signable)}`)
 
   const ethSignRequest = qrEncoding.encode(JSON.stringify(signable)).toCBOR()
 	let keyCode = 0
-	let uc = ethSignRequest.toUREncoder(config.get('qrCodeSize'))
+	let ur = ethSignRequest.toUREncoder(config.get('qrCodeSize'))
   while (keyCode === 0) {
-		let qrEncoded = uc.next()	
+		let urPart = ur.nextPart()	
 
-		QRCode.toString(qrEncoded, {type: 'terminal'}, (err, str) => {
+		QRCode.toString(urPart, {type: 'terminal'}, (err, str) => {
 			if (err) throw new Error(err)
 			console.log(str)
 		})
 
-		console.log(qrEncoded)
+		console.log(urPart)
 		console.log('')
 
 		keyCode = await pressAnyKey('Press any key to continue!')
@@ -261,6 +261,7 @@ async function getAirsignSignature (rawTx, type) {
     signature = zbarcam.stdout
   }
 
+	// TODO: ur decode signature below
   signature = signature.replace(/^.*0x/, '')
   return signature
 }
