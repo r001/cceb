@@ -29,6 +29,7 @@
   "dependencies": {
     "@airgap/coinlib-core": "^0.13.14",
     "@ethereumjs/common": "^3.0.1",
+    "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/tx": "^4.0.1",
     "@ethereumjs/util": "^8.0.2",
     "@keystonehq/bc-ur-registry-eth": "^0.19.1",
@@ -73,6 +74,7 @@
     "scrypt-js": "^3.0.0",
     "set-value": "^4.1.0",
     "shelljs": "~0.8.3",
+    "uuid": "^9.0.0",
     "web3": "^1.10.0",
     "yargs": "^17.7.2"
   },
