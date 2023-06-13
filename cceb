@@ -39,7 +39,7 @@ log4js.configure(
 		appenders: {
 			out: {type: 'stdout', layout: {
 				type: 'pattern',
-				pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
+				pattern: '%[[%d] [%p] [%f{1}:%M#%l] -%] %m',
 			},
 			},
 		},
@@ -64,6 +64,7 @@ if (EIP_1559) {
 	log.debug(`EIP_1559 gas market is used.`)
 
 	args.gasPrice = {
+		type: 'EIP_1559',
 		maxPriorityFeePerGas: args.maxPriorityFeePerGas,
 		maxFeePerGas: args.maxFeePerGas
 	}
@@ -72,6 +73,13 @@ if (EIP_1559) {
 	args.gasprice = args.gasPrice
 
 	log.debug(`args.gasPrice: ${JSON.stringify(args.gasPrice)}`)
+} else {
+	var gasPrice = args.gasPrice
+
+	args.gasPrice = {
+		type: 'legacy',
+		gasPrice,
+	}
 }
 
 let exchange

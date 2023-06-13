@@ -202,14 +202,19 @@ async function signV1 (walletConnect, payload, args) {
 	}
 
 
-	var result, signature, rawTx, txReceipt 
+	var result, signature, rawTx, txReceipt, msg
 
   const signFunction = await getSignFunction(from)
 	
 	switch (payload.method) {
 		case 'personal_sign':
+			msg = payload.params[0]
+			log.debug(`Signing personal message: ${msg}`)
+			if (msg.startsWith('0x')) {
+				msg = Buffer.from(msg.replace("0x", ''), 'hex').toString('utf8')
+			}
 			console.log('from: ', from)
-			console.log('msg: ', Buffer.from(payload.params[0]).toString())
+			console.log(`msg,type: '${msg},${typeof msg}'`)
 			log.info(`Signing personal message`)
 			from = payload.params[1]
 
@@ -219,8 +224,8 @@ async function signV1 (walletConnect, payload, args) {
 					signFunction,
 					{
 						type: 'sign_personal_message',
-						data: payload.params[0],
-						from: payload.params[1]
+						data: msg,
+						from,
 					},
 					walletConnect,
 					payload

@@ -33,7 +33,8 @@ const {bufArrToArr, fromRpcSig, stripHexPrefix} = require('@ethereumjs/util')
 const {RLP} = require('@ethereumjs/rlp')
 const ut = require('./util')
 const {keccak256} = require('ethereum-cryptography/keccak') 
-const {EthSignRequest, DataType, ETHSignature, CryptoKeypath, PathComponent, URRegistryDecoder} = require('@keystonehq/bc-ur-registry-eth')
+const {EthSignRequest, DataType, ETHSignature, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const {URDecoder} = require('@ngraveio/bc-ur')
 const UUID = require('uuid') 
 const rlp = require('@ethereumjs/rlp')
 
@@ -44,7 +45,7 @@ log4js.configure(
     appenders: {
       out: {type: 'stdout', layout: {
         type: 'pattern',
-        pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
+				pattern: '%[[%d] [%p] [%f{1}#%l] -%] %m',
       },
       },
     },
@@ -90,7 +91,7 @@ async function getPrivateKeySignature (web3, rawTx, type) {
 			var createTransaction
 
 			if (EIP_1559) {
-				createTransaction = FeeMarketEIP_1559Transaction.fromTxData
+				createTransaction = FeeMarketEIP1559Transaction.fromTxData
 			} else {
 				createTransaction = Transaction.fromTxData
 			}
@@ -121,7 +122,7 @@ async function getLedgerSignature (web3, rawTx, type) {
   switch (type) {
     case 'sign_transaction':
 			if (EIP_1559) {
-				let tx = FeeMarketEIP_1559Transaction.fromTxData(rawTx, {common})
+				let tx = FeeMarketEIP1559Transaction.fromTxData(rawTx, {common})
 				let unsignedTx = tx.getMessageToSign(false)
 				let resolution = await ledgerService.resolveTransaction(tx)
 				signed = await eth.signTransaction(derivePath, unsignedTx, resolution)
@@ -138,7 +139,7 @@ async function getLedgerSignature (web3, rawTx, type) {
 
 				signed = await eth.signTransaction(
 					derivePath,
-					Buffer.from(RLP.encode(bufArrToArr(lTx))).toString('hex')
+					RLP.encode(bufArrToArr(lTx))
 				)
 			}
 
@@ -191,11 +192,10 @@ async function calcV (v) {
   return v
 }
 
-async function getFakeDerivePath (address, parentFingerprintBuffer) {
-	let addressHash = keccak256(Uint8Array.from(Buffer.from(address, 'hex')))
+async function getFakeDerivePath (address) {
+	let addressHash = keccak256(Uint8Array.from(Buffer.from(stripHexPrefix(address), 'hex')))
 	return new CryptoKeypath (
-		[0, 1, 2, 3].map(index => new PathComponent({index: addressHash[index], hardened:true})),
-		parentFingerprintBuffer
+		[0, 1, 2, 3].map(index => new PathComponent({index: addressHash.at(index), hardened:true}))
 	).getPath()
 }
 
@@ -205,10 +205,9 @@ async function getAirsignSignature (rawTx, type) {
   var signable, signableSpecific
 	log.debug(`getAddressType: ${JSON.stringify(await getAddressType(rawTx.from))}`)
 	var accountData = config.get((await getAddressType(rawTx.from)).confPath)
-	var parentFingerprint = Buffer.from(accountData.parentFingerprint || '12345678', 'hex')
-	const derivePath = accountData.derivePath || await getFakeDerivePath(rawTx.from, parentFingerprint) 
+	const derivePath = accountData.derivePath || await getFakeDerivePath(rawTx.from) 
 	const uuid = UUID.v4()
-	log.debug(JSON.stringify({derivePath, parentFingerprint, accountData, uuid, rawTx, type}))
+	log.debug(JSON.stringify({derivePath, accountData, uuid, rawTx, type}, (key, value) => typeof value === 'bigint' ? value.toString() : value))
 
   switch (type) {
     case 'sign_transaction':
@@ -234,7 +233,7 @@ async function getAirsignSignature (rawTx, type) {
   }
 	signable = {...signableSpecific, type, derivePath, uuid}
 
-  log.debug(`signable: ${JSON.stringify(signable)}`)
+  log.debug(`signable: ${JSON.stringify(signable, (key, value) => typeof value === 'bigint' ? value.toString() : value)}`)
 
   const ethSignRequest = (await encode(signable))
 	let done = false
@@ -242,6 +241,7 @@ async function getAirsignSignature (rawTx, type) {
 	log.debug(`cbor: ${ur.cbor.toString('hex')}`)
   while (!done) {
 		let urPart = ur.nextPart()	
+
 
 		QRCode.toString(urPart, {type: 'terminal'}, (err, str) => {
 			if (err) throw new Error(err)
@@ -267,20 +267,26 @@ async function getAirsignSignature (rawTx, type) {
     signature = zbarcam.stdout
   }
 
-	signature = signature.replace(/^.*ur:/i, 'ur:')
-	var decoder = new URRegistryDecoder()
-	var needMoreData = decoder.receivePart(ur)
-	if (needMoreData) {
-		throw new Error('We should have received signature in one single QR.')
+	signature = signature.replace(/^.*ur:/, 'ur:')
+	var decoder = new URDecoder()
+	log.debug(`signature: ${signature}`)
+	decoder.receivePart(signature)
+
+	log.debug(`decoder fragments: ${JSON.stringify(decoder.expectedPartCount())}`)
+
+	if (!decoder.isComplete() || !decoder.isSuccess()) {
+		throw new Error('Error decoding signature.')
 	}
-	signature = ETHSignature.fromCBOR(decoder.resultUR().decodeCBOR())
-	signature = signature.toDataItem().getData().toString('hex')
+	
+	signature = ETHSignature.fromCBOR(decoder.resultUR().cbor)
+	signature = `0x${signature.getSignature().toString('hex')}`
+	log.debug(`signature: ${signature}`)
   return signature
 }
 
 async function encode (signable) {
 	let version = signable.version
-	const tx = signable.payload
+	const rawTx = signable.payload
 	const derivePath = signable.derivePath
 	let EIP_1559 = true
 	let xfp = "12345678";
@@ -289,32 +295,37 @@ async function encode (signable) {
   switch (signable.type) {
     case 'sign_message':
     case 'sign_personal_message':
-			rlpEncoded = Buffer.from(rlp.encode(Buffer.from(signable.payload, 'utf8')))
+			rlpEncoded = Buffer.from(rlp.encode(signable.payload))
 			dataType = DataType.personalMessage
 			break
     case 'sign_typed_data':
 			typedData = Buffer.from(signable.payload, 'utf8') 
-			version = Buffer.from(version[1], 'utf8')
+			version = Buffer.from(version.slice(1), 'utf8')
 			rlpEncoded = Buffer.from(rlp.encode([version, typedData]))
 			dataType = DataType.typedData
 			break
     case 'sign_transaction':
-			EIP_1559 = !tx.gasPrice	
-			common = new Common({chain: tx.chainId})
+			EIP_1559 = !rawTx.gasPrice	
+			common = new Common({chain: rawTx.chainId, hardfork: Hardfork.Shanghai})
 			if (EIP_1559) {
-				txn = FeeMarketEIP1559Transaction.fromTxData(tx, {common})
+				log.debug(`encoding EIP_1559 transaction`)
+				txn = FeeMarketEIP1559Transaction.fromTxData(rawTx, {common})
 				dataType = DataType.typedTransaction
+				serializedMessage = txn.getMessageToSign(false) //alreade rlp encoded!!!
+				rlpEncoded = serializedMessage
 			} else {
-				txn = Transaction.fromTxData(tx, {common})
+				log.debug(`encoding legacy transaction`)
+				txn = Transaction.fromTxData(rawTx, {common})
 				dataType = DataType.transaction
+				serializedMessage = txn.getMessageToSign(false) //not rlp encoded!!!
+				rlpEncoded = Buffer.from(rlp.encode(bufArrToArr(serializedMessage)))
 			}
-			serializedMessage = txn.getMessageToSign(false)
-			rlpEncoded = Buffer.from(rlp.encode(serializedMessage))
 			break
 		default:
 			throw new Error(`Unknown signable type: ${signable.type}`)
   }
-	return EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, signable.uuid, tx.chainId)
+	log.debug(`rlpEncoded: ${rlpEncoded.toString('hex')}`)
+	return EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, signable.uuid, rawTx.chainId)
 }
 
 // Function to broadcast transactions
@@ -325,23 +336,26 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
     from: from,
     to: to,
     data: txData,
-    value: toHex(value),
-    gasLimit: toHex(gasLimit),
-    nonce: toHex(txCount),
+    value: BigInt(value),
+    gasLimit: BigInt(gasLimit),
+    nonce: BigInt(txCount),
   }
 
-	const EIP_1559 = typeof gasPrice === 'object'
+	const EIP_1559 = gasPrice.type === 'EIP_1559'
 	if (EIP_1559) {
 		//convert to hex
 		log.debug(JSON.stringify({gasPrice}))
-		gasPrice.maxPriorityFeePerGas = `0x${gasPrice.maxPriorityFeePerGas.toString(16)}`
-		gasPrice.maxFeePerGas = `0x${gasPrice.maxFeePerGas.toString(16)}`
+
+		gasPrice = {
+			maxPriorityFeePerGas: BigInt(gasPrice.maxPriorityFeePerGas),
+			maxFeePerGas: BigInt(gasPrice.maxFeePerGas)
+		}
 
 		//add to rawTx
-		rawTx = {...rawTx, ...gasPrice}
 	} else {
-		rawTx = {...rawTx, gasPrice}
+		gasPrice = {gasPrice: BigInt(gasPrice.gasPrice)}
 	}
+		rawTx = {...rawTx, ...gasPrice}
 
   log.debug(rawTx)
   const accounts = config.get(`web3.account`)
@@ -365,10 +379,17 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
 
   if (signature) {
 		let {v, r, s} = fromRpcSig('0x' + stripHexPrefix(signature).replace(/[^0-9a-fx]/gm, ""))
-    log.debug(`r: ${r.toString()}`)
-    log.debug(`s: ${s.toString()}`)
-    log.debug(`v: ${v.toString()}`)
-		rawTx = {...rawTx, r, s, v}
+
+		rawTx = {
+			...rawTx,
+			r: `0x${r.toString('hex')}`,
+			s: `0x${s.toString('hex')}`,
+			v: Number(v)
+		}
+
+    log.debug(`r: ${rawTx.r}`)
+    log.debug(`s: ${rawTx.s}`)
+    log.debug(`v: ${rawTx.v}`)
   } else {
     log.error(`Signature not found`)
     throw new Error(`Signature not created`)
@@ -376,7 +397,14 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
 
   log.debug(`value: ${value}`)
   log.debug('Raw tx: ', rawTx)
-  var tx = Transaction.fromTxData(rawTx, {common})
+	var tx
+	if (EIP_1559) {
+		rawTx.v = Number(rawTx.v - 27)
+    log.debug(`tx.v changed to: ${rawTx.v}`) // fromRpcSig() adds 27 to v, here we set it back
+		tx = new FeeMarketEIP1559Transaction(rawTx, {common})
+	} else {
+		tx = Transaction.fromTxData(rawTx, {common})
+	}
 	log.debug('Tx to json: ', JSON.stringify(tx.toJSON()))
 	if (EIP_1559) {
 		log.debug('maxPriorityFeePerGas: ', '0x' + tx.maxPriorityFeePerGas.toString(16))
@@ -457,9 +485,8 @@ async function getLedgerEthereumDerivePath (web3, from, transport) {
 }
 
 async function getGasPrice (web3, gasPrice, EIP_1559) {
-	if (!EIP_1559) EIP_1559 = gasPrice && typeof gasPrice === 'object' || !gasPrice
-	log.debug(`getGasPrice()`)
-	log.debug(`gasPrice: ${gasPrice}`)
+	if (!EIP_1559) EIP_1559 = gasPrice.type === 'EIP_1559'
+	log.debug(`gasPrice: ${JSON.stringify(gasPrice)}`)
   var etherscanWorked = true
   var gasPrices = {}
   try {
@@ -480,8 +507,27 @@ async function getGasPrice (web3, gasPrice, EIP_1559) {
 			const network = config.get('web3.network')
 			web3 = await ut.getWeb3(network)
 		}
-    gasPrice = await web3.eth.getGasPrice(web3)
-    log.info('Web3 gasprice: ' + new BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+    let feeHistory = await web3.eth.getFeeHistory(1, await web3.eth.getBlockNumber(), ['0', '25', '50', '75', '100'])
+		let baseFeePerGas = BigInt(feeHistory.baseFeePerGas[0])
+		let maxPriorityFeePerGas = BigInt(feeHistory.maxPriorityFeePerGas[0][1])
+		let gasPrice = {}
+		if (EIP_1559) {
+			gasPrice = {
+				type: 'EIP_1559',
+				maxFeePerGas: baseFeePerGas + maxPriorityFeePerGas,
+				maxPriorityFeePerGas,
+			}
+
+			log.info(`Web3 maxPriorityFeePerGas: ${new BN(gasPrice.maxPriorityFeePerGas).div(10 ** 9).toString()} GWei`)
+			log.info(`Web3 maxFeePerGas: ${new BN(gasPrice.maxFeePerGas).div(10 ** 9).toString()} GWei`)
+		} else {
+			gasPrice= {
+				type: 'legacy',
+				gasPrice: baseFeePerGas + maxPriorityFeePerGas,
+			}
+
+			log.info(`Web3 gasprice: ${new BN(gasPrice.gasPrice).div(10 ** 9).toString()} GWei`)
+		}
   }
 
   if (etherscanWorked) {
@@ -512,16 +558,16 @@ async function getGasPrice (web3, gasPrice, EIP_1559) {
 				BN(gasPrice.maxFeePerGas) ||
 				gasPriceRec
 
-			gasPrice = {maxPriorityFeePerGas, maxFeePerGas}
+			gasPrice = {type: 'EIP_1559', maxPriorityFeePerGas, maxFeePerGas}
 		} else  {
 			log.debug(`legacy used to declare gas cost`)
-			gasPrice = gasPriceRec
+			gasPrice = {type: 'legacy', gasPrice: gasPriceRec}
 		} 
 		//log.debug('Etherscan result: ', gasPrices)
 		if (EIP_1559) {
 			log.info(`Etherscan maxPriorityFeePerGas: ${gasPrice.maxPriorityFeePerGas.div(10 ** 9).toFixed(6)} GWei maxFeePerGas: ${gasPrice.maxFeePerGas.div(10 ** 9).toFixed(6)} GWei`)
 		} else {
-			log.info('Etherscan gasprice: ' + BN(gasPrice).div(10 ** 9).toString() + ' GWei')
+			log.info('Etherscan gasprice: ' + BN(gasPrice.gasPrice).div(10 ** 9).toString() + ' GWei')
 		}
   }
 
@@ -594,12 +640,12 @@ async function kyberTrade (
       throw Error(`Current Ether balance is: ${strBalance} Ether, Ether to spend is larger: ${strQty} Ether`)
     }
   }
-  var gasPrice = await getGasPrice(web3)
-	const EIP_1559 = typeof gasPrice === 'object'
+	var gasPrice = await getGasPrice(web3, {type: 'legacy'})
+	const EIP_1559 = gasPrice.type === 'EIP_1559'
 	if (EIP_1559) {
 		gasPrice = gasPrice.maxFeePerGas
 	}
-	gasPrice = new BN(gasPrice)
+	gasPrice = new BN(gasPrice.gasPrice)
   log.info(`Gasprice: ${gasPrice.div(10 ** 9).toString()} GWei`)
 
   const maxGasPrice = new BN(await getKyberMaxGasPrice(web3))
@@ -881,7 +927,7 @@ async function getAddressAndCheck (web3, to) {
 
 async function access (web3, block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata, gasOverhead, getHashFast) {
 
-	const EIP_1559 = typeof gasPrice === 'object' || !gasPrice
+	const EIP_1559 = gasPrice.type === 'EIP_1559'
 
   if (multipleUse) {
     web3 = await ut.getWeb3(network)
@@ -898,7 +944,9 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
     (from ? ` from ${await getAddress(from)}` : '') +
     (value ? ` value ${value}` : '') +
     (gasLimit ? ` gasLimit ${gasLimit}` : '') +
-    (gasPrice ? ` gasPrice ${JSON.stringify(gasPrice)}` : '') +
+    ((gasPrice && gasPrice.gasPrice) ? ` gasPrice ${JSON.stringify(gasPrice.gasPrice)}` : '') +
+    ((gasPrice && gasPrice.maxPriorityFeePerGas) ? ` maxPriorityFeePerGas ${JSON.stringify(gasPrice.maxPriorityFeePerGas)}` : '') +
+    ((gasPrice && gasPrice.maxFeePerGas) ? ` maxFeePerGas ${JSON.stringify(gasPrice.maxFeePerGas)}` : '') +
     (nonce ? ` nonce ${nonce}` : '') +
     (block ? ` block ${block}` : '') +
     (inputs ? ` inputs ${inputs}` : '') +
@@ -1038,16 +1086,16 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 
     var txData = calldata ? calldata : ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
     if (
-			!gasPrice || 
+			!EIP_1559 &&  !gasPrice.gasPrice || 
 			(
 				EIP_1559 &&
 				(
-					!args.maxPriorityFeePerGas ||
-					!args.maxFeePerGas
+					!gasPrice.maxPriorityFeePerGas ||
+					!gasPrice.maxFeePerGas
 				)
 			)
 			) gasPrice = await getGasPrice(web3, gasPrice, EIP_1559)
-		log.debug(`Gas price: ${gasPrice}`)
+		log.debug(`Gas price: ${JSON.stringify(gasPrice)}`)
 
 		var ethUsdPrice = BN(await ut.getPriceInOtherCurrency('gate', 'ETH', 'USD'))
     if (!gasLimit) {
@@ -1079,11 +1127,11 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 						usdCost = ethCost.times(ethUsdPrice)
 						console.log(`overhead est. gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
 					} else {
-						ethCost = BN(gasPrice).times(BN(gasLimit)).div(10**18)
+						ethCost = BN(gasPrice.gasPrice).times(BN(gasLimit)).div(10**18)
 						usdCost = ethCost.times(ethUsdPrice)
 						console.log(`gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
 						gasLimit += gasOverhead || config.get(`web3.gasOverhead`)
-						ethCost = BN(gasPrice).times(BN(gasLimit)).div(10**18)
+						ethCost = BN(gasPrice.gasPrice).times(BN(gasLimit)).div(10**18)
 						usdCost = ethCost.times(ethUsdPrice)
 						console.log(`overhead est. gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
 					}
@@ -1098,7 +1146,7 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 					usdCost = ethCost.times(ethUsdPrice)
 					console.log(`estimated gas: ${gasLimit} estimated eth cost: ${ethCost.toFixed(6)} eestimated usd cost: ${usdCost.toFixed(6)}`)
 				} else {
-					ethCost = BN(gasPrice).times(BN(gasLimit)).div(10**18)
+					ethCost = BN(gasPrice.gasPrice).times(BN(gasLimit)).div(10**18)
 					usdCost = ethCost.times(ethUsdPrice)
 					console.log(`estimated gas: ${gasLimit} eth cost: ${ethCost.toFixed(6)} usd cost: ${usdCost.toFixed(6)}`)
 				}
