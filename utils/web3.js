@@ -485,7 +485,7 @@ async function getLedgerEthereumDerivePath (web3, from, transport) {
 }
 
 async function getGasPrice (web3, gasPrice, EIP_1559) {
-	if (!EIP_1559) EIP_1559 = gasPrice.type === 'EIP_1559'
+	if (!EIP_1559) EIP_1559 = !gasPrice || gasPrice.type === 'EIP_1559'
 	log.debug(`gasPrice: ${JSON.stringify(gasPrice)}`)
   var etherscanWorked = true
   var gasPrices = {}
@@ -641,7 +641,7 @@ async function kyberTrade (
     }
   }
 	var gasPrice = await getGasPrice(web3, {type: 'legacy'})
-	const EIP_1559 = gasPrice.type === 'EIP_1559'
+	const EIP_1559 = !gasPrice || gasPrice.type === 'EIP_1559'
 	if (EIP_1559) {
 		gasPrice = gasPrice.maxFeePerGas
 	}
@@ -927,7 +927,7 @@ async function getAddressAndCheck (web3, to) {
 
 async function access (web3, block, to, funcName, args = [], abi, from, value, gasLimit, gasPrice, nonce, inputs, multipleUse, calldata, gasOverhead, getHashFast) {
 
-	const EIP_1559 = gasPrice.type === 'EIP_1559'
+	const EIP_1559 = !gasPrice || gasPrice.type === 'EIP_1559'
 
   if (multipleUse) {
     web3 = await ut.getWeb3(network)
