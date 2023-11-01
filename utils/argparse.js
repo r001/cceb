@@ -849,8 +849,8 @@ function argParse () {
           })
           .command({
             //cceb eth
-            command: 'send <txjson> <signature>',
-            desc: 'Sends a prepared transaction (json formatted) to the blockchain',
+            command: 'send <txjson> [signature]',
+            desc: 'Sends a prepared transaction (json formatted) to the blockchain. If no signature is given, it will sign first.',
             builder: (yargs) =>
               yargs
 

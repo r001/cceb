@@ -238,7 +238,7 @@ async function getAirsignSignature (rawTx, type) {
   const ethSignRequest = (await encode(signable))
 	let done = false
 	let ur = ethSignRequest.toUREncoder(config.get('qrCodeSize'))
-	log.debug(`cbor: ${ur.cbor.toString('hex')}`)
+	console.log(`cbor: ${ur.cbor.toString('hex')}`)
   while (!done) {
 		let urPart = ur.nextPart()	
 
@@ -330,13 +330,14 @@ async function encode (signable) {
 
 // Function to broadcast transactions
 async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, nonce, signature, getHashFast) {
+	log.debug(`broadcastTx: ${JSON.stringify({from, to, txData, value, gasLimit, gasPrice, nonce, signature, getHashFast})}`)
   const txCount = nonce || await web3.eth.getTransactionCount(from)
 
   var rawTx = {
     from: from,
     to: to,
     data: txData,
-    value: BigInt(value),
+    value: BigInt(value || 0),
     gasLimit: BigInt(gasLimit),
     nonce: BigInt(txCount),
   }
@@ -1097,7 +1098,7 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 			) gasPrice = await getGasPrice(web3, gasPrice, EIP_1559)
 		log.debug(`Gas price: ${JSON.stringify(gasPrice)}`)
 
-		var ethUsdPrice = BN(await ut.getPriceInOtherCurrency('gate', 'ETH', 'USD'))
+		var ethUsdPrice = BN(await ut.getPriceInOtherCurrency('gate', 'ETH', 'USDT'))
     if (!gasLimit) {
       if (!ether) {
         try {

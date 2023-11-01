@@ -157,6 +157,63 @@ async function signV2 (walletconnectV2, event, args) {
 			approveRequestV2(walletconnectV2, topic, id, signature)
 
 			break
+		case 'eth_sendTransaction':
+			log.info(`Sending transaction`)
+
+			txData = methodParams[0]
+			from = txData.from
+			txData.chainId = chainId.replace(/.*:/g, '')
+			if (web3.chainId !== txData.chainId) {
+				await walletconnectV2.rejectSession({
+					id,
+					reason: getSdkError('UNSUPPORTED_CHAINS'),
+				})
+
+				log.error(`Invalid chainId: ${chainId} != ${web3.chainId}`)
+			}
+
+			if (!txData.gasPrice) {
+				txData.gasPrice = {type: 'EIP_1559', maxPriorityFeePerGas: txData.maxPriorityFeePerGas, maxFeePerGas: txData.maxFeePerGas}
+			} else {
+				txData.gasPrice = {type: 'legacy', gasPrice: txData.gasPrice}
+			}
+
+			try {
+				var result = (await w3.access(
+					web3,
+					null,
+					txData.to,
+					null,
+					null,
+					null,
+					args.overridefrom || txData.from,
+					txData.value,
+					args.overridegaslimit || args.theirgas && txData.gas,
+					args.overridegasprice || args.theirgas && txData.gasPrice,
+					args.overridenonce || txData.nonce,
+					null,
+					null,
+					txData.data,
+					args.gasoverhead,
+					true                       // getHashFast
+				)).transactionHash
+
+				log.info(`Transactionhash: ${result}`)
+
+				approveRequestV2(walletconnectV2, topic, id, result)
+
+			} catch (e) {
+				let message = `Signing aborted`
+				log.error(`Error sending transaction: ${message} \n${e.stack}`)
+
+				await walletconnectV2.rejectSession({
+					id,
+					reason: getSdkError('USER_REJECTED'),
+				})
+
+				log.info(`Request rejected`)
+			}
+			break
 		default:
 			await walletconnectV2.rejectSession({
 				id,
