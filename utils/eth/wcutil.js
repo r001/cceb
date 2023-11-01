@@ -163,7 +163,8 @@ async function signV2 (walletconnectV2, event, args) {
 			txData = methodParams[0]
 			from = txData.from
 			txData.chainId = chainId.replace(/.*:/g, '')
-			if (web3.chainId !== txData.chainId) {
+			log.debug(`web3.chainid = ${web3.chainId}, txData.chainId = ${txData.chainId}`)
+			if (web3.chainId && (String(web3.chainId) !== String(txData.chainId))) {
 				await walletconnectV2.rejectSession({
 					id,
 					reason: getSdkError('UNSUPPORTED_CHAINS'),

@@ -1087,12 +1087,14 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 
     var txData = calldata ? calldata : ether ? '0x' : await contract.methods[methodName](...args).encodeABI()
     if (
-			!EIP_1559 &&  !gasPrice.gasPrice || 
-			(
-				EIP_1559 &&
+			!gasPrice || (
+				!EIP_1559 &&  !gasPrice.gasPrice || 
 				(
-					!gasPrice.maxPriorityFeePerGas ||
-					!gasPrice.maxFeePerGas
+					EIP_1559 &&
+					(
+						!gasPrice.maxPriorityFeePerGas ||
+						!gasPrice.maxFeePerGas
+					)
 				)
 			)
 			) gasPrice = await getGasPrice(web3, gasPrice, EIP_1559)
