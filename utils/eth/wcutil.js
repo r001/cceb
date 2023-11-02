@@ -553,7 +553,7 @@ function approveRequest (walletConnect, payload, result) {
         log.info(`Request approved`)
 }
 
-function approveRequestV2 (walletConnect, topic, id, signature) {
+function approveRequestV2 (walletConnectV2, topic, id, signature) {
 
 				let response = 
 				{
@@ -567,7 +567,7 @@ function approveRequestV2 (walletConnect, topic, id, signature) {
 
         log.debug(`approved: ${JSON.stringify(response)}`)
 
-        walletConnect.approveRequest(response)
+        walletConnectV2.respondSessionRequest(response)
 
         log.info(`Request approved`)
 }

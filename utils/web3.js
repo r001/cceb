@@ -1160,7 +1160,7 @@ async function access (web3, block, to, funcName, args = [], abi, from, value, g
 
     process.on('uncaughtException', function (err) {
       var value = err.message.match(/0x([a-zA-Z0-9]*)/)[1]
-      value = new Buffer(value, 'hex')
+      value = Buffer.from(value, 'hex')
       //log.error(err.message)
       log.error(value.toString().replace(/[^-A-Za-z0-9/. ]/g, ''));
       process.exit(0)

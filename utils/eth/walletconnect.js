@@ -46,7 +46,6 @@ async function walletconnectv2 (args, uri) {
 	});
 
 	const walletConnectV2 = await Web3Wallet.init({
-
 		core, // <- pass the shared `core` instance
 		metadata: {
 			name: "cceb",
@@ -55,6 +54,8 @@ async function walletconnectv2 (args, uri) {
 			icons: [],
 		},
 	});
+
+	var namespaces
 
 	walletConnectV2.on("session_proposal", async sessionProposal => {
 		log.info(`Session Proposal`)
@@ -66,7 +67,7 @@ async function walletconnectv2 (args, uri) {
 			args.accounts.map(async account => await w3.getAddress(account))
 		)
 
-		const account0 = accounts[0]
+		const account0 = args.from || accounts[0]
 
 		const chains = Object
 			.keys(config.get(`web3.networks`))
@@ -98,7 +99,7 @@ async function walletconnectv2 (args, uri) {
 		log.debug(`optionalNamespaces: ${JSON.stringify(params.optionalNamespaces)}`)
 		log.debug(`Proposer: ${JSON.stringify(params.proposer)}`)
     log.debug(`namespacesCandidate: ${JSON.stringify(namespacesCandidate)}`)
-		var namespaces = buildApprovedNamespaces(namespacesCandidate)
+		namespaces = buildApprovedNamespaces(namespacesCandidate)
 
 
 		await walletConnectV2.approveSession({
@@ -110,11 +111,9 @@ async function walletconnectv2 (args, uri) {
 
 		process && process.on('SIGINT', async () => {
 			log.info("Caught interrupt signal");
-			await walletConnectV2.killSession()
+			await walletConnectV2.core.pairing.disconnect({topic: walletConnectV2.core.pairing.topic})
 			log.info("Session killed");
-			walletConnectV2.transportClose()
-			log.info("Transport closed");
-			process.exit(0)
+			process && process.exit(0)
 		});
 	});
 
@@ -128,7 +127,7 @@ async function walletconnectv2 (args, uri) {
 		log.info(`Session Deleted`)
 		walletConnectV2.core.pairing.disconnect({topic: walletConnectV2.core.pairing.topic})
 		log.info("Transport closed");
-		process || process.exit(0)
+		process && process.exit(0)
 	});
 
 	await walletConnectV2.core.pairing.pair({uri});	
