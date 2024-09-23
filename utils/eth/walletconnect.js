@@ -67,7 +67,7 @@ async function walletconnectv2 (args, uri) {
 			args.accounts.map(async account => await w3.getAddress(account))
 		)
 
-		const account0 = args.from || accounts[0]
+		const account0 = await w3.getAddress(args.from) || accounts[0]
 
 		const chains = Object
 			.keys(config.get(`web3.networks`))
