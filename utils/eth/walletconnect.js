@@ -88,7 +88,7 @@ async function walletconnectv2 (args, uri) {
 							"eth_signTypedData",
 							"eth_signTransaction",
 						],
-						"events": ["chainChanged", "accountsChanged"],
+						"events": ["chainChanged", "accountsChanged", "connect", "disconnect"],
 						"accounts": [...accounts, "eip155:0x0000000000000000000000000000000000000000"], 
 					},
 				},

@@ -41,7 +41,7 @@ async function signV2 (walletconnectV2, event, args) {
 		case "personal_sign": 
 			var [message, from] = methodParams
 
-			signature = '0x' + await getResV2(
+			signature = '0x' + (await getResV2(
 				'personal_sign', 
 				await getSignFunction(from),
 				{
@@ -51,7 +51,7 @@ async function signV2 (walletconnectV2, event, args) {
 				},
 				walletconnectV2,
 				id
-			)
+			))
 				.replace(/^\s*0x/, '')
 				.replace(/[^A-Fa-f0-9]*$/, '')
 
@@ -61,7 +61,7 @@ async function signV2 (walletconnectV2, event, args) {
 			[from, message] = methodParams	
 			log.info(`Signing message`)
 
-			signature = '0x' + await getResV2(
+			signature = '0x' + (await getResV2(
 				'eth_sign', 
 				await getSignFunction(from),
 				{
@@ -71,7 +71,7 @@ async function signV2 (walletconnectV2, event, args) {
 				},
 				walletconnectV2,
 				id
-			)
+			))
 				.replace(/^\s*0x/, '')
 				.replace(/[^A-Fa-f0-9]*$/, '')
 
@@ -111,7 +111,7 @@ async function signV2 (walletconnectV2, event, args) {
 			log.debug(`From: ${from}`)
 			log.debug(`CChainId: ${chainId}`)
 
-			signature = '0x' + await getResV2(
+			signature = '0x' + (await getResV2(
 				'eth_signTypedData', 
 				await getSignFunction(from),
 				{
@@ -122,7 +122,7 @@ async function signV2 (walletconnectV2, event, args) {
 				},
 				walletconnectV2,
 				id
-			)
+			))
 				.replace(/^\s*0x/, '')
 				.replace(/[^A-Fa-f0-9]*$/, '')
 
