@@ -2,7 +2,7 @@
 const BN = require('bignumber.js')
 const fs = require('fs')
 const log4js = require('log4js')
-const logger = require("@ledgerhq/logs");
+//const logger = require("@ledgerhq/logs");
 const path = require('path')
 const pm2 = require('pm2')
 const {promisify} = require('es6-promisify')
@@ -26,12 +26,12 @@ const aave = require('./utils/eth/aave.js')
 const curve = require('./utils/eth/curve.js')
 const radix = require('./utils/radix.js')
 const walletconnect = require('./utils/eth/walletconnect.js')
-const addresses = require('./utils/ledger/addresses.js')
+// const addresses = require('./utils/ledger/addresses.js')
 const maker = require('./utils/eth/maker.js')
 const exch = require('./utils/exchange.js')
 const tx = require('./utils/eth/tx.js')
 
-logger.listen(log => console.log(log.type + ": " + log.message))
+//logger.listen(log => console.log(log.type + ": " + log.message))
 BN.set({DECIMAL_PLACES: 45, ROUNDING_MODE: 1/*round down*/})
 
 log4js.configure(
@@ -249,13 +249,6 @@ async function processArgs (exchange, args) {
 									await curve.dispCurveInfo(args, baseDir)
 									break
 							}
-							break
-					}
-					break
-				case 'ledger':
-					switch (args._[1]) {
-						case 'addresses':
-							await addresses.dispLedgerAddresses(args)
 							break
 					}
 					break

@@ -25,9 +25,9 @@ const network = config.get('web3.network')
 const common = new Common({chain: config.get(`web3.networks.${network}.chainid`)})
 const pressAnyKey = require('press-any-key')
 const shell = require('shelljs')
-const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
-const Eth = require("@ledgerhq/hw-app-eth").default
-const {ledgerService} = require("@ledgerhq/hw-app-eth").default
+// const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid-singleton").default;
+// const Eth = require("@ledgerhq/hw-app-eth").default
+// const {ledgerService} = require("@ledgerhq/hw-app-eth").default
 const sigUtil = require('@metamask/eth-sig-util')
 const {bufArrToArr, fromRpcSig, stripHexPrefix} = require('@ethereumjs/util')
 const {RLP} = require('@ethereumjs/rlp')
@@ -108,80 +108,80 @@ async function getPrivateKeySignature (web3, rawTx, type) {
   }
 }
 
-async function getLedgerSignature (web3, rawTx, type) {
-
-  const derivePath = await getLedgerDerivePath(web3, 'Ethereum', rawTx.from)
-  log.debug({derivePath})
-  const transport = await TransportNodeHid.create();
-  const eth = new Eth(transport)
-
-  var signed, rawLedger, typedData, sanitizedData, domainSeparator,
-    typedDataHash
-
-	const EIP_1559 = !rawTx.gasPrice
-  switch (type) {
-    case 'sign_transaction':
-			if (EIP_1559) {
-				let tx = FeeMarketEIP1559Transaction.fromTxData(rawTx, {common})
-				let unsignedTx = tx.getMessageToSign(false)
-				let resolution = await ledgerService.resolveTransaction(tx)
-				signed = await eth.signTransaction(derivePath, unsignedTx, resolution)
-			} else {
-				log.debug({rawLedger})
-				var lTx = Transaction.fromTxData(rawTx, {common})
-
-				log.debug({
-					serialized:lTx.serialize().toString("hex"),
-					r: lTx.r.toString("hex"),
-					s: lTx.s.toString("hex"),
-					v: lTx.v.toString("hex")
-				})
-
-				signed = await eth.signTransaction(
-					derivePath,
-					RLP.encode(bufArrToArr(lTx))
-				)
-			}
-
-      break
-    case 'sign_personal_message':
-      signed = await eth.signPersonalMessage(derivePath, rawTx.data)
-      signed.v = calcV(signed.v)
-      break
-    case 'sign_typed_data':
-      typedData = rawTx.data
-      sanitizedData = sigUtil.TypedDataUtils.sanitizeData(typedData)
-
-      domainSeparator = sigUtil.TypedDataUtils.hashStruct(
-        'EIP712Domain',
-        sanitizedData.domain,
-        sanitizedData.types,
-        rawTx.version
-      )
-
-      typedDataHash = sigUtil.TypedDataUtils.hashStruct(
-        rawTx.data.primaryType,
-        sanitizedData.message,
-        sanitizedData.types,
-        rawTx.version,
-      )
-
-      signed = await eth.signEIP712HashedMessage(
-        derivePath,
-        domainSeparator.toString('hex'),
-        typedDataHash.toString('hex')
-      )
-
-      signed.v = calcV(signed.v)
-      break
-    default:
-      throw new Error(`Unsupported type ${type}`)
-  }
-
-  const signature = signed.r + signed.s + signed.v
-  await transport.close()
-  return signature
-}
+//async function getLedgerSignature (web3, rawTx, type) {
+//
+//  const derivePath = await getLedgerDerivePath(web3, 'Ethereum', rawTx.from)
+//  log.debug({derivePath})
+//  const transport = await TransportNodeHid.create();
+//  const eth = new Eth(transport)
+//
+//  var signed, rawLedger, typedData, sanitizedData, domainSeparator,
+//    typedDataHash
+//
+//	const EIP_1559 = !rawTx.gasPrice
+//  switch (type) {
+//    case 'sign_transaction':
+//			if (EIP_1559) {
+//				let tx = FeeMarketEIP1559Transaction.fromTxData(rawTx, {common})
+//				let unsignedTx = tx.getMessageToSign(false)
+//				let resolution = await ledgerService.resolveTransaction(tx)
+//				signed = await eth.signTransaction(derivePath, unsignedTx, resolution)
+//			} else {
+//				log.debug({rawLedger})
+//				var lTx = Transaction.fromTxData(rawTx, {common})
+//
+//				log.debug({
+//					serialized:lTx.serialize().toString("hex"),
+//					r: lTx.r.toString("hex"),
+//					s: lTx.s.toString("hex"),
+//					v: lTx.v.toString("hex")
+//				})
+//
+//				signed = await eth.signTransaction(
+//					derivePath,
+//					RLP.encode(bufArrToArr(lTx))
+//				)
+//			}
+//
+//      break
+//    case 'sign_personal_message':
+//      signed = await eth.signPersonalMessage(derivePath, rawTx.data)
+//      signed.v = calcV(signed.v)
+//      break
+//    case 'sign_typed_data':
+//      typedData = rawTx.data
+//      sanitizedData = sigUtil.TypedDataUtils.sanitizeData(typedData)
+//
+//      domainSeparator = sigUtil.TypedDataUtils.hashStruct(
+//        'EIP712Domain',
+//        sanitizedData.domain,
+//        sanitizedData.types,
+//        rawTx.version
+//      )
+//
+//      typedDataHash = sigUtil.TypedDataUtils.hashStruct(
+//        rawTx.data.primaryType,
+//        sanitizedData.message,
+//        sanitizedData.types,
+//        rawTx.version,
+//      )
+//
+//      signed = await eth.signEIP712HashedMessage(
+//        derivePath,
+//        domainSeparator.toString('hex'),
+//        typedDataHash.toString('hex')
+//      )
+//
+//      signed.v = calcV(signed.v)
+//      break
+//    default:
+//      throw new Error(`Unsupported type ${type}`)
+//  }
+//
+//  const signature = signed.r + signed.s + signed.v
+//  await transport.close()
+//  return signature
+//}
 
 async function calcV (v) {
   v -= 27;
@@ -368,7 +368,8 @@ async function broadcastTx (web3, from, to, txData, value, gasLimit, gasPrice, n
         signature = await getAirsignSignature(rawTx, 'sign_transaction')
         break
       case 'ledger':
-        signature = await getLedgerSignature(web3, rawTx, 'sign_transaction')
+        //signature = await getLedgerSignature(web3, rawTx, 'sign_transaction')
+				throw new Error(`Account is on ledger, not supported on mobile.`)
         break
       case 'privatekey':
         signature = await getPrivateKeySignature(web3, rawTx, 'sign_transaction')
@@ -1620,7 +1621,6 @@ module.exports = {
   getGasPrice,
   getLedgerDerivePath,
   getLedgerEthereumDerivePath,
-  getLedgerSignature,
   getNonce,
   getPath,
   getPrivateKeySignature,
