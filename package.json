@@ -63,7 +63,7 @@
     "keythereum": "^1.2.0",
     "log4js": "^6.9.1",
     "lokijs": "^1.5.12",
-    "node-telegram-bot-api": "^0.61.0",
+    "node-telegram-bot-api": "^0.66.0",
     "path": "^0.12.7",
     "pm2": "^5.2.0",
     "press-any-key": "^0.1.1",
@@ -81,13 +81,13 @@
   "devDependencies": {
     "assert": "^2.0.0",
     "babel-eslint": "^10.0.1",
-    "eslint": "^5.16.0",
+    "eslint": "^9.17.0",
     "eslint-plugin-chai": "0.0.1",
     "eslint-plugin-json": "^1.4.0",
     "eslint-plugin-mocha": "^5.3.0",
     "eslint-plugin-react": "^7.13.0",
     "mocha": "^10.0.0",
-    "rewiremock": "^3.14.3",
+    "rewiremock": "^3.14.5",
     "typescript": "^4.9.3"
   }
 }
